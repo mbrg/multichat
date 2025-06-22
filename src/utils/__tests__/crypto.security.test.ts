@@ -3,6 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Allow use of the Node global object in tests
+declare const global: any;
 import { SecureStorage } from '../crypto';
 
 describe('SecureStorage Security Tests', () => {

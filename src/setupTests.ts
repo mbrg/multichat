@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Allow access to the Node global object for mocks
+declare const global: any;
+
 // Mock DOM methods not available in JSDOM
 Object.defineProperty(Element.prototype, 'scrollIntoView', {
   value: vi.fn(),
@@ -68,7 +71,7 @@ const mockCrypto = {
       throw new Error('Decryption failed');
     }),
     exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-    importKey: vi.fn().mockImplementation(async (format: any, keyData: any) => {
+    importKey: vi.fn().mockImplementation(async (_format: any, keyData: any) => {
       const keyId = new TextDecoder().decode(keyData);
       // Check if this key already exists
       if (keyStore.has(keyId)) {
@@ -117,11 +120,15 @@ const createMockRequest = (shouldSucceed = true) => {
         transaction: vi.fn().mockReturnValue({
           objectStore: vi.fn().mockReturnValue({
             get: vi.fn().mockImplementation((keyName: string) => {
-              const getRequest = {
-                onsuccess: null as any,
-                onerror: null as any,
-                result: undefined,
-              };
+                const getRequest: {
+                  onsuccess: ((this: unknown, ev: any) => any) | null;
+                  onerror: ((this: unknown, ev: any) => any) | null;
+                  result: any;
+                } = {
+                  onsuccess: null,
+                  onerror: null,
+                  result: undefined,
+                };
               queueMicrotask(() => {
                 // Simulate finding stored key data if it exists
                 const storedKeys = Array.from(keyStore.keys());
@@ -131,7 +138,7 @@ const createMockRequest = (shouldSucceed = true) => {
                   const keyData = new TextEncoder().encode(latestKeyId);
                   getRequest.result = keyData;
                 }
-                if (getRequest.onsuccess) getRequest.onsuccess();
+                  if (getRequest.onsuccess) getRequest.onsuccess({} as any);
               });
               return getRequest;
             }),
