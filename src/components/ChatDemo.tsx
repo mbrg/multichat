@@ -104,24 +104,15 @@ const ChatDemo: React.FC = () => {
   return (
     <div 
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }} 
-      className="h-screen bg-[#0a0a0a] text-gray-200 flex flex-col overflow-hidden"
+      className="h-screen bg-[#0a0a0a] text-gray-200"
     >
-      {/* Header */}
-      <div className="flex justify-between items-center p-3 bg-[#1a1a1a] border-b border-[#2a2a2a] min-h-[56px]">
-        <div className="text-lg font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
-          Infinite Chat
-        </div>
-      </div>
-      
-      <div className="flex-1">
-        <ChatContainer
-          messages={messages}
-          onSendMessage={handleSendMessage}
-          onSelectPossibility={handleSelectPossibility}
-          isLoading={isLoading}
-          className="bg-[#0a0a0a]"
-        />
-      </div>
+      <ChatContainer
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        onSelectPossibility={handleSelectPossibility}
+        isLoading={isLoading}
+        className="bg-[#0a0a0a] h-full"
+      />
     </div>
   )
 }
