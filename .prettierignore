@@ -1,0 +1,10 @@
+dist
+node_modules
+.git
+*.md
+*.json
+*.yaml
+*.yml
+coverage
+.next
+out
