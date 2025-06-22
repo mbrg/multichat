@@ -56,7 +56,7 @@ describe('AI Configuration User Flows', () => {
     })
 
     it('should handle unknown provider gracefully', () => {
-      const unknownModels = getModelsByProvider('unknown-provider' as any)
+      const unknownModels = getModelsByProvider('unknown-provider' as keyof typeof MODELS)
       expect(unknownModels).toEqual([])
     })
 

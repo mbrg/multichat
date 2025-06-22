@@ -74,7 +74,7 @@ export class MistralProvider implements AIProvider {
     return apiKey
   }
 
-  private extractLogprobs(_result: any): number[] | undefined {
+  private extractLogprobs(): number[] | undefined {
     // Simplified for now - Mistral logprobs extraction not implemented
     return undefined
   }
