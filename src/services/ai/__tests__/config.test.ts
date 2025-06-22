@@ -6,6 +6,7 @@ import {
   getDefaultTemperatureRange,
   MODEL_CONFIGS,
 } from '../config'
+import type { ProviderType } from '../../../types/ai'
 
 describe('AI Configuration User Flows', () => {
   describe('Model Discovery for Users', () => {
@@ -59,7 +60,7 @@ describe('AI Configuration User Flows', () => {
 
     it('should handle unknown provider gracefully', () => {
       const unknownModels = getModelsByProvider(
-        'unknown-provider' as keyof typeof MODELS
+        'unknown-provider' as ProviderType
       )
       expect(unknownModels).toEqual([])
     })

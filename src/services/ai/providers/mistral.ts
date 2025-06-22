@@ -38,7 +38,7 @@ export class MistralProvider implements AIProvider {
       })
 
       // Try to extract logprobs if available
-      const logprobs = this.extractLogprobs(result)
+      const logprobs = this.extractLogprobs()
       const probability = logprobs
         ? this.calculateProbability(logprobs)
         : this.estimateProbability(options.temperature ?? 0.7)
