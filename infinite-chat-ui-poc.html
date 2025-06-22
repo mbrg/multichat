@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Infinite Possibilities Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            min-height: 56px;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .settings-button {
+            background: none;
+            border: 1px solid #3a3a3a;
+            color: #888;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .settings-button:hover {
+            border-color: #667eea;
+            color: #e0e0e0;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px;
+            }
+            
+            .logo {
+                font-size: 16px;
+            }
+            
+            .settings-button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .settings-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .settings-content {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .settings-content {
+                padding: 16px;
+                max-height: 85vh;
+            }
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .close-button:hover {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .api-key-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .api-key-section:last-child {
+            border-bottom: none;
+        }
+
+        .api-key-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .api-key-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #aaa;
+            flex: 1;
+        }
+
+        .model-icon-small {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .api-key-input {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+            font-family: monospace;
+            -webkit-appearance: none;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #2a2a2a;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #0a0a0a;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        .settings-divider {
+            margin: 24px 0;
+            padding-top: 24px;
+            border-top: 2px solid #2a2a2a;
+        }
+
+        .settings-group-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #e0e0e0;
+        }
+
+        .toggle-setting {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            gap: 12px;
+        }
+
+        .toggle-setting-label {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .toggle-setting-description {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .system-prompt-section {
+            margin-top: 16px;
+        }
+
+        .system-prompt-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .system-prompt-textarea {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            max-height: 200px;
+            -webkit-appearance: none;
+        }
+
+        .system-prompt-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .messages-area {
+                padding: 12px;
+                gap: 12px;
+            }
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 800px;
+            width: 100%;
+            align-self: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .message {
+                gap: 8px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+        }
+
+        .user .avatar {
+            background: #4a5568;
+        }
+
+        .ai .avatar {
+            border-radius: 8px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .ai .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .message-content {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .message-content {
+                padding: 12px;
+                font-size: 15px;
+            }
+        }
+
+        .user .message-content {
+            background: #2a2a3a;
+            border-color: #3a3a4a;
+        }
+
+        .model-info {
+            position: absolute;
+            top: -8px;
+            right: 16px;
+            background: #2a2a3a;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #888;
+            border: 1px solid #3a3a4a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .model-info {
+                right: 12px;
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
+
+        .model-info .prob {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .possibilities-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 60vh;
+            background: #0f0f0f;
+            border-top: 1px solid #2a2a2a;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .possibilities-container.active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .possibilities-container {
+                max-height: 50vh;
+            }
+        }
+
+        .possibilities-header {
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .loading-more {
+            display: none;
+            padding: 16px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading-more.active {
+            display: block;
+        }
+
+        .possibilities-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .possibilities-scroll {
+                padding: 12px;
+            }
+        }
+
+        .possibilities-list {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-height: 60px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .option {
+                padding: 10px 12px;
+                gap: 10px;
+                flex-direction: column;
+            }
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #1a1a2a;
+        }
+
+        @media (min-width: 769px) {
+            .option:hover {
+                transform: translateX(4px);
+            }
+        }
+
+        .option:active {
+            transform: scale(0.98);
+        }
+
+        .option-model {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 160px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .option-model {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+
+        .option-model img {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .option-model-name {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .option-text {
+                font-size: 13px;
+                width: 100%;
+            }
+        }
+
+        .option-probability {
+            background: #2a2a3a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        @media (max-width: 768px) {
+            .option-probability {
+                position: absolute;
+                top: 10px;
+                right: 12px;
+            }
+        }
+
+        .streaming-text {
+            display: inline;
+            animation: fadeInText 0.5s ease-out;
+        }
+
+        @keyframes fadeInText {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .input-area {
+            padding: 16px;
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        @media (max-width: 768px) {
+            .input-area {
+                padding: 12px;
+            }
+        }
+
+        .suggest-button {
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2a3a;
+            border: 1px solid #3a3a4a;
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-size: 12px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .suggest-button:hover {
+            background: #3a3a4a;
+            color: #e0e0e0;
+            border-color: #667eea;
+        }
+
+        .suggest-icon {
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .input-wrapper {
+                gap: 8px;
+            }
+        }
+
+        .input-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 0 12px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #667eea;
+        }
+
+        .attachment-button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .attachment-button:hover {
+            color: #e0e0e0;
+        }
+
+        .attachment-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 8px;
+            color: #e0e0e0;
+            font-size: 16px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        @media (max-width: 768px) {
+            .input-field {
+                padding: 10px 8px;
+                font-size: 16px;
+            }
+        }
+
+        .attachments-preview {
+            display: none;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #0a0a0a;
+            border-top: 1px solid #2a2a2a;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .attachments-preview.active {
+            display: flex;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #aaa;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .attachment-item img {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .attachment-remove {
+            margin-left: 4px;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .attachment-remove:hover {
+            color: #ff6b6b;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .send-button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4a4a;
+        }
+
+        /* Touch-friendly scrollbar for mobile */
+        @media (max-width: 768px) {
+            ::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Infinite Chat</div>
+        <button class="settings-button" onclick="toggleSettings()">⚙️ API Keys</button>
+    </div>
+
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <div class="settings-title">API Configuration</div>
+                <button class="close-button" onclick="toggleSettings()">×</button>
+            </div>
+            
+            <div class="api-key-section">
+                <div class="api-key-header">
+                    <div class="api-key-label">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" class="model-icon-small">
+                        <span>OpenAI API Key</span>
+                    </div>
+                    <div class="toggle-switch active" data-provider="openai" onclick="toggleProvider(this)"></div>
+                </div>
+                <input type="password" class="api-key-input" placeholder="sk-..." id="openaiKey">
+            </div>
+
+            <div class="api-key-section">
+                <div class="api-key-header">
+                    <div class="api-key-label">
+                        <img src="https://asset.brandfetch.io/id__Lq5DDK/idHMNckids.svg" class="model-icon-small">
+                        <span>Anthropic API Key</span>
+                    </div>
+                    <div class="toggle-switch active" data-provider="anthropic" onclick="toggleProvider(this)"></div>
+                </div>
+                <input type="password" class="api-key-input" placeholder="sk-ant-..." id="anthropicKey">
+            </div>
+
+            <div class="api-key-section">
+                <div class="api-key-header">
+                    <div class="api-key-label">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" class="model-icon-small">
+                        <span>Google API Key</span>
+                    </div>
+                    <div class="toggle-switch active" data-provider="google" onclick="toggleProvider(this)"></div>
+                </div>
+                <input type="password" class="api-key-input" placeholder="AIza..." id="googleKey">
+            </div>
+
+            <div class="api-key-section">
+                <div class="api-key-header">
+                    <div class="api-key-label">
+                        <img src="https://mistral.ai/images/logo_hubc88c4ece131b91c7cb753f40e9e1cc5_2589_256x0_resize_q97_h2_lanczos_3.webp" class="model-icon-small">
+                        <span>Mistral API Key</span>
+                    </div>
+                    <div class="toggle-switch active" data-provider="mistral" onclick="toggleProvider(this)"></div>
+                </div>
+                <input type="password" class="api-key-input" placeholder="..." id="mistralKey">
+            </div>
+
+            <div class="api-key-section">
+                <div class="api-key-header">
+                    <div class="api-key-label">
+                        <img src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg" class="model-icon-small">
+                        <span>HuggingFace Token</span>
+                    </div>
+                    <div class="toggle-switch active" data-provider="meta" onclick="toggleProvider(this)"></div>
+                </div>
+                <input type="password" class="api-key-input" placeholder="hf_..." id="huggingfaceKey">
+            </div>
+
+            <div class="settings-divider">
+                <div class="settings-group-title">Interface Settings</div>
+                
+                <div class="toggle-setting">
+                    <div>
+                        <div class="toggle-setting-label">Live Streaming While Typing</div>
+                        <div class="toggle-setting-description">Show AI responses in real-time as you type</div>
+                    </div>
+                    <div class="toggle-switch active" id="liveStreamingToggle" onclick="toggleLiveStreaming(this)"></div>
+                </div>
+                
+                <div class="system-prompt-section">
+                    <div class="system-prompt-label">
+                        <span>System Prompt</span>
+                        <span class="char-count" id="charCount">0 / 1000</span>
+                    </div>
+                    <textarea 
+                        class="system-prompt-textarea" 
+                        id="systemPrompt" 
+                        placeholder="You are a helpful AI assistant..."
+                        maxlength="1000"
+                        oninput="updateCharCount()"
+                    >You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages-area" id="messagesArea">
+            <div class="message ai">
+                <div class="avatar">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" alt="AI">
+                </div>
+                <div class="message-content">
+                    <div class="model-info">
+                        <span>GPT-4o • <span class="prob">94.2%</span></span>
+                    </div>
+                    Hello! Start typing to see infinite possibilities from multiple AI models in real-time. Click the settings button to add your API keys for full functionality.
+                </div>
+            </div>
+        </div>
+        
+        <div class="possibilities-container" id="possibilitiesContainer">
+            <div class="possibilities-header">
+                <span id="optionCount">Loading possibilities...</span>
+                <span id="scrollHint" style="font-size: 11px; color: #666;">Scroll for more</span>
+            </div>
+            <div class="possibilities-scroll" id="possibilitiesScroll">
+                <div class="possibilities-list" id="possibilitiesList"></div>
+                <div class="loading-more" id="loadingMore">Loading more options...</div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <button class="suggest-button" id="suggestButton" onclick="showUserSuggestions()">
+                <span class="suggest-icon">✨</span>
+                <span>Suggest response</span>
+            </button>
+            <div class="attachments-preview" id="attachmentsPreview"></div>
+            <div class="input-wrapper">
+                <div class="input-container">
+                    <button class="attachment-button" onclick="document.getElementById('fileInput').click()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                        </svg>
+                    </button>
+                    <input type="text" class="input-field" id="userInput" placeholder="Start typing to see possibilities..." autofocus>
+                    <input type="file" class="file-input" id="fileInput" multiple accept="image/*,audio/*,.pdf,.doc,.docx,.txt">
+                </div>
+                <button class="send-button" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Make functions globally available immediately
+        window.toggleSettings = function() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('active');
+            document.body.style.overflow = modal.classList.contains('active') ? 'hidden' : '';
+        };
+
+        window.toggleProvider = function(toggle) {
+            toggle.classList.toggle('active');
+            const provider = toggle.dataset.provider;
+            enabledProviders[provider] = toggle.classList.contains('active');
+            localStorage.setItem('enabledProviders', JSON.stringify(enabledProviders));
+            
+            if (possibilitiesContainer && possibilitiesContainer.classList.contains('active') && liveStreamingEnabled) {
+                showPossibilities();
+            }
+        };
+
+        window.toggleLiveStreaming = function(toggle) {
+            toggle.classList.toggle('active');
+            liveStreamingEnabled = toggle.classList.contains('active');
+            localStorage.setItem('liveStreamingEnabled', liveStreamingEnabled);
+            
+            if (!liveStreamingEnabled && possibilitiesContainer) {
+                possibilitiesContainer.classList.remove('active');
+            }
+        };
+
+        window.updateCharCount = function() {
+            const systemPromptTextarea = document.getElementById('systemPrompt');
+            const charCount = systemPromptTextarea.value.length;
+            document.getElementById('charCount').textContent = `${charCount} / 1000`;
+            systemPrompt = systemPromptTextarea.value;
+            localStorage.setItem('systemPrompt', systemPrompt);
+        };
+
+        window.showUserSuggestions = function() {
+            // This will be properly defined after DOM loads
+        };
+
+        window.removeAttachment = function(index) {
+            // This will be properly defined after DOM loads
+        };
+
+        // Initialize variables
+        let enabledProviders = {
+            openai: true,
+            anthropic: true,
+            google: true,
+            mistral: true,
+            meta: true
+        };
+        let liveStreamingEnabled = true;
+        let systemPrompt = "You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.";
+        let possibilitiesContainer;
+
+        const models = [
+            { 
+                name: 'GPT-4o', 
+                provider: 'OpenAI',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
+                type: 'general'
+            },
+            { 
+                name: 'o1-preview', 
+                provider: 'OpenAI',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
+                type: 'reasoning'
+            },
+            { 
+                name: 'Claude 3.5 Sonnet', 
+                provider: 'Anthropic',
+                icon: 'https://asset.brandfetch.io/id__Lq5DDK/idHMNckids.svg',
+                type: 'general'
+            },
+            { 
+                name: 'Claude 3 Opus', 
+                provider: 'Anthropic',
+                icon: 'https://asset.brandfetch.io/id__Lq5DDK/idHMNckids.svg',
+                type: 'general'
+            },
+            { 
+                name: 'Gemini 1.5 Pro', 
+                provider: 'Google',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg',
+                type: 'general'
+            },
+            { 
+                name: 'Gemini 2.0 Flash', 
+                provider: 'Google',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg',
+                type: 'reasoning'
+            },
+            { 
+                name: 'Mistral Large', 
+                provider: 'Mistral',
+                icon: 'https://mistral.ai/images/logo_hubc88c4ece131b91c7cb753f40e9e1cc5_2589_256x0_resize_q97_h2_lanczos_3.webp',
+                type: 'general'
+            },
+            { 
+                name: 'LLaMA 3.1 405B', 
+                provider: 'Meta',
+                icon: 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg',
+                type: 'general'
+            },
+            { 
+                name: 'Qwen 2.5', 
+                provider: 'Alibaba',
+                icon: 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg',
+                type: 'general'
+            }
+        ];
+
+        const responseStarters = {
+            general: [
+                "I understand you're asking about",
+                "Based on your input about",
+                "Let me help you with",
+                "Here's my perspective on",
+                "Regarding your question about"
+            ],
+            reasoning: [
+                "Let me think through this step by step:",
+                "Breaking down your query logically:",
+                "Analyzing this systematically:",
+                "Let me reason through this:",
+                "Considering multiple angles:"
+            ]
+        };
+
+        // API configurations
+        const API_ENDPOINTS = {
+            openai: 'https://api.openai.com/v1/chat/completions',
+            anthropic: 'https://api.anthropic.com/v1/messages',
+            google: 'https://generativelanguage.googleapis.com/v1beta/models/',
+            mistral: 'https://api.mistral.ai/v1/chat/completions'
+        };
+
+        const MODEL_MAPPINGS = {
+            'GPT-4o': 'gpt-4o',
+            'o1-preview': 'o1-preview',
+            'Claude 3.5 Sonnet': 'claude-3-5-sonnet-20241022',
+            'Claude 3 Opus': 'claude-3-opus-20240229',
+            'Gemini 1.5 Pro': 'gemini-1.5-pro',
+            'Gemini 2.0 Flash': 'gemini-2.0-flash-exp',
+            'Mistral Large': 'mistral-large-latest',
+            'LLaMA 3.1 405B': 'meta-llama/Meta-Llama-3.1-405B-Instruct',
+            'Qwen 2.5': 'Qwen/Qwen2.5-72B-Instruct'
+        };
+
+        let typingTimer;
+        let currentOptions = [];
+        let displayedOptions = 0;
+        let isTyping = false;
+        let streamingIntervals = new Map();
+        let isLoadingMore = false;
+        let attachedFiles = [];
+        let showingSuggestions = false;
+        const INITIAL_LOAD = 10;
+        const LOAD_MORE = 10;
+
+        const messagesArea = document.getElementById('messagesArea');
+        possibilitiesContainer = document.getElementById('possibilitiesContainer');
+        const possibilitiesScroll = document.getElementById('possibilitiesScroll');
+        const possibilitiesList = document.getElementById('possibilitiesList');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const optionCount = document.getElementById('optionCount');
+        const loadingMore = document.getElementById('loadingMore');
+        const attachmentsPreview = document.getElementById('attachmentsPreview');
+        const fileInput = document.getElementById('fileInput');
+        const systemPromptTextarea = document.getElementById('systemPrompt');
+        const suggestButton = document.getElementById('suggestButton');
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('active');
+            document.body.style.overflow = modal.classList.contains('active') ? 'hidden' : '';
+        }
+
+        function toggleProvider(toggle) {
+            toggle.classList.toggle('active');
+            const provider = toggle.dataset.provider;
+            enabledProviders[provider] = toggle.classList.contains('active');
+            localStorage.setItem('enabledProviders', JSON.stringify(enabledProviders));
+            
+            if (possibilitiesContainer.classList.contains('active') && liveStreamingEnabled) {
+                showPossibilities();
+            }
+        }
+
+        function toggleLiveStreaming(toggle) {
+            toggle.classList.toggle('active');
+            liveStreamingEnabled = toggle.classList.contains('active');
+            localStorage.setItem('liveStreamingEnabled', liveStreamingEnabled);
+            
+            if (!liveStreamingEnabled) {
+                possibilitiesContainer.classList.remove('active');
+            }
+        }
+
+        function updateCharCount() {
+            const charCount = systemPromptTextarea.value.length;
+            document.getElementById('charCount').textContent = `${charCount} / 1000`;
+            systemPrompt = systemPromptTextarea.value;
+            localStorage.setItem('systemPrompt', systemPrompt);
+        }
+
+        function showUserSuggestions() {
+            if (!possibilitiesList || !optionCount || !possibilitiesContainer) {
+                console.error('Required elements not found');
+                return;
+            }
+            
+            showingSuggestions = true;
+            const lastAiMessage = Array.from(messagesArea.querySelectorAll('.message.ai')).pop();
+            const context = lastAiMessage ? lastAiMessage.querySelector('.message-content').textContent : '';
+            
+            // Generate user response suggestions
+            const suggestions = [
+                "Can you explain that in more detail?",
+                "What are the main advantages and disadvantages?",
+                "How does this compare to alternatives?",
+                "Can you provide a specific example?",
+                "What would you recommend?",
+                "Tell me more about the technical aspects",
+                "What are the potential risks?",
+                "How can I get started with this?",
+                "What's the historical context?",
+                "Can you summarize the key points?"
+            ];
+            
+            // Create pseudo-responses for user suggestions
+            currentOptions = [];
+            suggestions.forEach((suggestion, index) => {
+                const probability = (95 - index * 5).toFixed(1);
+                currentOptions.push({
+                    model: { name: 'Suggested Response', provider: 'System', icon: '✨', type: 'user' },
+                    response: { text: suggestion, probability: probability },
+                    globalIndex: index
+                });
+            });
+            
+            displayedOptions = 0;
+            possibilitiesList.innerHTML = '';
+            optionCount.textContent = `${suggestions.length} suggested responses`;
+            possibilitiesContainer.classList.add('active');
+            loadMoreOptions();
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('active');
+            document.body.style.overflow = modal.classList.contains('active') ? 'hidden' : '';
+        }
+
+        function showUserSuggestions() {
+            if (!possibilitiesList || !optionCount || !possibilitiesContainer) {
+                console.error('Required elements not found');
+                return;
+            }
+            
+            showingSuggestions = true;
+            const lastAiMessage = Array.from(messagesArea.querySelectorAll('.message.ai')).pop();
+            const context = lastAiMessage ? lastAiMessage.querySelector('.message-content').textContent : '';
+            
+            // Generate user response suggestions
+            const suggestions = [
+                "Can you explain that in more detail?",
+                "What are the main advantages and disadvantages?",
+                "How does this compare to alternatives?",
+                "Can you provide a specific example?",
+                "What would you recommend?",
+                "Tell me more about the technical aspects",
+                "What are the potential risks?",
+                "How can I get started with this?",
+                "What's the historical context?",
+                "Can you summarize the key points?"
+            ];
+            
+            // Create pseudo-responses for user suggestions
+            currentOptions = [];
+            suggestions.forEach((suggestion, index) => {
+                const probability = (95 - index * 5).toFixed(1);
+                currentOptions.push({
+                    model: { name: 'Suggested Response', provider: 'System', icon: '✨', type: 'user' },
+                    response: { text: suggestion, probability: probability },
+                    globalIndex: index
+                });
+            });
+            
+            displayedOptions = 0;
+            possibilitiesList.innerHTML = '';
+            optionCount.textContent = `${suggestions.length} suggested responses`;
+            possibilitiesContainer.classList.add('active');
+            loadMoreOptions();
+        }
+        
+        // Make showUserSuggestions globally available
+        window.showUserSuggestions = showUserSuggestions;
+
+        function toggleProvider(toggle) {
+            toggle.classList.toggle('active');
+            const provider = toggle.dataset.provider;
+            enabledProviders[provider] = toggle.classList.contains('active');
+            localStorage.setItem('enabledProviders', JSON.stringify(enabledProviders));
+            
+            if (possibilitiesContainer.classList.contains('active') && liveStreamingEnabled) {
+                showPossibilities();
+            }
+        }
+
+        function toggleLiveStreaming(toggle) {
+            toggle.classList.toggle('active');
+            liveStreamingEnabled = toggle.classList.contains('active');
+            localStorage.setItem('liveStreamingEnabled', liveStreamingEnabled);
+            
+            if (!liveStreamingEnabled) {
+                possibilitiesContainer.classList.remove('active');
+            }
+        }
+
+        function loadSettings() {
+            const savedProviders = localStorage.getItem('enabledProviders');
+            if (savedProviders) {
+                enabledProviders = JSON.parse(savedProviders);
+                Object.keys(enabledProviders).forEach(provider => {
+                    const toggle = document.querySelector(`[data-provider="${provider}"]`);
+                    if (toggle) {
+                        if (enabledProviders[provider]) {
+                            toggle.classList.add('active');
+                        } else {
+                            toggle.classList.remove('active');
+                        }
+                    }
+                });
+            }
+            
+            const savedLiveStreaming = localStorage.getItem('liveStreamingEnabled');
+            if (savedLiveStreaming !== null) {
+                liveStreamingEnabled = savedLiveStreaming === 'true';
+                const toggle = document.getElementById('liveStreamingToggle');
+                if (liveStreamingEnabled) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+            
+            // Load saved system prompt
+            const savedPrompt = localStorage.getItem('systemPrompt');
+            if (savedPrompt) {
+                systemPrompt = savedPrompt;
+                systemPromptTextarea.value = savedPrompt;
+                updateCharCount();
+            } else {
+                updateCharCount();
+            }
+        }
+
+        async function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function callOpenAI(messages, model, apiKey) {
+            try {
+                const response = await fetch(API_ENDPOINTS.openai, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_MAPPINGS[model],
+                        messages: messages,
+                        max_tokens: 1000,
+                        temperature: 0.7 + Math.random() * 0.3,
+                        n: 1
+                    })
+                });
+
+                if (!response.ok) throw new Error(`OpenAI API error: ${response.status}`);
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('OpenAI API error:', error);
+                throw error;
+            }
+        }
+
+        async function callAnthropic(messages, model, apiKey) {
+            try {
+                // Convert messages format for Anthropic
+                const systemMessage = messages.find(m => m.role === 'system');
+                const userMessages = messages.filter(m => m.role !== 'system');
+                
+                const response = await fetch(API_ENDPOINTS.anthropic, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_MAPPINGS[model],
+                        messages: userMessages,
+                        system: systemMessage ? systemMessage.content : undefined,
+                        max_tokens: 1000,
+                        temperature: 0.7 + Math.random() * 0.3
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Anthropic API error: ${response.status}`);
+                const data = await response.json();
+                return data.content[0].text;
+            } catch (error) {
+                console.error('Anthropic API error:', error);
+                throw error;
+            }
+        }
+
+        async function callGoogle(messages, model, apiKey) {
+            try {
+                const modelName = MODEL_MAPPINGS[model];
+                const url = `${API_ENDPOINTS.google}${modelName}:generateContent?key=${apiKey}`;
+                
+                // Convert messages to Google format
+                const contents = messages.filter(m => m.role !== 'system').map(m => ({
+                    role: m.role === 'assistant' ? 'model' : 'user',
+                    parts: [{ text: m.content }]
+                }));
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: contents,
+                        generationConfig: {
+                            temperature: 0.7 + Math.random() * 0.3,
+                            maxOutputTokens: 1000
+                        }
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Google API error: ${response.status}`);
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error('Google API error:', error);
+                throw error;
+            }
+        }
+
+        async function callMistral(messages, model, apiKey) {
+            try {
+                const response = await fetch(API_ENDPOINTS.mistral, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_MAPPINGS[model],
+                        messages: messages,
+                        max_tokens: 1000,
+                        temperature: 0.7 + Math.random() * 0.3
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Mistral API error: ${response.status}`);
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('Mistral API error:', error);
+                throw error;
+            }
+        }
+
+        async function generateRealResponses(userInput, attachments = []) {
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                ...conversationHistory
+            ];
+
+            // Add current message with attachments
+            let currentMessage = { role: 'user', content: userInput };
+            if (attachments.length > 0) {
+                // For now, we'll just mention attachments in text
+                // Full multimodal support would require base64 encoding
+                currentMessage.content += ` [User attached ${attachments.length} file(s): ${attachments.map(f => f.name).join(', ')}]`;
+            }
+            messages.push(currentMessage);
+
+            const responses = [];
+            const enabledModelsList = models.filter(model => {
+                const provider = model.provider.toLowerCase();
+                return enabledProviders[provider] || enabledProviders[provider] === undefined;
+            });
+
+            // Get API keys
+            const apiKeys = {
+                openai: localStorage.getItem('openaiKey'),
+                anthropic: localStorage.getItem('anthropicKey'),
+                google: localStorage.getItem('googleKey'),
+                mistral: localStorage.getItem('mistralKey')
+            };
+
+            // Generate responses from each model
+            for (const model of enabledModelsList) {
+                const provider = model.provider.toLowerCase();
+                const apiKey = apiKeys[provider];
+                
+                if (!apiKey) {
+                    console.log(`No API key for ${provider}, using mock response`);
+                    // Generate mock responses if no API key
+                    for (let i = 0; i < 3; i++) {
+                        responses.push({
+                            model: model,
+                            response: {
+                                text: generateResponse(model, userInput, i).text,
+                                probability: (95 - responses.length * 3 - Math.random() * 10).toFixed(1)
+                            },
+                            globalIndex: responses.length
+                        });
+                    }
+                    continue;
+                }
+
+                try {
+                    let responseText;
+                    switch (provider) {
+                        case 'openai':
+                            responseText = await callOpenAI(messages, model.name, apiKey);
+                            break;
+                        case 'anthropic':
+                            responseText = await callAnthropic(messages, model.name, apiKey);
+                            break;
+                        case 'google':
+                            responseText = await callGoogle(messages, model.name, apiKey);
+                            break;
+                        case 'mistral':
+                            responseText = await callMistral(messages, model.name, apiKey);
+                            break;
+                        default:
+                            throw new Error(`Unsupported provider: ${provider}`);
+                    }
+
+                    // Generate multiple variations with different temperatures
+                    responses.push({
+                        model: model,
+                        response: {
+                            text: responseText,
+                            probability: (95 - Math.random() * 10).toFixed(1)
+                        },
+                        globalIndex: responses.length
+                    });
+
+                    // For demo, we'll just show one response per model
+                    // In production, you'd call the API multiple times with different temperatures
+                    for (let i = 1; i < 3; i++) {
+                        responses.push({
+                            model: model,
+                            response: {
+                                text: responseText + ` (Variation ${i + 1})`,
+                                probability: (90 - i * 5 - Math.random() * 10).toFixed(1)
+                            },
+                            globalIndex: responses.length
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error calling ${provider}:`, error);
+                    // Fallback to mock response on error
+                    responses.push({
+                        model: model,
+                        response: {
+                            text: `Error calling ${model.name}: ${error.message}. Please check your API key.`,
+                            probability: '0.0'
+                        },
+                        globalIndex: responses.length
+                    });
+                }
+            }
+
+            return responses;
+        }
+
+        function createOptionElement(model, response, index) {
+            const option = document.createElement('div');
+            option.className = 'option';
+            option.dataset.model = model.name;
+            option.dataset.icon = typeof model.icon === 'string' ? model.icon : '';
+            option.dataset.probability = response.probability;
+            option.dataset.fullText = response.text;
+            option.dataset.optionId = `option-${Date.now()}-${index}`;
+            option.dataset.isUserSuggestion = model.type === 'user' ? 'true' : 'false';
+            
+            const truncatedText = response.text.substring(0, 100);
+            
+            // Handle emoji icon for suggestions
+            const iconHtml = model.icon === '✨' 
+                ? `<div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 18px;">✨</div>`
+                : `<img src="${model.icon}" alt="${model.provider}">`;
+            
+            option.innerHTML = `
+                <div class="option-model">
+                    ${iconHtml}
+                    <div class="option-model-name">${model.name}</div>
+                </div>
+                <div class="option-text">
+                    <span class="streaming-text" data-full-text="${response.text}">${truncatedText}${response.text.length > 100 ? '...' : ''}</span>
+                </div>
+                <div class="option-probability">${response.probability}%</div>
+            `;
+            
+            // Desktop hover events
+            option.addEventListener('mouseenter', () => {
+                if (window.innerWidth > 768 && response.text.length > 100) {
+                    startStreaming(option);
+                }
+            });
+            
+            option.addEventListener('mouseleave', () => {
+                if (window.innerWidth > 768) {
+                    stopStreaming(option);
+                }
+            });
+            
+            // Touch events for mobile
+            let touchTimer;
+            option.addEventListener('touchstart', (e) => {
+                touchTimer = setTimeout(() => {
+                    if (response.text.length > 100) {
+                        startStreaming(option);
+                    }
+                }, 500);
+            });
+            
+            option.addEventListener('touchend', () => {
+                clearTimeout(touchTimer);
+            });
+            
+            option.addEventListener('click', () => selectOption(option));
+            
+            return option;
+        }
+
+        function startStreaming(option) {
+            const textElement = option.querySelector('.streaming-text');
+            const fullText = textElement.dataset.fullText;
+            const optionId = option.dataset.optionId;
+            
+            if (streamingIntervals.has(optionId)) {
+                clearInterval(streamingIntervals.get(optionId));
+            }
+            
+            let currentLength = 100;
+            const streamInterval = setInterval(() => {
+                currentLength += 5;
+                if (currentLength >= fullText.length) {
+                    textElement.textContent = fullText;
+                    clearInterval(streamInterval);
+                    streamingIntervals.delete(optionId);
+                } else {
+                    textElement.textContent = fullText.substring(0, currentLength) + '...';
+                }
+            }, 20);
+            
+            streamingIntervals.set(optionId, streamInterval);
+        }
+
+        function stopStreaming(option) {
+            const optionId = option.dataset.optionId;
+            if (streamingIntervals.has(optionId)) {
+                clearInterval(streamingIntervals.get(optionId));
+                streamingIntervals.delete(optionId);
+            }
+        }
+
+        function showPossibilities() {
+            const inputValue = userInput.value.trim();
+            if (!inputValue) {
+                possibilitiesContainer.classList.remove('active');
+                return;
+            }
+
+            showingSuggestions = false;
+            possibilitiesContainer.classList.add('active');
+            possibilitiesList.innerHTML = '';
+            displayedOptions = 0;
+            
+            streamingIntervals.forEach(interval => clearInterval(interval));
+            streamingIntervals.clear();
+            
+            // Generate all options
+            currentOptions = [];
+            models.forEach(model => {
+                const provider = model.provider.toLowerCase();
+                if (!enabledProviders[provider] && enabledProviders[provider] !== undefined) {
+                    return;
+                }
+                
+                const numOptions = Math.floor(Math.random() * 3) + 3;
+                for (let i = 0; i < numOptions; i++) {
+                    const response = generateResponse(model, inputValue, i);
+                    currentOptions.push({ model, response, globalIndex: currentOptions.length });
+                }
+            });
+
+            // Sort by probability
+            currentOptions.sort((a, b) => parseFloat(b.response.probability) - parseFloat(a.response.probability));
+            
+            // Update count
+            optionCount.textContent = `${currentOptions.length} possibilities found`;
+            
+            // Load initial batch
+            loadMoreOptions();
+        }
+
+        function loadMoreOptions() {
+            if (isLoadingMore || displayedOptions >= currentOptions.length) return;
+            
+            isLoadingMore = true;
+            loadingMore.classList.add('active');
+            
+            const start = displayedOptions;
+            const end = Math.min(displayedOptions + LOAD_MORE, currentOptions.length);
+            
+            for (let i = start; i < end; i++) {
+                const option = currentOptions[i];
+                const element = createOptionElement(option.model, option.response, option.globalIndex);
+                possibilitiesList.appendChild(element);
+                displayedOptions++;
+            }
+            
+            setTimeout(() => {
+                isLoadingMore = false;
+                loadingMore.classList.remove('active');
+                
+                if (displayedOptions >= currentOptions.length) {
+                    document.getElementById('scrollHint').style.display = 'none';
+                }
+            }, 300);
+        }
+
+        // Infinite scroll
+        possibilitiesScroll.addEventListener('scroll', () => {
+            const scrollTop = possibilitiesScroll.scrollTop;
+            const scrollHeight = possibilitiesScroll.scrollHeight;
+            const clientHeight = possibilitiesScroll.clientHeight;
+            
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                loadMoreOptions();
+            }
+        });
+
+        function selectOption(optionElement) {
+            const modelName = optionElement.dataset.model;
+            const icon = optionElement.dataset.icon;
+            const probability = optionElement.dataset.probability;
+            const fullText = optionElement.dataset.fullText;
+            const isUserSuggestion = optionElement.dataset.isUserSuggestion === 'true';
+            
+            if (isUserSuggestion) {
+                // Put the suggestion in the input field
+                userInput.value = fullText;
+                possibilitiesContainer.classList.remove('active');
+                sendButton.disabled = false;
+                // Trigger possibilities for the suggested text
+                if (liveStreamingEnabled) {
+                    setTimeout(() => showPossibilities(), 300);
+                }
+            } else {
+                const userMessage = userInput.value.trim();
+                const attachmentInfo = attachedFiles.length > 0 ? ` [${attachedFiles.length} file(s) attached]` : '';
+                addMessage('user', userMessage + attachmentInfo);
+                
+                setTimeout(() => {
+                    addMessage('ai', fullText, modelName, probability, icon);
+                    possibilitiesContainer.classList.remove('active');
+                    userInput.value = '';
+                    sendButton.disabled = true;
+                    attachedFiles = [];
+                    attachmentsPreview.classList.remove('active');
+                    attachmentsPreview.innerHTML = '';
+                }, 300);
+            }
+        }
+
+        function addMessage(type, content, modelName, probability, icon) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            
+            if (type === 'user') {
+                message.innerHTML = `
+                    <div class="avatar">U</div>
+                    <div class="message-content">${content}</div>
+                `;
+            } else {
+                // Handle emoji icon
+                const avatarContent = icon === '✨' || !icon
+                    ? `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 18px; background: #2a2a3a;">AI</div>`
+                    : `<img src="${icon}" alt="${modelName}">`;
+                    
+                message.innerHTML = `
+                    <div class="avatar">
+                        ${avatarContent}
+                    </div>
+                    <div class="message-content">
+                        <div class="model-info">
+                            <span>${modelName} • <span class="prob">${probability}%</span></span>
+                        </div>
+                        ${content}
+                    </div>
+                `;
+            }
+            
+            messagesArea.appendChild(message);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Real-time typing detection
+        userInput.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+            
+            if (userInput.value.trim() || attachedFiles.length > 0) {
+                sendButton.disabled = false;
+                if (liveStreamingEnabled && userInput.value.trim()) {
+                    typingTimer = setTimeout(() => {
+                        showPossibilities();
+                    }, 300);
+                }
+            } else {
+                sendButton.disabled = true;
+                possibilitiesContainer.classList.remove('active');
+            }
+        });
+
+        // Send on Enter
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && userInput.value.trim()) {
+                e.preventDefault();
+                const firstOption = possibilitiesList.querySelector('.option');
+                if (firstOption) {
+                    selectOption(firstOption);
+                }
+            }
+        });
+
+        sendButton.addEventListener('click', () => {
+            const firstOption = possibilitiesList.querySelector('.option');
+            if (firstOption) {
+                selectOption(firstOption);
+            }
+        });
+
+        function removeAttachment(index) {
+            attachedFiles.splice(index, 1);
+            updateAttachmentsPreview();
+            if (attachedFiles.length === 0 && !userInput.value.trim()) {
+                sendButton.disabled = true;
+            }
+        }
+
+        // File handling
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            attachedFiles = [...attachedFiles, ...files];
+            updateAttachmentsPreview();
+            sendButton.disabled = false;
+        });
+
+        function updateAttachmentsPreview() {
+            if (attachedFiles.length === 0) {
+                attachmentsPreview.classList.remove('active');
+                attachmentsPreview.innerHTML = '';
+                return;
+            }
+
+            attachmentsPreview.classList.add('active');
+            attachmentsPreview.innerHTML = attachedFiles.map((file, index) => {
+                let preview = '';
+                if (file.type.startsWith('image/')) {
+                    preview = `<img src="${URL.createObjectURL(file)}" alt="${file.name}">`;
+                } else if (file.type.startsWith('audio/')) {
+                    preview = `<div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #2a2a2a; border-radius: 4px;">🎵</div>`;
+                } else {
+                    preview = `<div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #2a2a2a; border-radius: 4px;">📄</div>`;
+                }
+                
+                return `
+                    <div class="attachment-item">
+                        ${preview}
+                        <span>${file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name}</span>
+                        <span class="attachment-remove" onclick="removeAttachment(${index})">×</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function removeAttachment(index) {
+            attachedFiles.splice(index, 1);
+            updateAttachmentsPreview();
+            if (attachedFiles.length === 0 && !userInput.value.trim()) {
+                sendButton.disabled = true;
+            }
+        }
+
+        // Make functions globally available
+        window.toggleSettings = toggleSettings;
+        window.toggleProvider = toggleProvider;
+        window.toggleLiveStreaming = toggleLiveStreaming;
+        window.updateCharCount = updateCharCount;
+        window.removeAttachment = removeAttachment;
+        window.showUserSuggestions = showUserSuggestions;
+
+        // Save API keys
+        document.querySelectorAll('.api-key-input').forEach(input => {
+            const savedKey = localStorage.getItem(input.id);
+            if (savedKey) input.value = savedKey;
+            
+            input.addEventListener('change', () => {
+                localStorage.setItem(input.id, input.value);
+            });
+        });
+
+        // Prevent body scroll when modal is open
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                toggleSettings();
+            }
+        });
+
+        // Handle viewport resize
+        let viewportHeight = window.innerHeight;
+        window.addEventListener('resize', () => {
+            const newHeight = window.innerHeight;
+            if (Math.abs(viewportHeight - newHeight) > 100) {
+                viewportHeight = newHeight;
+                document.body.style.height = `${newHeight}px`;
+            }
+        });
+
+        // Initialize
+        loadSettings();
+        sendButton.disabled = true;
+    </script>
+</body>
+</html>
