@@ -1,3 +1,5 @@
 - replace local storage for apikey in providers with actual secret storage
-- really calculate propabilities from logits dont have mocks
+- really calculate propabilities from logits dont have mocks (estimateProbability)
 - check for mocks that claude likes across repo
+- remove providers that dont support logits
+- check that all tests sitll test somthing
