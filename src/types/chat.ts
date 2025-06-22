@@ -15,17 +15,21 @@ export interface Message {
   probability?: number
   timestamp: Date
   attachments?: Attachment[]
+  possibilities?: Message[] // Alternative responses for assistant messages
+  isPossibility?: boolean // True if this is a possibility that can be selected
 }
 
 export interface ChatContainerProps {
   messages: Message[]
   onSendMessage: (content: string, attachments?: Attachment[]) => void
+  onSelectPossibility?: (userMessage: Message, selectedPossibility: Message) => void
   isLoading?: boolean
   className?: string
 }
 
 export interface MessageProps {
   message: Message
+  onSelectPossibility?: (possibility: Message) => void
   className?: string
 }
 

@@ -6,6 +6,7 @@ import MessageInput from './MessageInput'
 const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
   onSendMessage,
+  onSelectPossibility,
   isLoading = false,
   className = ''
 }) => {
@@ -15,27 +16,47 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const handleSelectPossibility = (possibility: Message) => {
+    // Find the user message that corresponds to this assistant message with possibilities
+    const currentMessageIndex = messages.findIndex(msg => 
+      msg.role === 'assistant' && msg.possibilities?.some(p => p.id === possibility.id)
+    )
+    
+    if (currentMessageIndex > 0) {
+      const userMessage = messages[currentMessageIndex - 1]
+      onSelectPossibility?.(userMessage, possibility)
+    }
+  }
+
   return (
-    <div className={`flex flex-col h-full bg-white ${className}`}>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 flex flex-col gap-4 -webkit-overflow-scrolling-touch">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-[#888]">
             <p className="text-lg">Start a conversation...</p>
           </div>
         ) : (
           messages.map((message) => (
-            <Message key={message.id} message={message} />
+            <Message 
+              key={message.id} 
+              message={message} 
+              onSelectPossibility={handleSelectPossibility}
+              className="max-w-[800px] w-full self-center animate-fadeIn"
+            />
           ))
         )}
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="border-t bg-gray-50 p-4">
-        <MessageInput
-          onSendMessage={onSendMessage}
-          disabled={isLoading}
-          placeholder={isLoading ? "Generating response..." : "Type a message..."}
-        />
+      <div className="border-t border-[#2a2a2a] bg-[#1a1a1a] p-4">
+        <div className="max-w-[800px] mx-auto">
+          <MessageInput
+            onSendMessage={onSendMessage}
+            disabled={isLoading}
+            placeholder={isLoading ? "Generating response..." : "Start typing to see possibilities..."}
+            className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"
+          />
+        </div>
       </div>
     </div>
   )

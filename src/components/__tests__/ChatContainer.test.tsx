@@ -96,7 +96,7 @@ describe('ChatContainer', () => {
       />
     )
 
-    expect(screen.getByPlaceholderText('Type a message...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Start typing to see possibilities...')).toBeInTheDocument()
   })
 
   it('passes onSendMessage to MessageInput', () => {
@@ -148,6 +148,6 @@ describe('ChatContainer', () => {
     )
 
     const mainContainer = container.firstChild as HTMLElement
-    expect(mainContainer).toHaveClass('flex', 'flex-col', 'h-full', 'bg-white')
+    expect(mainContainer).toHaveClass('flex', 'flex-col', 'h-full', 'bg-[#0a0a0a]')
   })
 })

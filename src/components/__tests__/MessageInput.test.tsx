@@ -140,10 +140,10 @@ describe('MessageInput', () => {
     const { container } = render(<MessageInput onSendMessage={mockOnSendMessage} />)
 
     const dropZone = screen.getByRole('textbox').closest('form')!
-    const inputWrapper = container.querySelector('.border-2')!
+    const inputWrapper = container.querySelector('.border')!
 
     // Check initial state
-    expect(inputWrapper).toHaveClass('border-gray-200')
+    expect(inputWrapper).toHaveClass('border-[#2a2a2a]')
 
     // Simulate drag over - this will add border styling
     fireEvent.dragOver(dropZone)
@@ -213,7 +213,7 @@ describe('MessageInput', () => {
     const textarea = container.querySelector('textarea')
 
     expect(form).toHaveClass('relative')
-    expect(inputWrapper).toHaveClass('flex', 'items-end', 'gap-2')
+    expect(inputWrapper).toHaveClass('flex', 'items-end', 'gap-3')
     expect(textarea).toHaveClass('flex-1', 'resize-none')
   })
 
@@ -265,10 +265,10 @@ describe('MessageInput', () => {
   it('handles border styling on focus and drag states', () => {
     const { container } = render(<MessageInput onSendMessage={mockOnSendMessage} />)
 
-    const inputWrapper = container.querySelector('.border-2')
-    expect(inputWrapper).toHaveClass('border-gray-200')
-    expect(inputWrapper).toHaveClass('hover:border-gray-300')
-    expect(inputWrapper).toHaveClass('focus-within:border-blue-500')
+    const inputWrapper = container.querySelector('.border')
+    expect(inputWrapper).toHaveClass('border-[#2a2a2a]')
+    expect(inputWrapper).toHaveClass('hover:border-[#3a3a3a]')
+    expect(inputWrapper).toHaveClass('focus-within:border-[#667eea]')
   })
 
   it('does not submit empty message without attachments', async () => {

@@ -134,10 +134,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="relative">
         <div
-          className={`flex items-end gap-2 p-3 border-2 rounded-lg transition-colors ${
+          className={`flex items-end gap-3 border border-[#2a2a2a] rounded-lg transition-colors ${
             isDragOver 
-              ? 'border-blue-400 bg-blue-50' 
-              : 'border-gray-200 hover:border-gray-300 focus-within:border-blue-500'
+              ? 'border-[#667eea] bg-[#0a0a0a]' 
+              : 'bg-[#0a0a0a] hover:border-[#3a3a3a] focus-within:border-[#667eea]'
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -148,7 +148,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
-            className="flex-shrink-0 p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-shrink-0 p-2 text-[#666] hover:text-[#e0e0e0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors -webkit-tap-highlight-color-transparent"
             aria-label="Attach file"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +164,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled}
-            className="flex-1 resize-none bg-transparent border-none outline-none placeholder-gray-500 disabled:cursor-not-allowed min-h-[24px] max-h-[120px]"
+            className="flex-1 resize-none bg-transparent border-none outline-none text-[#e0e0e0] placeholder-[#666] disabled:cursor-not-allowed min-h-[24px] max-h-[120px] p-3"
             rows={1}
           />
 
@@ -172,7 +172,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           <button
             type="submit"
             disabled={disabled || (!message.trim() && attachments.length === 0)}
-            className="flex-shrink-0 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-shrink-0 p-3 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg hover:translate-y-[-2px] hover:shadow-[0_4px_20px_rgba(102,126,234,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all disabled:hover:transform-none disabled:hover:shadow-none -webkit-tap-highlight-color-transparent"
             aria-label="Send message"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,8 +193,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
         {/* Drag and Drop Overlay */}
         {isDragOver && (
-          <div className="absolute inset-0 bg-blue-50 bg-opacity-90 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center">
-            <div className="text-blue-600 text-center">
+          <div className="absolute inset-0 bg-[#0a0a0a] bg-opacity-90 border-2 border-dashed border-[#667eea] rounded-lg flex items-center justify-center">
+            <div className="text-[#667eea] text-center">
               <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
