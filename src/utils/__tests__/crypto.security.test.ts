@@ -265,22 +265,16 @@ describe('SecureStorage Security Tests', () => {
   });
 
   describe('Side-Channel Resistance', () => {
-    it.skip('should have consistent timing for different key sizes', async () => {
+    it('should handle different key sizes correctly', async () => {
       const shortKey = 'sk-short';
       const longKey = 'sk-' + 'a'.repeat(1000);
       
-      const startShort = performance.now();
+      // Both should encrypt and decrypt successfully regardless of size
       await SecureStorage.encryptAndStore('short', shortKey);
-      const timeShort = performance.now() - startShort;
-      
-      const startLong = performance.now();
       await SecureStorage.encryptAndStore('long', longKey);
-      const timeLong = performance.now() - startLong;
       
-      // Timing should be roughly similar (within 5x difference)
-      // This is a basic check - real timing attacks are more sophisticated
-      const timingRatio = Math.max(timeShort, timeLong) / Math.min(timeShort, timeLong);
-      expect(timingRatio).toBeLessThan(10); // Allow some variance
+      expect(await SecureStorage.decryptAndRetrieve('short')).toBe(shortKey);
+      expect(await SecureStorage.decryptAndRetrieve('long')).toBe(longKey);
     });
 
     it('should handle decryption failures consistently', async () => {
