@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import type { MessageProps } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
 import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
@@ -9,12 +9,34 @@ const Message: React.FC<MessageProps> = ({
   className = ''
 }) => {
   const isUser = message.role === 'user'
+  const [visiblePossibilities, setVisiblePossibilities] = useState(3)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
   
   const formatTime = (timestamp: Date) => {
     return timestamp.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  // Simulate loading more possibilities
+  const loadMorePossibilities = async () => {
+    if (isLoadingMore || !message.possibilities) return
+    
+    setIsLoadingMore(true)
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+    setVisiblePossibilities(prev => Math.min(prev + 3, message.possibilities!.length + 10))
+    setIsLoadingMore(false)
+  }
+
+  // Infinite scroll handler
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+      loadMorePossibilities()
+    }
   }
 
   return (
@@ -52,9 +74,11 @@ const Message: React.FC<MessageProps> = ({
             </div>
           )}
           
-          <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
-            {message.content}
-          </div>
+          {message.content && (
+            <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
+              {message.content}
+            </div>
+          )}
           
           {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
@@ -71,10 +95,16 @@ const Message: React.FC<MessageProps> = ({
 
           {/* Possibilities Panel */}
           {!isUser && message.possibilities && message.possibilities.length > 0 && (
-            <div className="mt-3 space-y-2">
-              <div className="text-xs text-[#888] font-medium">Other possibilities:</div>
-              <div className="space-y-1">
-                {message.possibilities.map((possibility) => (
+            <div className={message.content ? "mt-3 space-y-2" : "space-y-2"}>
+              {message.content && (
+                <div className="text-xs text-[#888] font-medium">Other possibilities:</div>
+              )}
+              <div 
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="max-h-96 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-[#3a3a4a] scrollbar-track-[#1a1a1a]"
+              >
+                {message.possibilities.slice(0, visiblePossibilities).map((possibility) => (
                   <div
                     key={possibility.id}
                     onClick={() => onSelectPossibility?.(possibility)}
@@ -97,6 +127,11 @@ const Message: React.FC<MessageProps> = ({
                     </div>
                   </div>
                 ))}
+                {isLoadingMore && (
+                  <div className="px-3 py-2 text-center text-xs text-[#888]">
+                    Loading more possibilities...
+                  </div>
+                )}
               </div>
             </div>
           )}
