@@ -186,8 +186,8 @@ describe('SecureStorage Security Tests', () => {
       await SecureStorage.encryptAndStore('memory-test', 'sensitive-data');
       
       // Force garbage collection if available
-      if (global.gc) {
-        global.gc();
+      if ((globalThis as any).gc) {
+        (globalThis as any).gc();
       }
       
       SecureStorage.lockNow();

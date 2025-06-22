@@ -248,6 +248,17 @@ export class SecureStorage {
   public static isLocked(): boolean {
     return this.keyPromise === null;
   }
+
+  /**
+   * Resets the idle timer by accessing the key (if unlocked)
+   */
+  public static resetTimer(): void {
+    if (!this.isLocked()) {
+      this.getKey().catch(() => {
+        // Ignore errors - storage might be locked
+      });
+    }
+  }
 }
 
 // Auto-lock on page unload
@@ -258,11 +269,6 @@ window.addEventListener('beforeunload', () => {
 // Reset idle timer on user activity
 ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
   document.addEventListener(event, () => {
-    if (!SecureStorage.isLocked()) {
-      // Reset timer by accessing the key (which resets timer)
-      SecureStorage.getKey().catch(() => {
-        // Ignore errors - storage might be locked
-      });
-    }
+    SecureStorage.resetTimer();
   }, { passive: true });
 });

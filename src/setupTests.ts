@@ -140,7 +140,7 @@ const createMockRequest = (shouldSucceed = true) => {
                   const keyData = new TextEncoder().encode(latestKeyId);
                   getRequest.result = keyData;
                 }
-                if (getRequest.onsuccess) getRequest.onsuccess();
+                if (getRequest.onsuccess) getRequest.onsuccess({} as Event);
               });
               return getRequest;
             }),
@@ -150,7 +150,7 @@ const createMockRequest = (shouldSucceed = true) => {
                 onerror: null as ((event: Event) => void) | null,
               };
               queueMicrotask(() => {
-                if (putRequest.onsuccess) putRequest.onsuccess();
+                if (putRequest.onsuccess) putRequest.onsuccess({} as Event);
               });
               return putRequest;
             }),
@@ -160,7 +160,7 @@ const createMockRequest = (shouldSucceed = true) => {
                 onerror: null as ((event: Event) => void) | null,
               };
               queueMicrotask(() => {
-                if (deleteRequest.onsuccess) deleteRequest.onsuccess();
+                if (deleteRequest.onsuccess) deleteRequest.onsuccess({} as Event);
               });
               return deleteRequest;
             }),
@@ -170,7 +170,7 @@ const createMockRequest = (shouldSucceed = true) => {
                 onerror: null as ((event: Event) => void) | null,
               };
               queueMicrotask(() => {
-                if (clearRequest.onsuccess) clearRequest.onsuccess();
+                if (clearRequest.onsuccess) clearRequest.onsuccess({} as Event);
               });
               return clearRequest;
             }),
@@ -179,17 +179,43 @@ const createMockRequest = (shouldSucceed = true) => {
         close: vi.fn(),
       };
       
-      request.result = mockDB;
+      request.result = mockDB as unknown as IDBDatabase;
       
       // Trigger onupgradeneeded if needed
       if (request.onupgradeneeded) {
-        request.onupgradeneeded({ target: request } as IDBVersionChangeEvent);
+        request.onupgradeneeded({
+          target: request,
+          newVersion: 1,
+          oldVersion: 0,
+          bubbles: false,
+          cancelBubble: false,
+          cancelable: false,
+          composed: false,
+          currentTarget: null,
+          defaultPrevented: false,
+          eventPhase: 0,
+          isTrusted: false,
+          returnValue: true,
+          srcElement: null,
+          timeStamp: Date.now(),
+          type: 'upgradeneeded',
+          initEvent: () => {},
+          preventDefault: () => {},
+          stopImmediatePropagation: () => {},
+          stopPropagation: () => {},
+          composedPath: () => [],
+          NONE: 0,
+          CAPTURING_PHASE: 1,
+          AT_TARGET: 2,
+          BUBBLING_PHASE: 3,
+          AT_TARGET_PHASE: 2
+        } as unknown as IDBVersionChangeEvent);
       }
       
-      request.onsuccess();
+      request.onsuccess({} as Event);
     } else if (!shouldSucceed && request.onerror) {
       request.error = new Error('Database operation failed');
-      request.onerror();
+      request.onerror({} as Event);
     }
   });
   
@@ -214,7 +240,6 @@ Object.defineProperty(globalThis, 'crypto', {
   configurable: true,
 });
 
-// @ts-expect-error - Mocking indexedDB for tests
 globalThis.indexedDB = mockIndexedDB as unknown as IDBFactory;
 
 // Clear mocks between tests

@@ -20,19 +20,20 @@ describe('SecureStorage', () => {
     objectStore: ReturnType<typeof vi.fn>;
   }
   
-  interface MockDB extends IDBDatabase {
+  interface MockDB {
     transaction: ReturnType<typeof vi.fn>;
     objectStoreNames: { contains: ReturnType<typeof vi.fn> };
     createObjectStore: ReturnType<typeof vi.fn>;
   }
   
-  interface MockCrypto extends Crypto {
+  interface MockCrypto {
     subtle: {
       generateKey: ReturnType<typeof vi.fn>;
       encrypt: ReturnType<typeof vi.fn>;
       decrypt: ReturnType<typeof vi.fn>;
     };
     getRandomValues: ReturnType<typeof vi.fn>;
+    randomUUID: ReturnType<typeof vi.fn>;
   }
   
   let mockDB: MockDB;
@@ -74,6 +75,7 @@ describe('SecureStorage', () => {
         decrypt: vi.fn(),
       },
       getRandomValues: vi.fn(),
+      randomUUID: vi.fn(),
     };
 
     // Setup global mocks
@@ -92,36 +94,39 @@ describe('SecureStorage', () => {
     // Setup default mock implementations
     mockIndexedDB.open.mockImplementation(() => {
       const request = {
-        onerror: null,
-        onsuccess: null,
-        onupgradeneeded: null,
+        onerror: null as ((event: Event) => void) | null,
+        onsuccess: null as ((event: Event) => void) | null,
+        onupgradeneeded: null as ((event: IDBVersionChangeEvent) => void) | null,
         result: mockDB,
       };
       
       // Simulate async operation
       setTimeout(() => {
-        if (request.onsuccess) request.onsuccess();
+        if (request.onsuccess) request.onsuccess({} as Event);
       }, 0);
       
       return request;
     });
 
     mockStore.put.mockImplementation(() => {
-      const request = { onerror: null, onsuccess: null };
+      const request = { 
+        onerror: null as ((event: Event) => void) | null, 
+        onsuccess: null as ((event: Event) => void) | null 
+      };
       setTimeout(() => {
-        if (request.onsuccess) request.onsuccess();
+        if (request.onsuccess) request.onsuccess({} as Event);
       }, 0);
       return request;
     });
 
     mockStore.get.mockImplementation(() => {
       const request = { 
-        onerror: null, 
-        onsuccess: null,
+        onerror: null as ((event: Event) => void) | null, 
+        onsuccess: null as ((event: Event) => void) | null,
         result: mockCryptoKey
       };
       setTimeout(() => {
-        if (request.onsuccess) request.onsuccess();
+        if (request.onsuccess) request.onsuccess({} as Event);
       }, 0);
       return request;
     });
@@ -156,12 +161,12 @@ describe('SecureStorage', () => {
       // Mock no existing key
       mockStore.get.mockImplementationOnce(() => {
         const request = { 
-          onerror: null, 
-          onsuccess: null,
+          onerror: null as ((event: Event) => void) | null, 
+          onsuccess: null as ((event: Event) => void) | null,
           result: null
         };
         setTimeout(() => {
-          if (request.onsuccess) request.onsuccess();
+          if (request.onsuccess) request.onsuccess({} as Event);
         }, 0);
         return request;
       });
@@ -184,12 +189,12 @@ describe('SecureStorage', () => {
       vi.clearAllMocks();
       mockStore.get.mockImplementation(() => {
         const request = { 
-          onerror: null, 
-          onsuccess: null,
+          onerror: null as ((event: Event) => void) | null, 
+          onsuccess: null as ((event: Event) => void) | null,
           result: mockCryptoKey
         };
         setTimeout(() => {
-          if (request.onsuccess) request.onsuccess();
+          if (request.onsuccess) request.onsuccess({} as Event);
         }, 0);
         return request;
       });

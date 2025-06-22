@@ -1,4 +1,4 @@
-import { createOpenAI } from '@ai-sdk/openai-compatible'
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { generateText } from 'ai'
 import type { AIProvider, Message, ModelInfo, GenerationOptions, ResponseWithLogprobs } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
@@ -18,9 +18,10 @@ export class TogetherProvider implements AIProvider {
     }
 
     try {
-      const together = createOpenAI({
+      const together = createOpenAICompatible({
         apiKey,
-        baseURL: 'https://api.together.xyz/v1'
+        baseURL: 'https://api.together.xyz/v1',
+        name: 'together'
       })
 
       const formattedMessages = messages.map(msg => ({
@@ -65,9 +66,10 @@ export class TogetherProvider implements AIProvider {
         return false
       }
       
-      const together = createOpenAI({
+      const together = createOpenAICompatible({
         apiKey,
-        baseURL: 'https://api.together.xyz/v1'
+        baseURL: 'https://api.together.xyz/v1',
+        name: 'together'
       })
 
       const result = await generateText({

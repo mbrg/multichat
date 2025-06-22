@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import type { ChatContainerProps } from '../types/chat'
+import type { ChatContainerProps, Message as MessageType } from '../types/chat'
 import Message from './Message'
 import MessageInput from './MessageInput'
 import Settings from './Settings'
@@ -18,7 +18,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSelectPossibility = (possibility: Message) => {
+  const handleSelectPossibility = (possibility: MessageType) => {
     // Find the user message that corresponds to this assistant message with possibilities
     const currentMessageIndex = messages.findIndex(msg => 
       msg.role === 'assistant' && msg.possibilities?.some(p => p.id === possibility.id)

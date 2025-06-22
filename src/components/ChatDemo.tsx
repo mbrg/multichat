@@ -75,7 +75,7 @@ const ChatDemo: React.FC = () => {
     }
   }, [generateAIResponse])
 
-  const handleSelectPossibility = useCallback((userMessage: Message, selectedPossibility: Message) => {
+  const handleSelectPossibility = useCallback((_userMessage: Message, selectedPossibility: Message) => {
     setMessages(prevMessages => {
       // Find the assistant message that contains this possibility
       const assistantMessageIndex = prevMessages.findIndex(msg => 

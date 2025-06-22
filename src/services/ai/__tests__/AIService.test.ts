@@ -40,14 +40,14 @@ Object.defineProperty(window, 'localStorage', {
 
 describe('AIService User Flows', () => {
   let aiService: AIService
-  let mockGenerateText: unknown
+  let mockGenerateText: ReturnType<typeof vi.fn>
 
   beforeEach(async () => {
     vi.clearAllMocks()
     
     // Get the mocked generateText function
     const { generateText } = await import('ai')
-    mockGenerateText = generateText
+    mockGenerateText = generateText as ReturnType<typeof vi.fn>
     
     // Mock the generateText function with default success response
     mockGenerateText.mockResolvedValue({
