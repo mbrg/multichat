@@ -3,6 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Access the global object in tests
+const globalAny: any = globalThis;
 import { SecureStorage } from '../crypto';
 
 describe('SecureStorage Security Tests', () => {
@@ -186,8 +189,8 @@ describe('SecureStorage Security Tests', () => {
       await SecureStorage.encryptAndStore('memory-test', 'sensitive-data');
       
       // Force garbage collection if available
-      if (global.gc) {
-        global.gc();
+      if (globalAny.gc) {
+        globalAny.gc();
       }
       
       SecureStorage.lockNow();

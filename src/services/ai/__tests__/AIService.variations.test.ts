@@ -103,7 +103,7 @@ describe('AIService Multiple Variations User Flows', () => {
 
       // Should call with different temperatures
       expect(mockGenerateText).toHaveBeenCalledTimes(3)
-      const temperatureCalls = mockGenerateText.mock.calls.map(call => call[0].temperature)
+      const temperatureCalls = mockGenerateText.mock.calls.map(([options]: [any]) => (options as any).temperature)
       expect(temperatureCalls).toEqual([0.7, 0.8, 0.9])
     })
 
@@ -142,7 +142,7 @@ describe('AIService Multiple Variations User Flows', () => {
       expect(mockGenerateText).toHaveBeenCalledTimes(5)
 
       // Check temperature range for 5 variations
-      const temperatures = mockGenerateText.mock.calls.map(call => call[0].temperature)
+      const temperatures = mockGenerateText.mock.calls.map(([options]: [any]) => (options as any).temperature)
       expect(temperatures).toEqual([0.7, 0.75, 0.8, 0.9, 1.0])
     })
 
@@ -174,7 +174,7 @@ describe('AIService Multiple Variations User Flows', () => {
 
     it('should generate responses from multiple models when user wants diverse perspectives', async () => {
       // Mock responses for different models
-      mockGenerateText.mockImplementation((options) => {
+      mockGenerateText.mockImplementation((options: any) => {
         const modelName = options.model.constructor.name || 'unknown'
         return Promise.resolve({
           text: `Quantum explanation from ${modelName}`,

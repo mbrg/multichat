@@ -243,6 +243,17 @@ export class SecureStorage {
   }
 
   /**
+   * Touch the storage to reset the idle timer without exposing the key
+   */
+  public static async touch(): Promise<void> {
+    try {
+      await this.getKey();
+    } catch {
+      // Ignore errors - storage might be locked
+    }
+  }
+
+  /**
    * Checks if storage is currently locked
    */
   public static isLocked(): boolean {
@@ -259,10 +270,8 @@ window.addEventListener('beforeunload', () => {
 ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
   document.addEventListener(event, () => {
     if (!SecureStorage.isLocked()) {
-      // Reset timer by accessing the key (which resets timer)
-      SecureStorage.getKey().catch(() => {
-        // Ignore errors - storage might be locked
-      });
+      // Reset timer without exposing the key
+      SecureStorage.touch();
     }
   }, { passive: true });
 });

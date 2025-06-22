@@ -20,7 +20,7 @@ class MockFileReader {
 }
 
 // @ts-expect-error - Mocking global FileReader
-global.FileReader = MockFileReader
+globalThis.FileReader = MockFileReader
 
 describe('MessageInput', () => {
   const mockOnSendMessage = vi.fn()

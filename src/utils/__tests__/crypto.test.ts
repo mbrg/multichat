@@ -3,6 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Access the global object in tests
+const globalAny: any = globalThis;
 import { SecureStorage } from '../crypto';
 
 // Test data
@@ -53,8 +56,8 @@ describe('SecureStorage', () => {
     };
 
     // Setup global mocks
-    global.indexedDB = mockIndexedDB;
-    global.crypto = mockCrypto;
+    globalAny.indexedDB = mockIndexedDB;
+    globalAny.crypto = mockCrypto;
 
     // Setup localStorage mock
     const localStorageMock = {
@@ -63,11 +66,11 @@ describe('SecureStorage', () => {
       removeItem: vi.fn(),
       clear: vi.fn(),
     };
-    global.localStorage = localStorageMock as any;
+    globalAny.localStorage = localStorageMock as any;
 
     // Setup default mock implementations
     mockIndexedDB.open.mockImplementation(() => {
-      const request = {
+      const request: any = {
         onerror: null,
         onsuccess: null,
         onupgradeneeded: null,
@@ -83,7 +86,7 @@ describe('SecureStorage', () => {
     });
 
     mockStore.put.mockImplementation(() => {
-      const request = { onerror: null, onsuccess: null };
+      const request: any = { onerror: null, onsuccess: null };
       setTimeout(() => {
         if (request.onsuccess) request.onsuccess();
       }, 0);
@@ -91,8 +94,8 @@ describe('SecureStorage', () => {
     });
 
     mockStore.get.mockImplementation(() => {
-      const request = { 
-        onerror: null, 
+      const request: any = {
+        onerror: null,
         onsuccess: null,
         result: mockCryptoKey
       };
@@ -131,8 +134,8 @@ describe('SecureStorage', () => {
     it('should generate and store a new CryptoKey on first use', async () => {
       // Mock no existing key
       mockStore.get.mockImplementationOnce(() => {
-        const request = { 
-          onerror: null, 
+        const request: any = {
+          onerror: null,
           onsuccess: null,
           result: null
         };
@@ -159,8 +162,8 @@ describe('SecureStorage', () => {
       // Second call - should not generate new key
       vi.clearAllMocks();
       mockStore.get.mockImplementation(() => {
-        const request = { 
-          onerror: null, 
+        const request: any = {
+          onerror: null,
           onsuccess: null,
           result: mockCryptoKey
         };
