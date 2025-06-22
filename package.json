@@ -11,7 +11,9 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css}\"",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "echo \"No tests yet - basic project validation\" && npm run typecheck && npm run lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.10",
