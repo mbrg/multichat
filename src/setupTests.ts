@@ -13,6 +13,7 @@ const keyStore = new Map<string, any>();
 let keyGeneration = 0;
 
 const mockCrypto = {
+  randomUUID: vi.fn(() => Math.random().toString(36).substring(2, 15)),
   subtle: {
     generateKey: vi.fn().mockImplementation(async () => {
       keyGeneration++;
