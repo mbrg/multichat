@@ -7,16 +7,13 @@ interface OptionCardProps {
   onSelect?: (response: ResponseOption) => void
 }
 
-const OptionCard: React.FC<OptionCardProps> = ({
-  response,
-  onSelect
-}) => {
+const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
   const probabilityPercentage = Math.round(response.probability * 100)
 
   const getModelIcon = () => {
     return (
-      <img 
-        src={openaiLogo} 
+      <img
+        src={openaiLogo}
         alt="OpenAI"
         className="w-full h-full object-contain"
       />
@@ -50,8 +47,8 @@ const OptionCard: React.FC<OptionCardProps> = ({
       {/* Content */}
       <div className="flex-1 text-sm leading-[1.5] text-[#e0e0e0] overflow-hidden">
         <div className="break-words max-h-[2.8em] overflow-hidden">
-          {response.content.length > 120 
-            ? response.content.slice(0, 120) + "..." 
+          {response.content.length > 120
+            ? response.content.slice(0, 120) + '...'
             : response.content}
           {response.isStreaming && (
             <span className="inline-block ml-1 w-0.5 h-4 bg-[#667eea] animate-pulse"></span>

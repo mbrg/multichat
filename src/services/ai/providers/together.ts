@@ -1,6 +1,12 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { generateText } from 'ai'
-import type { AIProvider, Message, ModelInfo, GenerationOptions, ResponseWithLogprobs } from '../../../types/ai'
+import type {
+  AIProvider,
+  Message,
+  ModelInfo,
+  GenerationOptions,
+  ResponseWithLogprobs,
+} from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 
 export class TogetherProvider implements AIProvider {
@@ -21,12 +27,12 @@ export class TogetherProvider implements AIProvider {
       const together = createOpenAICompatible({
         apiKey,
         baseURL: 'https://api.together.xyz/v1',
-        name: 'together'
+        name: 'together',
       })
 
-      const formattedMessages = messages.map(msg => ({
+      const formattedMessages = messages.map((msg) => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       }))
 
       const result = await generateText({
@@ -36,7 +42,7 @@ export class TogetherProvider implements AIProvider {
         maxTokens: options.maxTokens ?? model.maxTokens,
         topP: options.topP,
         frequencyPenalty: options.frequencyPenalty,
-        presencePenalty: options.presencePenalty
+        presencePenalty: options.presencePenalty,
       })
 
       // Estimate probability based on temperature
@@ -47,15 +53,19 @@ export class TogetherProvider implements AIProvider {
         logprobs: undefined, // Simplified for now
         probability,
         finishReason: result.finishReason || 'stop',
-        usage: result.usage ? {
-          promptTokens: result.usage.promptTokens,
-          completionTokens: result.usage.completionTokens,
-          totalTokens: result.usage.totalTokens
-        } : undefined
+        usage: result.usage
+          ? {
+              promptTokens: result.usage.promptTokens,
+              completionTokens: result.usage.completionTokens,
+              totalTokens: result.usage.totalTokens,
+            }
+          : undefined,
       }
     } catch (error) {
       console.error('Together AI API error:', error)
-      throw new Error(`Together AI API error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Together AI API error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -65,17 +75,17 @@ export class TogetherProvider implements AIProvider {
       if (!apiKey) {
         return false
       }
-      
+
       const together = createOpenAICompatible({
         apiKey,
         baseURL: 'https://api.together.xyz/v1',
-        name: 'together'
+        name: 'together',
       })
 
       const result = await generateText({
         model: together('meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo'),
         messages: [{ role: 'user', content: 'Hi' }],
-        maxTokens: 5
+        maxTokens: 5,
       })
       return !!result.text
     } catch (error) {

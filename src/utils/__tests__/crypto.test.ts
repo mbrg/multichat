@@ -2,70 +2,76 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { SecureStorage } from '../crypto';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { SecureStorage } from '../crypto'
 
 // Test data
-const testData = 'test-api-key-12345';
-const testKey = 'openai-api-key';
-const mockCryptoKey = { type: 'secret', algorithm: { name: 'AES-GCM' } } as CryptoKey;
+const testData = 'test-api-key-12345'
+const testKey = 'openai-api-key'
+const mockCryptoKey = {
+  type: 'secret',
+  algorithm: { name: 'AES-GCM' },
+} as CryptoKey
 
 describe('SecureStorage', () => {
   interface MockStore {
-    put: ReturnType<typeof vi.fn>;
-    get: ReturnType<typeof vi.fn>;
+    put: ReturnType<typeof vi.fn>
+    get: ReturnType<typeof vi.fn>
   }
-  
+
   interface MockTransaction {
-    objectStore: ReturnType<typeof vi.fn>;
+    objectStore: ReturnType<typeof vi.fn>
   }
-  
+
   interface MockDB {
-    transaction: ReturnType<typeof vi.fn>;
-    objectStoreNames: { contains: ReturnType<typeof vi.fn> };
-    createObjectStore: ReturnType<typeof vi.fn>;
+    transaction: ReturnType<typeof vi.fn>
+    objectStoreNames: { contains: ReturnType<typeof vi.fn> }
+    createObjectStore: ReturnType<typeof vi.fn>
   }
-  
+
   interface MockCrypto {
     subtle: {
-      generateKey: ReturnType<typeof vi.fn>;
-      encrypt: ReturnType<typeof vi.fn>;
-      decrypt: ReturnType<typeof vi.fn>;
-    };
-    getRandomValues: ReturnType<typeof vi.fn>;
-    randomUUID: ReturnType<typeof vi.fn>;
+      generateKey: ReturnType<typeof vi.fn>
+      encrypt: ReturnType<typeof vi.fn>
+      decrypt: ReturnType<typeof vi.fn>
+    }
+    getRandomValues: ReturnType<typeof vi.fn>
+    randomUUID: ReturnType<typeof vi.fn>
   }
-  
-  let mockDB: MockDB;
-  let mockTransaction: MockTransaction;
-  let mockStore: MockStore;
-  let mockCrypto: MockCrypto;
-  let mockIndexedDB: { open: ReturnType<typeof vi.fn>; deleteDatabase: ReturnType<typeof vi.fn> };
+
+  let mockDB: MockDB
+  let mockTransaction: MockTransaction
+  let mockStore: MockStore
+  let mockCrypto: MockCrypto
+  let mockIndexedDB: {
+    open: ReturnType<typeof vi.fn>
+    deleteDatabase: ReturnType<typeof vi.fn>
+  }
 
   beforeEach(() => {
     // Reset any existing state
-    vi.clearAllMocks();
+    vi.clearAllMocks()
 
     // Mock IndexedDB
     mockStore = {
       put: vi.fn(),
       get: vi.fn(),
-    };
+    }
 
     mockTransaction = {
       objectStore: vi.fn().mockReturnValue(mockStore),
-    };
+    }
 
     mockDB = {
       transaction: vi.fn().mockReturnValue(mockTransaction),
       objectStoreNames: { contains: vi.fn().mockReturnValue(false) },
       createObjectStore: vi.fn(),
-    };
+    }
 
     mockIndexedDB = {
       open: vi.fn(),
       deleteDatabase: vi.fn(),
-    };
+    }
 
     // Mock crypto
     mockCrypto = {
@@ -76,11 +82,11 @@ describe('SecureStorage', () => {
       },
       getRandomValues: vi.fn(),
       randomUUID: vi.fn(),
-    };
+    }
 
     // Setup global mocks
-    globalThis.indexedDB = mockIndexedDB as unknown as IDBFactory;
-    globalThis.crypto = mockCrypto as unknown as Crypto;
+    globalThis.indexedDB = mockIndexedDB as unknown as IDBFactory
+    globalThis.crypto = mockCrypto as unknown as Crypto
 
     // Setup localStorage mock
     const localStorageMock = {
@@ -88,177 +94,183 @@ describe('SecureStorage', () => {
       setItem: vi.fn(),
       removeItem: vi.fn(),
       clear: vi.fn(),
-    };
-    globalThis.localStorage = localStorageMock as unknown as Storage;
+    }
+    globalThis.localStorage = localStorageMock as unknown as Storage
 
     // Setup default mock implementations
     mockIndexedDB.open.mockImplementation(() => {
       const request = {
         onerror: null as ((event: Event) => void) | null,
         onsuccess: null as ((event: Event) => void) | null,
-        onupgradeneeded: null as ((event: IDBVersionChangeEvent) => void) | null,
+        onupgradeneeded: null as
+          | ((event: IDBVersionChangeEvent) => void)
+          | null,
         result: mockDB,
-      };
-      
+      }
+
       // Simulate async operation
       setTimeout(() => {
-        if (request.onsuccess) request.onsuccess({} as Event);
-      }, 0);
-      
-      return request;
-    });
+        if (request.onsuccess) request.onsuccess({} as Event)
+      }, 0)
+
+      return request
+    })
 
     mockStore.put.mockImplementation(() => {
-      const request = { 
-        onerror: null as ((event: Event) => void) | null, 
-        onsuccess: null as ((event: Event) => void) | null 
-      };
+      const request = {
+        onerror: null as ((event: Event) => void) | null,
+        onsuccess: null as ((event: Event) => void) | null,
+      }
       setTimeout(() => {
-        if (request.onsuccess) request.onsuccess({} as Event);
-      }, 0);
-      return request;
-    });
+        if (request.onsuccess) request.onsuccess({} as Event)
+      }, 0)
+      return request
+    })
 
     mockStore.get.mockImplementation(() => {
-      const request = { 
-        onerror: null as ((event: Event) => void) | null, 
+      const request = {
+        onerror: null as ((event: Event) => void) | null,
         onsuccess: null as ((event: Event) => void) | null,
-        result: mockCryptoKey
-      };
+        result: mockCryptoKey,
+      }
       setTimeout(() => {
-        if (request.onsuccess) request.onsuccess({} as Event);
-      }, 0);
-      return request;
-    });
+        if (request.onsuccess) request.onsuccess({} as Event)
+      }, 0)
+      return request
+    })
 
-    mockCrypto.subtle.generateKey.mockResolvedValue(mockCryptoKey);
-    
+    mockCrypto.subtle.generateKey.mockResolvedValue(mockCryptoKey)
+
     mockCrypto.getRandomValues.mockImplementation((arr: Uint8Array) => {
       for (let i = 0; i < arr.length; i++) {
-        arr[i] = Math.floor(Math.random() * 256);
+        arr[i] = Math.floor(Math.random() * 256)
       }
-      return arr;
-    });
+      return arr
+    })
 
     // Mock encrypt/decrypt with proper base64 handling
     mockCrypto.subtle.encrypt.mockImplementation(async () => {
-      const mockEncrypted = new Uint8Array([1, 2, 3, 4, 5]);
-      return mockEncrypted.buffer;
-    });
+      const mockEncrypted = new Uint8Array([1, 2, 3, 4, 5])
+      return mockEncrypted.buffer
+    })
 
     mockCrypto.subtle.decrypt.mockImplementation(async () => {
-      const encoder = new TextEncoder();
-      return encoder.encode(testData).buffer;
-    });
-  });
+      const encoder = new TextEncoder()
+      return encoder.encode(testData).buffer
+    })
+  })
 
   afterEach(() => {
-    vi.restoreAllMocks();
-  });
+    vi.restoreAllMocks()
+  })
 
   describe('Key Generation and Storage', () => {
     it('should generate and store a new CryptoKey on first use', async () => {
       // Mock no existing key
       mockStore.get.mockImplementationOnce(() => {
-        const request = { 
-          onerror: null as ((event: Event) => void) | null, 
+        const request = {
+          onerror: null as ((event: Event) => void) | null,
           onsuccess: null as ((event: Event) => void) | null,
-          result: null
-        };
+          result: null,
+        }
         setTimeout(() => {
-          if (request.onsuccess) request.onsuccess({} as Event);
-        }, 0);
-        return request;
-      });
+          if (request.onsuccess) request.onsuccess({} as Event)
+        }, 0)
+        return request
+      })
 
-      await SecureStorage.encryptAndStore(testKey, testData);
+      await SecureStorage.encryptAndStore(testKey, testData)
 
       expect(mockCrypto.subtle.generateKey).toHaveBeenCalledWith(
         { name: 'AES-GCM', length: 256 },
         false, // non-extractable
         ['encrypt', 'decrypt']
-      );
-      expect(mockStore.put).toHaveBeenCalled();
-    });
+      )
+      expect(mockStore.put).toHaveBeenCalled()
+    })
 
     it('should reuse existing CryptoKey', async () => {
       // First call
-      await SecureStorage.encryptAndStore(testKey, testData);
-      
-      // Second call - should not generate new key
-      vi.clearAllMocks();
-      mockStore.get.mockImplementation(() => {
-        const request = { 
-          onerror: null as ((event: Event) => void) | null, 
-          onsuccess: null as ((event: Event) => void) | null,
-          result: mockCryptoKey
-        };
-        setTimeout(() => {
-          if (request.onsuccess) request.onsuccess({} as Event);
-        }, 0);
-        return request;
-      });
-      
-      await SecureStorage.encryptAndStore('another-key', 'another-value');
+      await SecureStorage.encryptAndStore(testKey, testData)
 
-      expect(mockCrypto.subtle.generateKey).not.toHaveBeenCalled();
-    });
-  });
+      // Second call - should not generate new key
+      vi.clearAllMocks()
+      mockStore.get.mockImplementation(() => {
+        const request = {
+          onerror: null as ((event: Event) => void) | null,
+          onsuccess: null as ((event: Event) => void) | null,
+          result: mockCryptoKey,
+        }
+        setTimeout(() => {
+          if (request.onsuccess) request.onsuccess({} as Event)
+        }, 0)
+        return request
+      })
+
+      await SecureStorage.encryptAndStore('another-key', 'another-value')
+
+      expect(mockCrypto.subtle.generateKey).not.toHaveBeenCalled()
+    })
+  })
 
   describe('Encryption and Decryption', () => {
     it('should encrypt and store data', async () => {
-      await SecureStorage.encryptAndStore(testKey, testData);
+      await SecureStorage.encryptAndStore(testKey, testData)
 
-      expect(mockCrypto.subtle.encrypt).toHaveBeenCalled();
-      expect(localStorage.setItem).toHaveBeenCalled();
-    });
+      expect(mockCrypto.subtle.encrypt).toHaveBeenCalled()
+      expect(localStorage.setItem).toHaveBeenCalled()
+    })
 
     it('should decrypt and retrieve data', async () => {
       // Setup localStorage to return mock encrypted data
-      const mockEncryptedData = btoa('mock-encrypted-data');
-      (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(mockEncryptedData);
+      const mockEncryptedData = btoa('mock-encrypted-data')
+      ;(localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockEncryptedData
+      )
 
-      const result = await SecureStorage.decryptAndRetrieve(testKey);
+      const result = await SecureStorage.decryptAndRetrieve(testKey)
 
-      expect(localStorage.getItem).toHaveBeenCalledWith(testKey);
-      expect(mockCrypto.subtle.decrypt).toHaveBeenCalled();
-      expect(result).toBe(testData);
-    });
+      expect(localStorage.getItem).toHaveBeenCalledWith(testKey)
+      expect(mockCrypto.subtle.decrypt).toHaveBeenCalled()
+      expect(result).toBe(testData)
+    })
 
     it('should return null for non-existent keys', async () => {
-      (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
+      ;(localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null)
 
-      const result = await SecureStorage.decryptAndRetrieve('non-existent-key');
+      const result = await SecureStorage.decryptAndRetrieve('non-existent-key')
 
-      expect(result).toBeNull();
-    });
+      expect(result).toBeNull()
+    })
 
     it('should handle decryption errors gracefully', async () => {
-      (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('invalid-encrypted-data');
-      mockCrypto.subtle.decrypt.mockRejectedValueOnce(new Error('Decryption failed'));
+      ;(localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+        'invalid-encrypted-data'
+      )
+      mockCrypto.subtle.decrypt.mockRejectedValueOnce(
+        new Error('Decryption failed')
+      )
 
-      const result = await SecureStorage.decryptAndRetrieve(testKey);
+      const result = await SecureStorage.decryptAndRetrieve(testKey)
 
-      expect(result).toBeNull();
-      expect(localStorage.removeItem).toHaveBeenCalledWith(testKey);
-    });
-  });
+      expect(result).toBeNull()
+      expect(localStorage.removeItem).toHaveBeenCalledWith(testKey)
+    })
+  })
 
   describe('Auto-lock Functionality', () => {
     it('should lock storage after idle timeout', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers()
 
-      await SecureStorage.encryptAndStore(testKey, testData);
-      expect(SecureStorage.isLocked()).toBe(false);
+      await SecureStorage.encryptAndStore(testKey, testData)
+      expect(SecureStorage.isLocked()).toBe(false)
 
       // Fast-forward time past idle timeout (15 minutes)
-      vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
+      vi.advanceTimersByTime(15 * 60 * 1000 + 1000)
 
-      expect(SecureStorage.isLocked()).toBe(true);
+      expect(SecureStorage.isLocked()).toBe(true)
 
-      vi.useRealTimers();
-    });
-
-  });
-
-});
+      vi.useRealTimers()
+    })
+  })
+})

@@ -9,7 +9,13 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Most capable GPT-4 model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
     },
     {
       id: 'gpt-4-turbo',
@@ -18,7 +24,13 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Faster and cheaper GPT-4',
       supportsLogprobs: true,
       maxTokens: 128000,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
     },
     {
       id: 'gpt-4o',
@@ -27,7 +39,15 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Multimodal flagship model',
       supportsLogprobs: true,
       maxTokens: 128000,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'audio/wav', 'audio/mp3']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'audio/wav',
+        'audio/mp3',
+      ],
     },
     {
       id: 'o1-preview',
@@ -36,7 +56,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Advanced reasoning model',
       supportsLogprobs: false,
       maxTokens: 32768,
-      supportedMimeTypes: ['text/plain']
+      supportedMimeTypes: ['text/plain'],
     },
     {
       id: 'o1-mini',
@@ -45,8 +65,8 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Faster reasoning model',
       supportsLogprobs: false,
       maxTokens: 65536,
-      supportedMimeTypes: ['text/plain']
-    }
+      supportedMimeTypes: ['text/plain'],
+    },
   ],
   anthropic: [
     {
@@ -56,7 +76,13 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Most intelligent Claude model',
       supportsLogprobs: false,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
     },
     {
       id: 'claude-3-5-haiku-20241022',
@@ -65,7 +91,13 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Fast and efficient Claude model',
       supportsLogprobs: false,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
     },
     {
       id: 'claude-3-opus-20240229',
@@ -74,8 +106,14 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Highly capable Claude model',
       supportsLogprobs: false,
       maxTokens: 4096,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    }
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
+    },
   ],
   google: [
     {
@@ -85,7 +123,13 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Latest Gemini model',
       supportsLogprobs: false,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
     },
     {
       id: 'gemini-1.5-pro',
@@ -94,7 +138,13 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Advanced Gemini model',
       supportsLogprobs: false,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
     },
     {
       id: 'gemini-1.5-flash',
@@ -103,8 +153,14 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Fast Gemini model',
       supportsLogprobs: false,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    }
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
+    },
   ],
   mistral: [
     {
@@ -114,7 +170,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Most capable Mistral model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain']
+      supportedMimeTypes: ['text/plain'],
     },
     {
       id: 'mistral-small-latest',
@@ -123,7 +179,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Efficient Mistral model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain']
+      supportedMimeTypes: ['text/plain'],
     },
     {
       id: 'pixtral-12b-2409',
@@ -132,8 +188,14 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Multimodal Mistral model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    }
+      supportedMimeTypes: [
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+      ],
+    },
   ],
   together: [
     {
@@ -143,7 +205,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Large Llama model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain']
+      supportedMimeTypes: ['text/plain'],
     },
     {
       id: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
@@ -152,7 +214,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Efficient Llama model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain']
+      supportedMimeTypes: ['text/plain'],
     },
     {
       id: 'Qwen/Qwen2.5-72B-Instruct-Turbo',
@@ -161,9 +223,9 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       description: 'Advanced Qwen model',
       supportsLogprobs: true,
       maxTokens: 8192,
-      supportedMimeTypes: ['text/plain']
-    }
-  ]
+      supportedMimeTypes: ['text/plain'],
+    },
+  ],
 }
 
 export const getAllModels = (): ModelInfo[] => {
@@ -175,7 +237,7 @@ export const getModelsByProvider = (provider: ProviderType): ModelInfo[] => {
 }
 
 export const getModelById = (id: string): ModelInfo | undefined => {
-  return getAllModels().find(model => model.id === id)
+  return getAllModels().find((model) => model.id === id)
 }
 
 export const getDefaultTemperatureRange = (count: number): number[] => {
@@ -184,7 +246,7 @@ export const getDefaultTemperatureRange = (count: number): number[] => {
   if (count === 3) return [0.7, 0.8, 0.9]
   if (count === 4) return [0.7, 0.8, 0.9, 1.0]
   if (count === 5) return [0.7, 0.75, 0.8, 0.9, 1.0]
-  
+
   // For more than 5, generate evenly spaced temperatures
   const temperatures: number[] = []
   for (let i = 0; i < count; i++) {

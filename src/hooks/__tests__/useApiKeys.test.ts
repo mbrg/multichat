@@ -8,8 +8,8 @@ vi.mock('../../utils/crypto', () => ({
   SecureStorage: {
     encryptAndStore: vi.fn(),
     decryptAndRetrieve: vi.fn(),
-    clearAll: vi.fn()
-  }
+    clearAll: vi.fn(),
+  },
 }))
 
 const mockedSecureStorage = vi.mocked(SecureStorage)
@@ -17,15 +17,15 @@ const mockedSecureStorage = vi.mocked(SecureStorage)
 describe('useApiKeys Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: vi.fn(),
         setItem: vi.fn(),
-        removeItem: vi.fn()
+        removeItem: vi.fn(),
       },
-      writable: true
+      writable: true,
     })
 
     // Default mock implementations
@@ -46,7 +46,7 @@ describe('useApiKeys Hook', () => {
       anthropic: false,
       google: false,
       mistral: false,
-      together: false
+      together: false,
     })
   })
 
@@ -65,7 +65,7 @@ describe('useApiKeys Hook', () => {
 
     expect(result.current.apiKeys).toEqual({
       openai: 'sk-test-key',
-      anthropic: 'sk-ant-test'
+      anthropic: 'sk-ant-test',
     })
   })
 
@@ -96,7 +96,10 @@ describe('useApiKeys Hook', () => {
       await result.current.saveApiKey('openai', 'sk-new-key')
     })
 
-    expect(mockedSecureStorage.encryptAndStore).toHaveBeenCalledWith('apiKey_openai', 'sk-new-key')
+    expect(mockedSecureStorage.encryptAndStore).toHaveBeenCalledWith(
+      'apiKey_openai',
+      'sk-new-key'
+    )
     expect(result.current.apiKeys.openai).toBe('sk-new-key')
     expect(result.current.enabledProviders.openai).toBe(true) // Auto-enabled
   })
@@ -150,7 +153,7 @@ describe('useApiKeys Hook', () => {
         anthropic: false,
         google: false,
         mistral: false,
-        together: false
+        together: false,
       })
     )
   })
@@ -190,20 +193,24 @@ describe('useApiKeys Hook', () => {
     })
 
     expect(mockedSecureStorage.clearAll).toHaveBeenCalled()
-    expect(window.localStorage.removeItem).toHaveBeenCalledWith('enabledProviders')
+    expect(window.localStorage.removeItem).toHaveBeenCalledWith(
+      'enabledProviders'
+    )
     expect(result.current.apiKeys).toEqual({})
     expect(result.current.enabledProviders).toEqual({
       openai: false,
       anthropic: false,
       google: false,
       mistral: false,
-      together: false
+      together: false,
     })
   })
 
   it('handles errors when saving API keys', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    mockedSecureStorage.encryptAndStore.mockRejectedValue(new Error('Storage error'))
+    mockedSecureStorage.encryptAndStore.mockRejectedValue(
+      new Error('Storage error')
+    )
 
     const { result } = renderHook(() => useApiKeys())
 
@@ -217,7 +224,10 @@ describe('useApiKeys Hook', () => {
       })
     }).rejects.toThrow('Storage error')
 
-    expect(consoleSpy).toHaveBeenCalledWith('Error saving openai API key:', expect.any(Error))
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error saving openai API key:',
+      expect.any(Error)
+    )
 
     consoleSpy.mockRestore()
   })

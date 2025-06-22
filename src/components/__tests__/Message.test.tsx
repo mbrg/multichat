@@ -4,28 +4,32 @@ import Message from '../Message'
 import type { Message as MessageType, Attachment } from '../../types/chat'
 
 describe('Message', () => {
-  const createMockMessage = (overrides: Partial<MessageType> = {}): MessageType => ({
+  const createMockMessage = (
+    overrides: Partial<MessageType> = {}
+  ): MessageType => ({
     id: '1',
     role: 'user',
     content: 'Test message content',
     timestamp: new Date('2024-01-01T12:00:00Z'),
-    ...overrides
+    ...overrides,
   })
 
-  const createMockAttachment = (overrides: Partial<Attachment> = {}): Attachment => ({
+  const createMockAttachment = (
+    overrides: Partial<Attachment> = {}
+  ): Attachment => ({
     id: 'att-1',
     name: 'test.jpg',
     type: 'image/jpeg',
     size: 1024,
     data: 'base64data',
     preview: 'data:image/jpeg;base64,preview',
-    ...overrides
+    ...overrides,
   })
 
   it('renders user message correctly', () => {
     const message = createMockMessage({
       role: 'user',
-      content: 'Hello world'
+      content: 'Hello world',
     })
 
     render(<Message message={message} />)
@@ -38,7 +42,7 @@ describe('Message', () => {
     const message = createMockMessage({
       role: 'assistant',
       content: 'Assistant response',
-      model: 'gpt-4'
+      model: 'gpt-4',
     })
 
     render(<Message message={message} />)
@@ -50,7 +54,7 @@ describe('Message', () => {
 
   it('displays timestamp correctly', () => {
     const message = createMockMessage({
-      timestamp: new Date('2024-01-01T14:30:00Z')
+      timestamp: new Date('2024-01-01T14:30:00Z'),
     })
 
     render(<Message message={message} />)
@@ -63,7 +67,7 @@ describe('Message', () => {
   it('displays probability when provided', () => {
     const message = createMockMessage({
       role: 'assistant',
-      probability: 0.85
+      probability: 0.85,
     })
 
     render(<Message message={message} />)
@@ -73,7 +77,7 @@ describe('Message', () => {
 
   it('does not display probability for user messages', () => {
     const message = createMockMessage({
-      role: 'user'
+      role: 'user',
       // Note: probability should not be provided for user messages anyway
     })
 
@@ -85,7 +89,7 @@ describe('Message', () => {
   it('displays model name for assistant messages', () => {
     const message = createMockMessage({
       role: 'assistant',
-      model: 'claude-3'
+      model: 'claude-3',
     })
 
     render(<Message message={message} />)
@@ -97,7 +101,7 @@ describe('Message', () => {
   it('does not display model for user messages', () => {
     const message = createMockMessage({
       role: 'user',
-      model: 'gpt-4'
+      model: 'gpt-4',
     })
 
     render(<Message message={message} />)
@@ -108,7 +112,7 @@ describe('Message', () => {
   it('renders attachments when provided', () => {
     const attachment = createMockAttachment()
     const message = createMockMessage({
-      attachments: [attachment]
+      attachments: [attachment],
     })
 
     render(<Message message={message} />)
@@ -120,10 +124,14 @@ describe('Message', () => {
   it('handles multiple attachments', () => {
     const attachments = [
       createMockAttachment({ id: 'att-1', name: 'image1.jpg' }),
-      createMockAttachment({ id: 'att-2', name: 'image2.png', type: 'image/png' })
+      createMockAttachment({
+        id: 'att-2',
+        name: 'image2.png',
+        type: 'image/png',
+      }),
     ]
     const message = createMockMessage({
-      attachments
+      attachments,
     })
 
     render(<Message message={message} />)
@@ -133,7 +141,7 @@ describe('Message', () => {
 
   it('preserves whitespace and line breaks in content', () => {
     const message = createMockMessage({
-      content: 'Line 1\nLine 2\n\nLine 4'
+      content: 'Line 1\nLine 2\n\nLine 4',
     })
 
     const { container } = render(<Message message={message} />)
@@ -171,7 +179,9 @@ describe('Message', () => {
   it('applies custom className when provided', () => {
     const message = createMockMessage()
 
-    const { container } = render(<Message message={message} className="custom-message" />)
+    const { container } = render(
+      <Message message={message} className="custom-message" />
+    )
 
     expect(container.firstChild).toHaveClass('custom-message')
   })
@@ -179,7 +189,7 @@ describe('Message', () => {
   it('handles missing model name gracefully', () => {
     const message = createMockMessage({
       role: 'assistant',
-      model: undefined
+      model: undefined,
     })
 
     render(<Message message={message} />)
@@ -189,7 +199,7 @@ describe('Message', () => {
 
   it('handles empty content gracefully', () => {
     const message = createMockMessage({
-      content: ''
+      content: '',
     })
 
     expect(() => {
@@ -203,11 +213,11 @@ describe('Message', () => {
     models.forEach((model) => {
       const message = createMockMessage({
         role: 'assistant',
-        model
+        model,
       })
 
       const { unmount } = render(<Message message={message} />)
-      
+
       // All assistant messages now use the OpenAI logo
       expect(screen.getByAltText('AI')).toBeInTheDocument()
       unmount()

@@ -4,11 +4,14 @@ import type { AttachmentPreviewProps } from '../types/chat'
 const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
   attachment,
   onRemove,
-  className = ''
+  className = '',
 }) => {
   const isImage = attachment.type.startsWith('image/')
   const isAudio = attachment.type.startsWith('audio/')
-  const isDocument = attachment.type.includes('pdf') || attachment.type.includes('document') || attachment.type.includes('text')
+  const isDocument =
+    attachment.type.includes('pdf') ||
+    attachment.type.includes('document') ||
+    attachment.type.includes('text')
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`
@@ -59,8 +62,18 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
               className="text-gray-400 hover:text-red-500 transition-colors"
               aria-label="Remove attachment"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}

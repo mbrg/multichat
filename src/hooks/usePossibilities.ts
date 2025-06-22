@@ -18,11 +18,13 @@ interface UsePossibilitiesReturn {
   setLoading: (loading: boolean) => void
 }
 
-export const usePossibilities = (options: UsePossibilitiesOptions = {}): UsePossibilitiesReturn => {
+export const usePossibilities = (
+  options: UsePossibilitiesOptions = {}
+): UsePossibilitiesReturn => {
   const {
     initialLoadCount = 10,
     loadMoreCount = 10,
-    maxResponses = 100
+    maxResponses = 100,
   } = options
 
   const [responses, setResponses] = useState<ResponseOption[]>([])
@@ -30,30 +32,40 @@ export const usePossibilities = (options: UsePossibilitiesOptions = {}): UsePoss
   const [isLoading, setIsLoading] = useState(false)
 
   // Always sort by probability when displaying
-  const sortedResponses = [...responses].sort((a, b) => b.probability - a.probability)
+  const sortedResponses = [...responses].sort(
+    (a, b) => b.probability - a.probability
+  )
   const displayedResponses = sortedResponses.slice(0, displayedCount)
-  const hasMore = displayedCount < sortedResponses.length && displayedCount < maxResponses
+  const hasMore =
+    displayedCount < sortedResponses.length && displayedCount < maxResponses
 
-  const addResponse = useCallback((response: ResponseOption) => {
-    setResponses(prev => {
-      const updated = [...prev, response]
-      return updated.slice(0, maxResponses)
-    })
-  }, [maxResponses])
+  const addResponse = useCallback(
+    (response: ResponseOption) => {
+      setResponses((prev) => {
+        const updated = [...prev, response]
+        return updated.slice(0, maxResponses)
+      })
+    },
+    [maxResponses]
+  )
 
-  const addResponses = useCallback((newResponses: ResponseOption[]) => {
-    setResponses(prev => {
-      const combined = [...prev, ...newResponses]
-      const unique = combined.filter((response, index, arr) => 
-        arr.findIndex(r => r.id === response.id) === index
-      )
-      return unique.slice(0, maxResponses)
-    })
-  }, [maxResponses])
+  const addResponses = useCallback(
+    (newResponses: ResponseOption[]) => {
+      setResponses((prev) => {
+        const combined = [...prev, ...newResponses]
+        const unique = combined.filter(
+          (response, index, arr) =>
+            arr.findIndex((r) => r.id === response.id) === index
+        )
+        return unique.slice(0, maxResponses)
+      })
+    },
+    [maxResponses]
+  )
 
   const loadMore = useCallback(() => {
     if (hasMore && !isLoading) {
-      setDisplayedCount(prev => 
+      setDisplayedCount((prev) =>
         Math.min(prev + loadMoreCount, responses.length, maxResponses)
       )
     }
@@ -82,7 +94,7 @@ export const usePossibilities = (options: UsePossibilitiesOptions = {}): UsePoss
     addResponses,
     loadMore,
     clearResponses,
-    setLoading
+    setLoading,
   }
 }
 
@@ -98,7 +110,9 @@ export const createMockResponse = (
   probability,
   isStreaming: false,
   timestamp: new Date(),
-  logprobs: Array.from({ length: content.split(' ').length }, () => Math.log(probability))
+  logprobs: Array.from({ length: content.split(' ').length }, () =>
+    Math.log(probability)
+  ),
 })
 
 export const generateVariationsForModel = (
@@ -109,11 +123,14 @@ export const generateVariationsForModel = (
   baseProbability: number
 ): ResponseOption[] => {
   const variations = []
-  
+
   for (let i = 0; i < variationCount; i++) {
     // Decrease probability for each variation
-    const probability = Math.max(0.05, baseProbability - (i * 0.15) - Math.random() * 0.1)
-    
+    const probability = Math.max(
+      0.05,
+      baseProbability - i * 0.15 - Math.random() * 0.1
+    )
+
     // Create slight variations in content
     const variationPhrases = [
       `${baseContent}`,
@@ -125,16 +142,18 @@ export const generateVariationsForModel = (
       `Building on that idea: ${baseContent}`,
       `Another approach would be: ${baseContent}`,
     ]
-    
+
     const content = variationPhrases[i % variationPhrases.length]
-    
-    variations.push(createMockResponse(
-      `${model.id}-var-${i}-${Date.now()}`,
-      model,
-      content,
-      probability
-    ))
+
+    variations.push(
+      createMockResponse(
+        `${model.id}-var-${i}-${Date.now()}`,
+        model,
+        content,
+        probability
+      )
+    )
   }
-  
+
   return variations
 }

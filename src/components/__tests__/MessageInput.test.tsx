@@ -38,13 +38,15 @@ describe('MessageInput', () => {
 
   it('renders with custom placeholder', () => {
     render(
-      <MessageInput 
-        onSendMessage={mockOnSendMessage} 
+      <MessageInput
+        onSendMessage={mockOnSendMessage}
         placeholder="Custom placeholder"
       />
     )
 
-    expect(screen.getByPlaceholderText('Custom placeholder')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('Custom placeholder')
+    ).toBeInTheDocument()
   })
 
   it('calls onSendMessage when form is submitted with text', async () => {
@@ -137,7 +139,9 @@ describe('MessageInput', () => {
   })
 
   it('shows correct border classes for drag state', () => {
-    const { container } = render(<MessageInput onSendMessage={mockOnSendMessage} />)
+    const { container } = render(
+      <MessageInput onSendMessage={mockOnSendMessage} />
+    )
 
     const dropZone = screen.getByRole('textbox').closest('form')!
     const inputWrapper = container.querySelector('.border')!
@@ -147,7 +151,7 @@ describe('MessageInput', () => {
 
     // Simulate drag over - this will add border styling
     fireEvent.dragOver(dropZone)
-    
+
     // Check that the component handles drag events (overlay logic is tested via state)
     expect(dropZone).toBeInTheDocument()
   })
@@ -196,17 +200,19 @@ describe('MessageInput', () => {
     // Verify all interactive elements are present and focusable
     expect(attachButton).toBeInTheDocument()
     expect(attachButton).not.toBeDisabled()
-    
+
     expect(textarea).toBeInTheDocument()
     expect(textarea).not.toBeDisabled()
-    
+
     expect(sendButton).toBeInTheDocument()
     // Send button should be disabled when no content
     expect(sendButton).toBeDisabled()
   })
 
   it('applies proper CSS classes for styling', () => {
-    const { container } = render(<MessageInput onSendMessage={mockOnSendMessage} />)
+    const { container } = render(
+      <MessageInput onSendMessage={mockOnSendMessage} />
+    )
 
     const form = container.querySelector('form')
     const inputWrapper = container.querySelector('.flex.items-end')
@@ -220,11 +226,13 @@ describe('MessageInput', () => {
   it('has correct file input configuration', () => {
     render(<MessageInput onSendMessage={mockOnSendMessage} />)
 
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement
     expect(fileInput).toHaveAttribute('accept')
     expect(fileInput).toHaveAttribute('multiple')
     expect(fileInput).toHaveClass('hidden')
-    
+
     const acceptAttr = fileInput.getAttribute('accept')
     expect(acceptAttr).toContain('image/jpeg')
     expect(acceptAttr).toContain('audio/mp3')
@@ -256,14 +264,19 @@ describe('MessageInput', () => {
 
   it('applies custom className', () => {
     const { container } = render(
-      <MessageInput onSendMessage={mockOnSendMessage} className="custom-input" />
+      <MessageInput
+        onSendMessage={mockOnSendMessage}
+        className="custom-input"
+      />
     )
 
     expect(container.firstChild).toHaveClass('custom-input')
   })
 
   it('handles border styling on focus and drag states', () => {
-    const { container } = render(<MessageInput onSendMessage={mockOnSendMessage} />)
+    const { container } = render(
+      <MessageInput onSendMessage={mockOnSendMessage} />
+    )
 
     const inputWrapper = container.querySelector('.border')
     expect(inputWrapper).toHaveClass('border-[#2a2a2a]')

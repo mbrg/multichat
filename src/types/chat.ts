@@ -22,7 +22,10 @@ export interface Message {
 export interface ChatContainerProps {
   messages: Message[]
   onSendMessage: (content: string, attachments?: Attachment[]) => void
-  onSelectPossibility?: (userMessage: Message, selectedPossibility: Message) => void
+  onSelectPossibility?: (
+    userMessage: Message,
+    selectedPossibility: Message
+  ) => void
   isLoading?: boolean
   className?: string
 }

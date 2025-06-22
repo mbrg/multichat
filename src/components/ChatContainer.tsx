@@ -9,7 +9,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onSendMessage,
   onSelectPossibility,
   isLoading = false,
-  className = ''
+  className = '',
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [showSettings, setShowSettings] = useState(false)
@@ -20,10 +20,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const handleSelectPossibility = (possibility: MessageType) => {
     // Find the user message that corresponds to this assistant message with possibilities
-    const currentMessageIndex = messages.findIndex(msg => 
-      msg.role === 'assistant' && msg.possibilities?.some(p => p.id === possibility.id)
+    const currentMessageIndex = messages.findIndex(
+      (msg) =>
+        msg.role === 'assistant' &&
+        msg.possibilities?.some((p) => p.id === possibility.id)
     )
-    
+
     if (currentMessageIndex > 0) {
       const userMessage = messages[currentMessageIndex - 1]
       onSelectPossibility?.(userMessage, possibility)
@@ -52,9 +54,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           </div>
         ) : (
           messages.map((message) => (
-            <Message 
-              key={message.id} 
-              message={message} 
+            <Message
+              key={message.id}
+              message={message}
               onSelectPossibility={handleSelectPossibility}
               className="max-w-[800px] w-full self-center animate-fadeIn"
             />
@@ -62,23 +64,24 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         )}
         <div ref={messagesEndRef} />
       </div>
-      
+
       <div className="border-t border-[#2a2a2a] bg-[#1a1a1a] p-4">
         <div className="max-w-[800px] mx-auto">
           <MessageInput
             onSendMessage={onSendMessage}
             disabled={isLoading}
-            placeholder={isLoading ? "Generating response..." : "Start typing to see possibilities..."}
+            placeholder={
+              isLoading
+                ? 'Generating response...'
+                : 'Start typing to see possibilities...'
+            }
             className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"
           />
         </div>
       </div>
 
       {/* Settings Modal */}
-      <Settings 
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
+      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   )
 }

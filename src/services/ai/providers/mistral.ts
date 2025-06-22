@@ -1,6 +1,12 @@
 import { mistral } from '@ai-sdk/mistral'
 import { generateText } from 'ai'
-import type { AIProvider, Message, ModelInfo, GenerationOptions, ResponseWithLogprobs } from '../../../types/ai'
+import type {
+  AIProvider,
+  Message,
+  ModelInfo,
+  GenerationOptions,
+  ResponseWithLogprobs,
+} from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 
 export class MistralProvider implements AIProvider {
@@ -18,9 +24,9 @@ export class MistralProvider implements AIProvider {
     }
 
     try {
-      const formattedMessages = messages.map(msg => ({
+      const formattedMessages = messages.map((msg) => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       }))
 
       const result = await generateText({
@@ -28,29 +34,33 @@ export class MistralProvider implements AIProvider {
         messages: formattedMessages,
         temperature: options.temperature ?? 0.7,
         maxTokens: options.maxTokens ?? model.maxTokens,
-        topP: options.topP
+        topP: options.topP,
       })
 
       // Try to extract logprobs if available
       const logprobs = this.extractLogprobs(result)
-      const probability = logprobs ? 
-        this.calculateProbability(logprobs) : 
-        this.estimateProbability(options.temperature ?? 0.7)
+      const probability = logprobs
+        ? this.calculateProbability(logprobs)
+        : this.estimateProbability(options.temperature ?? 0.7)
 
       return {
         content: result.text,
         logprobs,
         probability,
         finishReason: result.finishReason || 'stop',
-        usage: result.usage ? {
-          promptTokens: result.usage.promptTokens,
-          completionTokens: result.usage.completionTokens,
-          totalTokens: result.usage.totalTokens
-        } : undefined
+        usage: result.usage
+          ? {
+              promptTokens: result.usage.promptTokens,
+              completionTokens: result.usage.completionTokens,
+              totalTokens: result.usage.totalTokens,
+            }
+          : undefined,
       }
     } catch (error) {
       console.error('Mistral API error:', error)
-      throw new Error(`Mistral API error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Mistral API error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -59,7 +69,7 @@ export class MistralProvider implements AIProvider {
       const result = await generateText({
         model: mistral('mistral-small-latest'),
         messages: [{ role: 'user', content: 'Hi' }],
-        maxTokens: 5
+        maxTokens: 5,
       })
       return !!result.text
     } catch (error) {
@@ -85,9 +95,10 @@ export class MistralProvider implements AIProvider {
     }
 
     // Calculate average probability from logprobs
-    const avgLogprob = logprobs.reduce((sum, logprob) => sum + logprob, 0) / logprobs.length
+    const avgLogprob =
+      logprobs.reduce((sum, logprob) => sum + logprob, 0) / logprobs.length
     const probability = Math.exp(avgLogprob)
-    
+
     // Normalize to reasonable range (0.1 to 0.95)
     return Math.max(0.1, Math.min(0.95, probability))
   }

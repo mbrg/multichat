@@ -17,7 +17,7 @@ const PossibilitiesPanel: React.FC<PossibilitiesPanelProps> = ({
   onLoadMore,
   hasMore = false,
   isActive = false,
-  onSelectResponse
+  onSelectResponse,
 }) => {
   const sortedResponses = useMemo(
     () => [...responses].sort((a, b) => b.probability - a.probability),
@@ -25,7 +25,7 @@ const PossibilitiesPanel: React.FC<PossibilitiesPanelProps> = ({
   )
 
   return (
-    <div 
+    <div
       className={`
         bg-[#0f0f0f] border-t border-[#2a2a2a] 
         flex flex-col transition-all duration-300 ease-out overflow-hidden
@@ -35,7 +35,9 @@ const PossibilitiesPanel: React.FC<PossibilitiesPanelProps> = ({
       {/* Header */}
       <div className="px-4 py-3 bg-[#1a1a1a] border-b border-[#2a2a2a] text-xs text-[#888] flex items-center justify-between">
         <span>
-          {isLoading ? 'Loading possibilities...' : `${sortedResponses.length} possibilities found`}
+          {isLoading
+            ? 'Loading possibilities...'
+            : `${sortedResponses.length} possibilities found`}
         </span>
         {isLoading && (
           <div className="flex items-center gap-1">
@@ -56,7 +58,7 @@ const PossibilitiesPanel: React.FC<PossibilitiesPanelProps> = ({
               onSelect={onSelectResponse}
             />
           ))}
-          
+
           {hasMore && (
             <div className="text-center py-4">
               <button

@@ -3,8 +3,18 @@ import { AnthropicProvider } from './providers/anthropic'
 import { GoogleProvider } from './providers/google'
 import { MistralProvider } from './providers/mistral'
 import { TogetherProvider } from './providers/together'
-import type { AIProvider, Message, ModelInfo, GenerationOptions, ResponseOption } from '../../types/ai'
-import { getAllModels, getModelById, getDefaultTemperatureRange } from './config'
+import type {
+  AIProvider,
+  Message,
+  ModelInfo,
+  GenerationOptions,
+  ResponseOption,
+} from '../../types/ai'
+import {
+  getAllModels,
+  getModelById,
+  getDefaultTemperatureRange,
+} from './config'
 
 export class AIService {
   private providers: Map<string, AIProvider> = new Map()
@@ -46,7 +56,7 @@ export class AIService {
 
     try {
       const response = await provider.generateResponse(messages, model, options)
-      
+
       return {
         id: crypto.randomUUID(),
         model,
@@ -56,10 +66,12 @@ export class AIService {
         isStreaming: false,
         temperature: options.temperature,
         finishReason: response.finishReason,
-        usage: response.usage
+        usage: response.usage,
       }
     } catch (error) {
-      throw new Error(`Failed to generate response: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate response: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -75,10 +87,10 @@ export class AIService {
     }
 
     const temperatures = getDefaultTemperatureRange(count)
-    const promises = temperatures.map(temperature => 
+    const promises = temperatures.map((temperature) =>
       this.generateSingleResponse(messages, modelId, {
         ...baseOptions,
-        temperature
+        temperature,
       })
     )
 
@@ -87,7 +99,9 @@ export class AIService {
       // Sort by probability (highest first)
       return responses.sort((a, b) => b.probability - a.probability)
     } catch (error) {
-      throw new Error(`Failed to generate variations: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate variations: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -97,22 +111,30 @@ export class AIService {
     variationsPerModel: number = 3,
     baseOptions: GenerationOptions = {}
   ): Promise<ResponseOption[]> {
-    const promises = enabledModels.map(modelId => 
-      this.generateVariations(messages, modelId, variationsPerModel, baseOptions)
+    const promises = enabledModels.map((modelId) =>
+      this.generateVariations(
+        messages,
+        modelId,
+        variationsPerModel,
+        baseOptions
+      )
     )
 
     try {
       const allResponses = await Promise.allSettled(promises)
       const successfulResponses = allResponses
-        .filter((result): result is PromiseFulfilledResult<ResponseOption[]> => 
-          result.status === 'fulfilled'
+        .filter(
+          (result): result is PromiseFulfilledResult<ResponseOption[]> =>
+            result.status === 'fulfilled'
         )
-        .flatMap(result => result.value)
+        .flatMap((result) => result.value)
 
       // Sort all responses by probability
       return successfulResponses.sort((a, b) => b.probability - a.probability)
     } catch (error) {
-      throw new Error(`Failed to generate multi-model responses: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate multi-model responses: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -126,7 +148,7 @@ export class AIService {
     const storageKey = `${providerName}-api-key`
     const originalKey = localStorage.getItem(storageKey)
     localStorage.setItem(storageKey, apiKey)
-    
+
     try {
       const isValid = await provider.validateApiKey()
       if (!isValid && originalKey) {

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  getAllModels, 
-  getModelsByProvider, 
-  getModelById, 
+import {
+  getAllModels,
+  getModelsByProvider,
+  getModelById,
   getDefaultTemperatureRange,
-  MODEL_CONFIGS 
+  MODEL_CONFIGS,
 } from '../config'
 
 describe('AI Configuration User Flows', () => {
@@ -13,9 +13,9 @@ describe('AI Configuration User Flows', () => {
       const allModels = getAllModels()
 
       expect(allModels.length).toBeGreaterThan(0)
-      
+
       // Should include models from each provider
-      const providers = new Set(allModels.map(m => m.provider))
+      const providers = new Set(allModels.map((m) => m.provider))
       expect(providers).toContain('openai')
       expect(providers).toContain('anthropic')
       expect(providers).toContain('google')
@@ -26,14 +26,14 @@ describe('AI Configuration User Flows', () => {
     it('should provide detailed model information for user decision making', () => {
       const allModels = getAllModels()
 
-      allModels.forEach(model => {
+      allModels.forEach((model) => {
         expect(model).toMatchObject({
           id: expect.any(String),
           name: expect.any(String),
           provider: expect.any(String),
           description: expect.any(String),
           supportsLogprobs: expect.any(Boolean),
-          maxTokens: expect.any(Number)
+          maxTokens: expect.any(Number),
         })
 
         // Names should be user-friendly (except for some technical model names)
@@ -48,15 +48,19 @@ describe('AI Configuration User Flows', () => {
       const openaiModels = getModelsByProvider('openai')
       const anthropicModels = getModelsByProvider('anthropic')
 
-      expect(openaiModels.every(m => m.provider === 'openai')).toBe(true)
-      expect(anthropicModels.every(m => m.provider === 'anthropic')).toBe(true)
-      
+      expect(openaiModels.every((m) => m.provider === 'openai')).toBe(true)
+      expect(anthropicModels.every((m) => m.provider === 'anthropic')).toBe(
+        true
+      )
+
       expect(openaiModels.length).toBeGreaterThan(0)
       expect(anthropicModels.length).toBeGreaterThan(0)
     })
 
     it('should handle unknown provider gracefully', () => {
-      const unknownModels = getModelsByProvider('unknown-provider' as keyof typeof MODELS)
+      const unknownModels = getModelsByProvider(
+        'unknown-provider' as keyof typeof MODELS
+      )
       expect(unknownModels).toEqual([])
     })
 
@@ -67,13 +71,13 @@ describe('AI Configuration User Flows', () => {
       expect(gpt4).toMatchObject({
         id: 'gpt-4',
         name: 'GPT-4',
-        provider: 'openai'
+        provider: 'openai',
       })
 
       expect(claude).toMatchObject({
         id: 'claude-3-5-sonnet-20241022',
         name: 'Claude 3.5 Sonnet',
-        provider: 'anthropic'
+        provider: 'anthropic',
       })
     })
 
@@ -86,15 +90,19 @@ describe('AI Configuration User Flows', () => {
   describe('Model Capabilities for User Planning', () => {
     it('should indicate which models support probability scores', () => {
       const allModels = getAllModels()
-      const openaiModels = allModels.filter(m => m.provider === 'openai')
-      const mistralModels = allModels.filter(m => m.provider === 'mistral')
+      const openaiModels = allModels.filter((m) => m.provider === 'openai')
+      const mistralModels = allModels.filter((m) => m.provider === 'mistral')
 
       // Most OpenAI models should support logprobs (except o1 models)
-      const regularOpenaiModels = openaiModels.filter(m => !m.id.startsWith('o1-'))
-      expect(regularOpenaiModels.every(m => m.supportsLogprobs === true)).toBe(true)
-      
+      const regularOpenaiModels = openaiModels.filter(
+        (m) => !m.id.startsWith('o1-')
+      )
+      expect(
+        regularOpenaiModels.every((m) => m.supportsLogprobs === true)
+      ).toBe(true)
+
       // Mistral models should support logprobs
-      expect(mistralModels.every(m => m.supportsLogprobs === true)).toBe(true)
+      expect(mistralModels.every((m) => m.supportsLogprobs === true)).toBe(true)
     })
 
     it('should provide token limits for user cost estimation', () => {
@@ -110,11 +118,22 @@ describe('AI Configuration User Flows', () => {
       const gpt4o = getModelById('gpt-4o')
 
       expect(gpt4?.supportedMimeTypes).toEqual(
-        expect.arrayContaining(['text/plain', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+        expect.arrayContaining([
+          'text/plain',
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/gif',
+        ])
       )
 
       expect(gpt4o?.supportedMimeTypes).toEqual(
-        expect.arrayContaining(['text/plain', 'image/jpeg', 'audio/wav', 'audio/mp3'])
+        expect.arrayContaining([
+          'text/plain',
+          'image/jpeg',
+          'audio/wav',
+          'audio/mp3',
+        ])
       )
     })
 
@@ -158,11 +177,11 @@ describe('AI Configuration User Flows', () => {
 
     it('should generate smooth progression for large ranges', () => {
       const temperatures = getDefaultTemperatureRange(10)
-      
+
       expect(temperatures).toHaveLength(10)
       expect(temperatures[0]).toBe(0.7)
       expect(temperatures[temperatures.length - 1]).toBe(1.0)
-      
+
       // Should be evenly distributed
       for (let i = 1; i < temperatures.length; i++) {
         expect(temperatures[i]).toBeGreaterThan(temperatures[i - 1])
@@ -180,7 +199,7 @@ describe('AI Configuration User Flows', () => {
           expect.objectContaining({ id: 'gpt-4-turbo', name: 'GPT-4 Turbo' }),
           expect.objectContaining({ id: 'gpt-4o', name: 'GPT-4o' }),
           expect.objectContaining({ id: 'o1-preview', name: 'o1-preview' }),
-          expect.objectContaining({ id: 'o1-mini', name: 'o1-mini' })
+          expect.objectContaining({ id: 'o1-mini', name: 'o1-mini' }),
         ])
       )
     })
@@ -190,9 +209,18 @@ describe('AI Configuration User Flows', () => {
 
       expect(anthropicModels).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' }),
-          expect.objectContaining({ id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' }),
-          expect.objectContaining({ id: 'claude-3-opus-20240229', name: 'Claude 3 Opus' })
+          expect.objectContaining({
+            id: 'claude-3-5-sonnet-20241022',
+            name: 'Claude 3.5 Sonnet',
+          }),
+          expect.objectContaining({
+            id: 'claude-3-5-haiku-20241022',
+            name: 'Claude 3.5 Haiku',
+          }),
+          expect.objectContaining({
+            id: 'claude-3-opus-20240229',
+            name: 'Claude 3 Opus',
+          }),
         ])
       )
     })
@@ -202,9 +230,18 @@ describe('AI Configuration User Flows', () => {
 
       expect(googleModels).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash' }),
-          expect.objectContaining({ id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' }),
-          expect.objectContaining({ id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' })
+          expect.objectContaining({
+            id: 'gemini-2.0-flash-exp',
+            name: 'Gemini 2.0 Flash',
+          }),
+          expect.objectContaining({
+            id: 'gemini-1.5-pro',
+            name: 'Gemini 1.5 Pro',
+          }),
+          expect.objectContaining({
+            id: 'gemini-1.5-flash',
+            name: 'Gemini 1.5 Flash',
+          }),
         ])
       )
     })
@@ -212,7 +249,7 @@ describe('AI Configuration User Flows', () => {
     it('should provide model descriptions for user understanding', () => {
       const allModels = getAllModels()
 
-      allModels.forEach(model => {
+      allModels.forEach((model) => {
         expect(model.description).toBeTruthy()
         expect(typeof model.description).toBe('string')
         expect(model.description.length).toBeGreaterThan(10)

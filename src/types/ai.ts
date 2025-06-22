@@ -82,7 +82,12 @@ export interface ModelConfig {
   defaultOptions?: GenerationOptions
 }
 
-export type ProviderType = 'openai' | 'anthropic' | 'google' | 'mistral' | 'together'
+export type ProviderType =
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'mistral'
+  | 'together'
 
 export interface ProviderConfig {
   [key: string]: {

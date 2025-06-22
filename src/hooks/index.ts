@@ -1,1 +1,5 @@
-export { usePossibilities, createMockResponse, generateVariationsForModel } from './usePossibilities'
+export {
+  usePossibilities,
+  createMockResponse,
+  generateVariationsForModel,
+} from './usePossibilities'

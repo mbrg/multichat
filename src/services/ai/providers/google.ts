@@ -1,6 +1,12 @@
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
-import type { AIProvider, Message, ModelInfo, GenerationOptions, ResponseWithLogprobs } from '../../../types/ai'
+import type {
+  AIProvider,
+  Message,
+  ModelInfo,
+  GenerationOptions,
+  ResponseWithLogprobs,
+} from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 
 export class GoogleProvider implements AIProvider {
@@ -18,9 +24,9 @@ export class GoogleProvider implements AIProvider {
     }
 
     try {
-      const formattedMessages = messages.map(msg => ({
+      const formattedMessages = messages.map((msg) => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       }))
 
       const result = await generateText({
@@ -29,7 +35,7 @@ export class GoogleProvider implements AIProvider {
         temperature: options.temperature ?? 0.7,
         maxTokens: options.maxTokens ?? model.maxTokens,
         topP: options.topP,
-        topK: options.topK
+        topK: options.topK,
       })
 
       // Google doesn't provide logprobs, so we estimate probability
@@ -40,15 +46,19 @@ export class GoogleProvider implements AIProvider {
         logprobs: undefined, // Google doesn't provide logprobs
         probability,
         finishReason: result.finishReason || 'stop',
-        usage: result.usage ? {
-          promptTokens: result.usage.promptTokens,
-          completionTokens: result.usage.completionTokens,
-          totalTokens: result.usage.totalTokens
-        } : undefined
+        usage: result.usage
+          ? {
+              promptTokens: result.usage.promptTokens,
+              completionTokens: result.usage.completionTokens,
+              totalTokens: result.usage.totalTokens,
+            }
+          : undefined,
       }
     } catch (error) {
       console.error('Google API error:', error)
-      throw new Error(`Google API error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Google API error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -57,7 +67,7 @@ export class GoogleProvider implements AIProvider {
       const result = await generateText({
         model: google('gemini-1.5-flash'),
         messages: [{ role: 'user', content: 'Hi' }],
-        maxTokens: 5
+        maxTokens: 5,
       })
       return !!result.text
     } catch (error) {
