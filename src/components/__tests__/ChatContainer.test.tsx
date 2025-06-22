@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import ChatContainer from '../ChatContainer'
 import type { Message } from '../../types/chat'
+
+// Mock the Settings component to avoid useApiKeys side effects
+vi.mock('../Settings', () => ({
+  default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+    isOpen ? <div data-testid="settings-mock">Settings Mock</div> : null
+  )
+}))
 
 describe('ChatContainer', () => {
   const mockOnSendMessage = vi.fn()
@@ -20,23 +27,27 @@ describe('ChatContainer', () => {
 
   it('renders correctly with required props', () => {
     const messages: Message[] = []
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+        />
+      )
+    })
 
     expect(screen.getByText('Start a conversation...')).toBeInTheDocument()
   })
 
   it('displays empty state when no messages', () => {
-    render(
-      <ChatContainer
-        messages={[]}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={[]}
+          onSendMessage={mockOnSendMessage}
+        />
+      )
+    })
 
     expect(screen.getByText('Start a conversation...')).toBeInTheDocument()
   })
@@ -52,60 +63,72 @@ describe('ChatContainer', () => {
       })
     ]
 
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+        />
+      )
+    })
 
     expect(screen.getByText('First message')).toBeInTheDocument()
     expect(screen.getByText('Assistant response')).toBeInTheDocument()
   })
 
   it('applies custom className when provided', () => {
-    const { container } = render(
-      <ChatContainer
-        messages={[]}
-        onSendMessage={mockOnSendMessage}
-        className="custom-class"
-      />
-    )
+    let container: HTMLElement
+    act(() => {
+      const result = render(
+        <ChatContainer
+          messages={[]}
+          onSendMessage={mockOnSendMessage}
+          className="custom-class"
+        />
+      )
+      container = result.container
+    })
 
-    expect(container.firstChild).toHaveClass('custom-class')
+    expect(container!.firstChild).toHaveClass('custom-class')
   })
 
   it('shows loading state in message input', () => {
-    render(
-      <ChatContainer
-        messages={[]}
-        onSendMessage={mockOnSendMessage}
-        isLoading={true}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={[]}
+          onSendMessage={mockOnSendMessage}
+          isLoading={true}
+        />
+      )
+    })
 
     expect(screen.getByPlaceholderText('Generating response...')).toBeInTheDocument()
   })
 
   it('shows normal placeholder when not loading', () => {
-    render(
-      <ChatContainer
-        messages={[]}
-        onSendMessage={mockOnSendMessage}
-        isLoading={false}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={[]}
+          onSendMessage={mockOnSendMessage}
+          isLoading={false}
+        />
+      )
+    })
 
     expect(screen.getByPlaceholderText('Start typing to see possibilities...')).toBeInTheDocument()
   })
 
   it('passes onSendMessage to MessageInput', () => {
-    render(
-      <ChatContainer
-        messages={[]}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={[]}
+          onSendMessage={mockOnSendMessage}
+        />
+      )
+    })
 
     const messageInput = screen.getByRole('textbox')
     expect(messageInput).toBeInTheDocument()
@@ -117,37 +140,47 @@ describe('ChatContainer', () => {
       createMockMessage({ id: 'msg-2', content: 'Message 2' })
     ]
 
-    const { container } = render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
+    let container: HTMLElement
+    act(() => {
+      const result = render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+        />
+      )
+      container = result.container
+    })
 
-    const messageElements = container.querySelectorAll('[data-testid]')
+    const messageElements = container!.querySelectorAll('[data-testid]')
     expect(messageElements.length).toBeGreaterThanOrEqual(0)
   })
 
   it('handles empty messages array gracefully', () => {
     expect(() => {
-      render(
+      act(() => {
+        render(
+          <ChatContainer
+            messages={[]}
+            onSendMessage={mockOnSendMessage}
+          />
+        )
+      })
+    }).not.toThrow()
+  })
+
+  it('renders with proper structure and CSS classes', () => {
+    let container: HTMLElement
+    act(() => {
+      const result = render(
         <ChatContainer
           messages={[]}
           onSendMessage={mockOnSendMessage}
         />
       )
-    }).not.toThrow()
-  })
+      container = result.container
+    })
 
-  it('renders with proper structure and CSS classes', () => {
-    const { container } = render(
-      <ChatContainer
-        messages={[]}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
-
-    const mainContainer = container.firstChild as HTMLElement
+    const mainContainer = container!.firstChild as HTMLElement
     expect(mainContainer).toHaveClass('flex', 'flex-col', 'h-full', 'bg-[#0a0a0a]')
   })
 })

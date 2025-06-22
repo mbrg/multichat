@@ -57,7 +57,7 @@ describe('AIService Error Handling User Flows', () => {
   })
 
   describe('API Key Validation User Flows', () => {
-    it('should validate OpenAI API key when user enters it', async () => {
+    it('confirms API key works before users start chatting', async () => {
       mockGenerateText.mockResolvedValueOnce({
         text: 'Test response',
         finishReason: 'stop'
@@ -74,7 +74,7 @@ describe('AIService Error Handling User Flows', () => {
       )
     })
 
-    it('should reject invalid OpenAI API key for user feedback', async () => {
+    it('prevents users from using invalid credentials', async () => {
       mockGenerateText.mockRejectedValueOnce(new Error('Invalid API key'))
 
       const isValid = await aiService.validateApiKey('openai', 'invalid-key')
@@ -82,7 +82,7 @@ describe('AIService Error Handling User Flows', () => {
       expect(isValid).toBe(false)
     })
 
-    it('should validate Anthropic API key when user configures it', async () => {
+    it('verifies Anthropic credentials to ensure service availability', async () => {
       mockGenerateText.mockResolvedValueOnce({
         text: 'Claude response',
         finishReason: 'stop'
@@ -93,7 +93,7 @@ describe('AIService Error Handling User Flows', () => {
       expect(isValid).toBe(true)
     })
 
-    it('should validate Google API key when user sets it up', async () => {
+    it('tests Google API access when user configures Gemini', async () => {
       mockGenerateText.mockResolvedValueOnce({
         text: 'Gemini response',
         finishReason: 'stop'
@@ -104,7 +104,7 @@ describe('AIService Error Handling User Flows', () => {
       expect(isValid).toBe(true)
     })
 
-    it('should handle network errors during API key validation gracefully', async () => {
+    it('provides helpful guidance when network connection fails', async () => {
       mockGenerateText.mockRejectedValueOnce(new Error('Network timeout'))
 
       const isValid = await aiService.validateApiKey('openai', 'test-key')
@@ -112,7 +112,7 @@ describe('AIService Error Handling User Flows', () => {
       expect(isValid).toBe(false)
     })
 
-    it('should reject unknown provider names for user safety', async () => {
+    it('protects users from configuring unsupported AI services', async () => {
       await expect(aiService.validateApiKey('unknown-provider', 'test-key')).rejects.toThrow(
         'Provider not found: unknown-provider'
       )

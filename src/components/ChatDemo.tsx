@@ -109,7 +109,7 @@ const ChatDemo: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center p-3 bg-[#1a1a1a] border-b border-[#2a2a2a] min-h-[56px]">
         <div className="text-lg font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
-          Chat with Possibilities
+          Infinite Chat
         </div>
       </div>
       

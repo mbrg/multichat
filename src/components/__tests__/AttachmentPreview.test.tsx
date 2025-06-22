@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import AttachmentPreview from '../AttachmentPreview'
 import type { Attachment } from '../../types/chat'
 
-describe('AttachmentPreview', () => {
+describe('AttachmentPreview - User File Management', () => {
   const createMockAttachment = (overrides: Partial<Attachment> = {}): Attachment => ({
     id: 'att-1',
     name: 'test-file.jpg',
@@ -13,7 +13,7 @@ describe('AttachmentPreview', () => {
     ...overrides
   })
 
-  it('renders image attachment with preview', () => {
+  it('shows image preview when user attaches an image file', () => {
     const attachment = createMockAttachment({
       type: 'image/jpeg',
       preview: 'data:image/jpeg;base64,preview'
@@ -26,7 +26,7 @@ describe('AttachmentPreview', () => {
     expect(image).toHaveAttribute('src', 'data:image/jpeg;base64,preview')
   })
 
-  it('renders non-image attachment with file info', () => {
+  it('displays file details when user attaches non-image documents', () => {
     const attachment = createMockAttachment({
       name: 'document.pdf',
       type: 'application/pdf',
@@ -40,7 +40,7 @@ describe('AttachmentPreview', () => {
     expect(screen.getByText('📄')).toBeInTheDocument() // Document icon
   })
 
-  it('displays correct file size formatting', () => {
+  it('shows human-readable file sizes to help users understand storage impact', () => {
     const testCases = [
       { size: 500, expected: '500 B' },
       { size: 1536, expected: '1.5 KB' },
@@ -62,7 +62,7 @@ describe('AttachmentPreview', () => {
     })
   })
 
-  it('displays correct icons for different file types', () => {
+  it('helps users identify file types at a glance', () => {
     const fileTypes = [
       { type: 'image/jpeg', icon: '🖼️' },
       { type: 'audio/mp3', icon: '🎵' },
@@ -85,7 +85,7 @@ describe('AttachmentPreview', () => {
     })
   })
 
-  it('calls onRemove when remove button is clicked for image', () => {
+  it('allows users to remove unwanted image attachments', () => {
     const onRemove = vi.fn()
     const attachment = createMockAttachment({
       type: 'image/jpeg',
@@ -100,7 +100,7 @@ describe('AttachmentPreview', () => {
     expect(onRemove).toHaveBeenCalledWith('att-1')
   })
 
-  it('calls onRemove when remove button is clicked for non-image', () => {
+  it('allows users to remove unwanted document attachments', () => {
     const onRemove = vi.fn()
     const attachment = createMockAttachment({
       type: 'application/pdf'
@@ -114,7 +114,7 @@ describe('AttachmentPreview', () => {
     expect(onRemove).toHaveBeenCalledWith('att-1')
   })
 
-  it('does not show remove button when onRemove is not provided', () => {
+  it('hides removal option when attachments cannot be modified', () => {
     const attachment = createMockAttachment({
       type: 'image/jpeg',
       preview: 'data:image/jpeg;base64,preview'
@@ -125,7 +125,7 @@ describe('AttachmentPreview', () => {
     expect(screen.queryByLabelText('Remove attachment')).not.toBeInTheDocument()
   })
 
-  it('applies custom className', () => {
+  it('supports custom styling for different contexts', () => {
     const attachment = createMockAttachment()
 
     const { container } = render(
@@ -135,7 +135,7 @@ describe('AttachmentPreview', () => {
     expect(container.firstChild).toHaveClass('custom-class')
   })
 
-  it('handles image without preview gracefully', () => {
+  it('falls back to file info when image preview is unavailable', () => {
     const attachment = createMockAttachment({
       type: 'image/jpeg',
       preview: undefined
@@ -149,7 +149,7 @@ describe('AttachmentPreview', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
-  it('truncates long file names in non-image view', () => {
+  it('keeps long filenames readable by truncating display', () => {
     const attachment = createMockAttachment({
       name: 'very-long-file-name-that-should-be-truncated.pdf',
       type: 'application/pdf'
@@ -162,7 +162,7 @@ describe('AttachmentPreview', () => {
     expect(nameElement).toHaveTextContent('very-long-file-name-that-should-be-truncated.pdf')
   })
 
-  it('shows hover effect for remove button on images', () => {
+  it('reveals remove option when user hovers over image', () => {
     const onRemove = vi.fn()
     const attachment = createMockAttachment({
       type: 'image/jpeg',
@@ -175,7 +175,7 @@ describe('AttachmentPreview', () => {
     expect(removeButton).toBeInTheDocument()
   })
 
-  it('handles audio file type correctly', () => {
+  it('recognizes and displays audio files appropriately', () => {
     const attachment = createMockAttachment({
       name: 'audio.mp3',
       type: 'audio/mp3',
@@ -189,7 +189,7 @@ describe('AttachmentPreview', () => {
     expect(screen.getByText('🎵')).toBeInTheDocument()
   })
 
-  it('handles document file types correctly', () => {
+  it('categorizes various document formats for users', () => {
     const documentTypes = [
       { type: 'application/pdf', expectedIcon: '📄' },
       { type: 'text/plain', expectedIcon: '📄' },
@@ -210,7 +210,7 @@ describe('AttachmentPreview', () => {
     })
   })
 
-  it('handles empty or missing file name', () => {
+  it('gracefully handles files with missing names', () => {
     const attachment = createMockAttachment({
       name: '',
       type: 'text/plain'

@@ -1,8 +1,15 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { vi } from 'vitest'
 import ChatContainer from '../ChatContainer'
 import type { Message } from '../../types/chat'
+
+// Mock the Settings component to avoid useApiKeys side effects
+vi.mock('../Settings', () => ({
+  default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+    isOpen ? <div data-testid="settings-mock">Settings Mock</div> : null
+  )
+}))
 
 describe('ChatContainer - Possibilities', () => {
   const mockOnSendMessage = vi.fn()
@@ -47,13 +54,15 @@ describe('ChatContainer - Possibilities', () => {
     
     const messages = [userMessage, assistantMessage]
     
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-        onSelectPossibility={mockOnSelectPossibility}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+          onSelectPossibility={mockOnSelectPossibility}
+        />
+      )
+    })
     
     expect(screen.getByText('Hi there!')).toBeInTheDocument()
     expect(screen.getByText('Hello!')).toBeInTheDocument()
@@ -79,15 +88,19 @@ describe('ChatContainer - Possibilities', () => {
     
     const messages = [userMessage, assistantMessage]
     
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-        onSelectPossibility={mockOnSelectPossibility}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+          onSelectPossibility={mockOnSelectPossibility}
+        />
+      )
+    })
     
-    fireEvent.click(screen.getByText('The answer is 4'))
+    act(() => {
+      fireEvent.click(screen.getByText('The answer is 4'))
+    })
     
     expect(mockOnSelectPossibility).toHaveBeenCalledWith(userMessage, selectedPossibility)
   })
@@ -123,15 +136,19 @@ describe('ChatContainer - Possibilities', () => {
     
     const messages = [userMessage1, assistantMessage1, userMessage2, assistantMessage2]
     
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-        onSelectPossibility={mockOnSelectPossibility}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+          onSelectPossibility={mockOnSelectPossibility}
+        />
+      )
+    })
     
-    fireEvent.click(screen.getByText('Second response option A'))
+    act(() => {
+      fireEvent.click(screen.getByText('Second response option A'))
+    })
     
     expect(mockOnSelectPossibility).toHaveBeenCalledWith(userMessage2, selectedPossibility)
   })
@@ -149,15 +166,19 @@ describe('ChatContainer - Possibilities', () => {
     
     const messages = [assistantMessage] // No user message before assistant
     
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-        onSelectPossibility={mockOnSelectPossibility}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+          onSelectPossibility={mockOnSelectPossibility}
+        />
+      )
+    })
     
-    fireEvent.click(screen.getByText('Orphaned response'))
+    act(() => {
+      fireEvent.click(screen.getByText('Orphaned response'))
+    })
     
     // Should not call onSelectPossibility when no user message is found
     expect(mockOnSelectPossibility).not.toHaveBeenCalled()
@@ -181,18 +202,24 @@ describe('ChatContainer - Possibilities', () => {
     
     const messages = [userMessage, assistantMessage]
     
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+        />
+      )
+    })
     
     // Should render without errors
     expect(screen.getByText('Hi there!')).toBeInTheDocument()
     
     // Should not throw when clicked without callback
-    expect(() => fireEvent.click(screen.getByText('Hi there!'))).not.toThrow()
+    expect(() => {
+      act(() => {
+        fireEvent.click(screen.getByText('Hi there!'))
+      })
+    }).not.toThrow()
   })
 
   it('handles complex conversation with multiple possibilities', () => {
@@ -221,23 +248,29 @@ describe('ChatContainer - Possibilities', () => {
       }
     ]
     
-    render(
-      <ChatContainer
-        messages={messages}
-        onSendMessage={mockOnSendMessage}
-        onSelectPossibility={mockOnSelectPossibility}
-      />
-    )
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+          onSelectPossibility={mockOnSelectPossibility}
+        />
+      )
+    })
     
     // Click on first set of possibilities
-    fireEvent.click(screen.getByText('AI is revolutionary'))
+    act(() => {
+      fireEvent.click(screen.getByText('AI is revolutionary'))
+    })
     expect(mockOnSelectPossibility).toHaveBeenCalledWith(
       messages[0], // First user message
       messages[1].possibilities![0] // First possibility
     )
     
     // Click on second set of possibilities
-    fireEvent.click(screen.getByText('ML uses algorithms to learn'))
+    act(() => {
+      fireEvent.click(screen.getByText('ML uses algorithms to learn'))
+    })
     expect(mockOnSelectPossibility).toHaveBeenCalledWith(
       messages[2], // Second user message
       messages[3].possibilities![0] // Third possibility
