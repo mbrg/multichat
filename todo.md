@@ -1,0 +1,3 @@
+- replace local storage for apikey in providers with actual secret storage
+- really calculate propabilities from logits dont have mocks
+- check for mocks that claude likes across repo
