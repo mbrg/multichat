@@ -55,40 +55,60 @@ Set up the base project structure for a React TypeScript application optimized f
 
 ---
 
-### Issue #2: Implement Secure API Key Storage System
-**Priority**: P0  
-**Estimated**: 4 hours  
-**Assignee**: Security-focused Engineer
+Below is a drop-in replacement for the current **Issue #2** section, preserving the same markdown structure and headings while reflecting the streamlined, pass-phrase-free design we discussed.
+
+---
+
+### Issue #2: Implement Secure API-Key Storage via Origin-Bound CryptoKey
+
+**Priority**: P0
+**Estimated**: 4 hours
+**Assignee**: Security-focused Engineer&#x20;
 
 **Description**:
-Implement a secure client-side storage system for API keys using Web Crypto API.
+Implement a lightweight, browser-native system that encrypts API keys with an **origin-bound `CryptoKey`** persisted in IndexedDB—no user pass-phrase, no extra UI friction.
 
 **Tasks**:
-- [ ] Create encryption utility using Web Crypto API
-- [ ] Implement key derivation from user passphrase
-- [ ] Create secure storage service with methods:
-  - `encryptAndStore(key: string, value: string, passphrase: string)`
-  - `decryptAndRetrieve(key: string, passphrase: string)`
-  - `clearAll()`
-- [ ] Add session management for passphrase
-- [ ] Implement auto-lock after inactivity
-- [ ] Create tests for encryption/decryption
+
+* [ ] Generate and persist a non-extractable 256-bit AES-GCM `CryptoKey` in IndexedDB on first run.
+* [ ] Build `SecureStorage` utility with methods:
+
+  * `encryptAndStore(key: string, value: string)`
+  * `decryptAndRetrieve(key: string)`
+  * `clearAll()`
+* [ ] Hold the `CryptoKey` in memory after retrieval and **purge it after 15 min of inactivity** or on tab close.
+* [ ] Enforce a strict **Content-Security-Policy** (no inline scripts) and enable `trustedTypes` to mitigate XSS.
+* [ ] Write unit tests covering encryption, decryption, idle auto-lock, and CSP enforcement.&#x20;
 
 **Code Structure**:
+
 ```typescript
 // src/utils/crypto.ts
 export class SecureStorage {
-  private static async deriveKey(passphrase: string): Promise<CryptoKey>
-  public static async encrypt(data: string, passphrase: string): Promise<string>
-  public static async decrypt(encryptedData: string, passphrase: string): Promise<string>
+  // Persisted CryptoKey promise; resolves once per session
+  private static keyPromise: Promise<CryptoKey>;
+
+  // Idle timer handle for auto-lock
+  private static idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private static async getKey(): Promise<CryptoKey> { /* … */ }
+
+  public static async encrypt(data: string): Promise<string> { /* … */ }
+
+  public static async decrypt(ciphertext: string): Promise<string> { /* … */ }
+
+  public static clearAll(): void { /* purge IndexedDB & memory */ }
 }
 ```
 
 **Acceptance Criteria**:
-- API keys are never stored in plain text
-- Keys are encrypted using AES-GCM
-- Passphrase is required to access keys
-- Auto-lock after 15 minutes of inactivity
+
+* API keys are **never** stored in plain text.
+* Keys are encrypted/decrypted with AES-GCM using the origin-bound `CryptoKey`.
+* No pass-phrase is ever requested from the user.
+* In-memory key is flushed after 15 minutes of inactivity.
+* Strict CSP and `trustedTypes` are active site-wide.
+* All unit tests pass.
 
 ---
 
