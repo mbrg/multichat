@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { ChatContainerProps } from '../types/chat'
 import Message from './Message'
 import MessageInput from './MessageInput'
+import Settings from './Settings'
 
 const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
@@ -11,6 +12,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   className = ''
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -30,6 +32,19 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 bg-[#1a1a1a] border-b border-[#2a2a2a] min-h-[56px]">
+        <div className="text-lg font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+          Infinite Chat
+        </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="border border-[#3a3a3a] text-[#888] hover:text-[#e0e0e0] hover:border-[#667eea] px-3 py-2 rounded-md text-sm transition-colors whitespace-nowrap"
+        >
+          ⚙️ API Keys
+        </button>
+      </div>
+
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 flex flex-col gap-4 -webkit-overflow-scrolling-touch">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-[#888]">
@@ -58,6 +73,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           />
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <Settings 
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   )
 }
