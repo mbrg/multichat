@@ -11,11 +11,35 @@ const testKey = 'openai-api-key';
 const mockCryptoKey = { type: 'secret', algorithm: { name: 'AES-GCM' } } as CryptoKey;
 
 describe('SecureStorage', () => {
-  let mockDB: any;
-  let mockTransaction: any;
-  let mockStore: any;
-  let mockCrypto: any;
-  let mockIndexedDB: any;
+  interface MockStore {
+    put: ReturnType<typeof vi.fn>;
+    get: ReturnType<typeof vi.fn>;
+  }
+  
+  interface MockTransaction {
+    objectStore: ReturnType<typeof vi.fn>;
+  }
+  
+  interface MockDB extends IDBDatabase {
+    transaction: ReturnType<typeof vi.fn>;
+    objectStoreNames: { contains: ReturnType<typeof vi.fn> };
+    createObjectStore: ReturnType<typeof vi.fn>;
+  }
+  
+  interface MockCrypto extends Crypto {
+    subtle: {
+      generateKey: ReturnType<typeof vi.fn>;
+      encrypt: ReturnType<typeof vi.fn>;
+      decrypt: ReturnType<typeof vi.fn>;
+    };
+    getRandomValues: ReturnType<typeof vi.fn>;
+  }
+  
+  let mockDB: MockDB;
+  let mockTransaction: MockTransaction;
+  let mockStore: MockStore;
+  let mockCrypto: MockCrypto;
+  let mockIndexedDB: { open: ReturnType<typeof vi.fn>; deleteDatabase: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     // Reset any existing state
@@ -53,8 +77,8 @@ describe('SecureStorage', () => {
     };
 
     // Setup global mocks
-    global.indexedDB = mockIndexedDB;
-    global.crypto = mockCrypto;
+    globalThis.indexedDB = mockIndexedDB as unknown as IDBFactory;
+    globalThis.crypto = mockCrypto as unknown as Crypto;
 
     // Setup localStorage mock
     const localStorageMock = {
@@ -63,7 +87,7 @@ describe('SecureStorage', () => {
       removeItem: vi.fn(),
       clear: vi.fn(),
     };
-    global.localStorage = localStorageMock as any;
+    globalThis.localStorage = localStorageMock as unknown as Storage;
 
     // Setup default mock implementations
     mockIndexedDB.open.mockImplementation(() => {
@@ -187,7 +211,7 @@ describe('SecureStorage', () => {
     it('should decrypt and retrieve data', async () => {
       // Setup localStorage to return mock encrypted data
       const mockEncryptedData = btoa('mock-encrypted-data');
-      (localStorage.getItem as any).mockReturnValue(mockEncryptedData);
+      (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(mockEncryptedData);
 
       const result = await SecureStorage.decryptAndRetrieve(testKey);
 
@@ -197,7 +221,7 @@ describe('SecureStorage', () => {
     });
 
     it('should return null for non-existent keys', async () => {
-      (localStorage.getItem as any).mockReturnValue(null);
+      (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
       const result = await SecureStorage.decryptAndRetrieve('non-existent-key');
 
@@ -205,7 +229,7 @@ describe('SecureStorage', () => {
     });
 
     it('should handle decryption errors gracefully', async () => {
-      (localStorage.getItem as any).mockReturnValue('invalid-encrypted-data');
+      (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('invalid-encrypted-data');
       mockCrypto.subtle.decrypt.mockRejectedValueOnce(new Error('Decryption failed'));
 
       const result = await SecureStorage.decryptAndRetrieve(testKey);

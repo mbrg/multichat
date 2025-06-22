@@ -122,7 +122,30 @@ export class AIService {
       throw new Error(`Provider not found: ${providerName}`)
     }
 
-    return provider.validateApiKey(apiKey)
+    // Store the API key temporarily for validation
+    const storageKey = `${providerName}-api-key`
+    const originalKey = localStorage.getItem(storageKey)
+    localStorage.setItem(storageKey, apiKey)
+    
+    try {
+      const isValid = await provider.validateApiKey()
+      if (!isValid && originalKey) {
+        // Restore original key if validation failed
+        localStorage.setItem(storageKey, originalKey)
+      } else if (!isValid) {
+        // Remove invalid key
+        localStorage.removeItem(storageKey)
+      }
+      return isValid
+    } catch (error) {
+      // Restore original key on error
+      if (originalKey) {
+        localStorage.setItem(storageKey, originalKey)
+      } else {
+        localStorage.removeItem(storageKey)
+      }
+      throw error
+    }
   }
 
   cancelPendingRequests(): void {

@@ -6,7 +6,7 @@ import type { Message } from '../../types/chat'
 
 // Mock the Settings component to avoid useApiKeys side effects
 vi.mock('../Settings', () => ({
-  default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+  default: ({ isOpen }: { isOpen: boolean }) => (
     isOpen ? <div data-testid="settings-mock">Settings Mock</div> : null
   )
 }))

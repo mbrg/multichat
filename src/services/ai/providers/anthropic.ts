@@ -52,7 +52,7 @@ export class AnthropicProvider implements AIProvider {
     }
   }
 
-  async validateApiKey(_apiKey: string): Promise<boolean> {
+  async validateApiKey(): Promise<boolean> {
     try {
       const result = await generateText({
         model: anthropic('claude-3-5-haiku-20241022'),

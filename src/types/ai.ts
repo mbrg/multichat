@@ -71,7 +71,7 @@ export interface AIProvider {
     model: ModelInfo,
     options: GenerationOptions
   ): Promise<ResponseWithLogprobs>
-  validateApiKey(apiKey: string): Promise<boolean>
+  validateApiKey(): Promise<boolean>
 }
 
 export interface ModelConfig {

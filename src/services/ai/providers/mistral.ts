@@ -54,7 +54,7 @@ export class MistralProvider implements AIProvider {
     }
   }
 
-  async validateApiKey(_apiKey: string): Promise<boolean> {
+  async validateApiKey(): Promise<boolean> {
     try {
       const result = await generateText({
         model: mistral('mistral-small-latest'),
@@ -74,7 +74,7 @@ export class MistralProvider implements AIProvider {
     return apiKey
   }
 
-  private extractLogprobs(_result: unknown): number[] | undefined {
+  private extractLogprobs(): number[] | undefined {
     // Simplified for now - Mistral logprobs extraction not implemented
     return undefined
   }

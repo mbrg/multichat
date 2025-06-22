@@ -16,7 +16,6 @@ interface Provider {
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const {
-    apiKeys,
     enabledProviders,
     isLoading,
     saveApiKey,
@@ -81,7 +80,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
 
   const handleApiKeyChange = async (providerId: string, value: string) => {
     try {
-      await saveApiKey(providerId as keyof typeof apiKeys, value)
+      await saveApiKey(providerId as keyof typeof enabledProviders, value)
     } catch (error) {
       console.error('Error saving API key:', error)
     }
@@ -158,7 +157,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 <input
                   type="password"
                   placeholder={provider.placeholder}
-                  value={getApiKey(provider.id as keyof typeof apiKeys) || ''}
+                  value={getApiKey(provider.id as keyof typeof enabledProviders) || ''}
                   onChange={(e) => handleApiKeyChange(provider.id, e.target.value)}
                   className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-md px-3 py-2 text-[#e0e0e0] text-sm font-mono focus:outline-none focus:border-[#667eea] transition-colors"
                 />

@@ -9,7 +9,16 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
 
 // Mock Web Crypto API with actual data storage
 const encryptedDataStore = new Map<string, string>();
-const keyStore = new Map<string, any>();
+interface MockCryptoKey {
+  id: string;
+  generation: number;
+  type: string;
+  algorithm: { name: string; length: number };
+  extractable: boolean;
+  usages: string[];
+}
+
+const keyStore = new Map<string, MockCryptoKey>();
 let keyGeneration = 0;
 
 const mockCrypto = {
@@ -29,7 +38,7 @@ const mockCrypto = {
       keyStore.set(keyId, key);
       return key;
     }),
-    encrypt: vi.fn().mockImplementation(async (algorithm: any, key: any, data: ArrayBuffer) => {
+    encrypt: vi.fn().mockImplementation(async (algorithm: AlgorithmIdentifier & { iv?: ArrayBufferLike }, key: MockCryptoKey, data: ArrayBuffer) => {
       const plaintext = new TextDecoder().decode(data);
       // Use btoa with URL-safe encoding for unicode support
       const encrypted = btoa(unescape(encodeURIComponent(plaintext + ':encrypted')));
@@ -40,7 +49,7 @@ const mockCrypto = {
       encryptedDataStore.set(storageKey, plaintext);
       return new TextEncoder().encode(encrypted);
     }),
-    decrypt: vi.fn().mockImplementation(async (algorithm: any, key: any, data: ArrayBuffer) => {
+    decrypt: vi.fn().mockImplementation(async (algorithm: AlgorithmIdentifier & { iv?: ArrayBufferLike }, key: MockCryptoKey, data: ArrayBuffer) => {
       const encrypted = new TextDecoder().decode(data);
       const iv = algorithm.iv ? Array.from(new Uint8Array(algorithm.iv)).join(',') : 'default-iv';
       const keyId = key.id || 'default-key';
@@ -60,7 +69,7 @@ const mockCrypto = {
           if (decoded.endsWith(':encrypted')) {
             return new TextEncoder().encode(decoded.replace(':encrypted', ''));
           }
-        } catch (e) {
+        } catch {
           // Ignore
         }
       }
@@ -68,7 +77,7 @@ const mockCrypto = {
       throw new Error('Decryption failed');
     }),
     exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
-    importKey: vi.fn().mockImplementation(async (format: any, keyData: any) => {
+    importKey: vi.fn().mockImplementation(async (_format: string, keyData: ArrayBuffer) => {
       const keyId = new TextDecoder().decode(keyData);
       // Check if this key already exists
       if (keyStore.has(keyId)) {
@@ -99,11 +108,11 @@ const mockCrypto = {
 // Mock IndexedDB for tests
 const createMockRequest = (shouldSucceed = true) => {
   const request = {
-    onerror: null as any,
-    onsuccess: null as any,
-    onupgradeneeded: null as any,
-    result: null as any,
-    error: null as any,
+    onerror: null as ((event: Event) => void) | null,
+    onsuccess: null as ((event: Event) => void) | null,
+    onupgradeneeded: null as ((event: IDBVersionChangeEvent) => void) | null,
+    result: null as IDBDatabase | null,
+    error: null as Error | null,
   };
   
   // Simulate database operation
@@ -118,9 +127,9 @@ const createMockRequest = (shouldSucceed = true) => {
           objectStore: vi.fn().mockReturnValue({
             get: vi.fn().mockImplementation((keyName: string) => {
               const getRequest = {
-                onsuccess: null as any,
-                onerror: null as any,
-                result: undefined,
+                onsuccess: null as ((event: Event) => void) | null,
+                onerror: null as ((event: Event) => void) | null,
+                result: undefined as ArrayBuffer | undefined,
               };
               queueMicrotask(() => {
                 // Simulate finding stored key data if it exists
@@ -137,8 +146,8 @@ const createMockRequest = (shouldSucceed = true) => {
             }),
             put: vi.fn().mockImplementation(() => {
               const putRequest = {
-                onsuccess: null as any,
-                onerror: null as any,
+                onsuccess: null as ((event: Event) => void) | null,
+                onerror: null as ((event: Event) => void) | null,
               };
               queueMicrotask(() => {
                 if (putRequest.onsuccess) putRequest.onsuccess();
@@ -147,8 +156,8 @@ const createMockRequest = (shouldSucceed = true) => {
             }),
             delete: vi.fn().mockImplementation(() => {
               const deleteRequest = {
-                onsuccess: null as any,
-                onerror: null as any,
+                onsuccess: null as ((event: Event) => void) | null,
+                onerror: null as ((event: Event) => void) | null,
               };
               queueMicrotask(() => {
                 if (deleteRequest.onsuccess) deleteRequest.onsuccess();
@@ -157,8 +166,8 @@ const createMockRequest = (shouldSucceed = true) => {
             }),
             clear: vi.fn().mockImplementation(() => {
               const clearRequest = {
-                onsuccess: null as any,
-                onerror: null as any,
+                onsuccess: null as ((event: Event) => void) | null,
+                onerror: null as ((event: Event) => void) | null,
               };
               queueMicrotask(() => {
                 if (clearRequest.onsuccess) clearRequest.onsuccess();
@@ -174,7 +183,7 @@ const createMockRequest = (shouldSucceed = true) => {
       
       // Trigger onupgradeneeded if needed
       if (request.onupgradeneeded) {
-        request.onupgradeneeded({ target: request } as any);
+        request.onupgradeneeded({ target: request } as IDBVersionChangeEvent);
       }
       
       request.onsuccess();
@@ -199,14 +208,14 @@ const mockIndexedDB = {
 };
 
 // Mock crypto with defineProperty since it's read-only
-Object.defineProperty(global, 'crypto', {
+Object.defineProperty(globalThis, 'crypto', {
   value: mockCrypto,
   writable: true,
   configurable: true,
 });
 
-// @ts-ignore
-global.indexedDB = mockIndexedDB;
+// @ts-expect-error - Mocking indexedDB for tests
+globalThis.indexedDB = mockIndexedDB as unknown as IDBFactory;
 
 // Clear mocks between tests
 import { beforeEach } from 'vitest';

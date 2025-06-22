@@ -54,7 +54,7 @@ export class OpenAIProvider implements AIProvider {
     }
   }
 
-  async validateApiKey(_apiKey: string): Promise<boolean> {
+  async validateApiKey(): Promise<boolean> {
     try {
       const result = await generateText({
         model: openai('gpt-4o-mini'),

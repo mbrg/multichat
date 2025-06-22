@@ -52,7 +52,7 @@ export class GoogleProvider implements AIProvider {
     }
   }
 
-  async validateApiKey(_apiKey: string): Promise<boolean> {
+  async validateApiKey(): Promise<boolean> {
     try {
       const result = await generateText({
         model: google('gemini-1.5-flash'),

@@ -40,7 +40,7 @@ Object.defineProperty(window, 'localStorage', {
 
 describe('AIService User Flows', () => {
   let aiService: AIService
-  let mockGenerateText: any
+  let mockGenerateText: unknown
 
   beforeEach(async () => {
     vi.clearAllMocks()

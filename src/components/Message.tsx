@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import type { MessageProps } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
 import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
@@ -13,12 +13,6 @@ const Message: React.FC<MessageProps> = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   
-  const formatTime = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   // Simulate loading more possibilities
   const loadMorePossibilities = async () => {

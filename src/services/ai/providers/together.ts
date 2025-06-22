@@ -58,8 +58,13 @@ export class TogetherProvider implements AIProvider {
     }
   }
 
-  async validateApiKey(apiKey: string): Promise<boolean> {
+  async validateApiKey(): Promise<boolean> {
     try {
+      const apiKey = await this.getApiKey()
+      if (!apiKey) {
+        return false
+      }
+      
       const together = createOpenAI({
         apiKey,
         baseURL: 'https://api.together.xyz/v1'
