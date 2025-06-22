@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock DOM methods not available in JSDOM
+Object.defineProperty(Element.prototype, 'scrollIntoView', {
+  value: vi.fn(),
+  writable: true,
+});
+
 // Mock Web Crypto API with actual data storage
 const encryptedDataStore = new Map<string, string>();
 const keyStore = new Map<string, any>();
