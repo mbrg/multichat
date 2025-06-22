@@ -190,9 +190,9 @@ The test mocks are designed to simulate real crypto operations:
 - Type definitions in `src/types/chat.ts` with possibility support
 
 ### Test Coverage ✅
-- **Total Tests**: 124 passing (79 component tests + 45 security tests)
-- **Coverage Areas**: Component rendering, user interactions, file handling, security, accessibility, possibility selection
-- **Test Files**: 11 test files across components and utilities
+- **Total Tests**: 230 passing (AI service tests + component tests + security tests)
+- **Coverage Areas**: Component rendering, user interactions, file handling, security, accessibility, possibility selection, AI service integration
+- **Test Files**: 19 test files across components, utilities, and AI services
 
 ### Next Development Priorities 🔄
 Based on the project plan, the next issues to tackle are:
@@ -218,3 +218,92 @@ Based on the project plan, the next issues to tackle are:
    - Always create comprehensive tests for new components
    - Update the total test count after adding new tests
    - Document any new testing patterns or requirements
+
+## TypeScript Error Resolution Guidelines
+
+**CRITICAL**: When encountering TypeScript build errors, follow this systematic approach learned from fixing all build errors in December 2024:
+
+### Common TypeScript Issues and Solutions:
+
+1. **Unused React Imports**:
+   - **Issue**: `'React' is declared but its value is never read`
+   - **Solution**: Remove `import React from 'react'` from components and test files when using React 17+ JSX transform
+   - **Files to check**: All `.tsx` and test files
+
+2. **Mock Function Type Issues**:
+   - **Issue**: `'mockFunction' is of type 'unknown'`
+   - **Solution**: Properly type mock functions: `let mockFunction: ReturnType<typeof vi.fn>`
+   - **Cast when assigning**: `mockFunction = importedFunction as ReturnType<typeof vi.fn>`
+
+3. **Private Method Access**:
+   - **Issue**: `Property 'method' is private and only accessible within class`
+   - **Solution**: Create public wrapper methods instead of accessing private methods from outside the class
+   - **Pattern**: Add public methods like `resetTimer()` that internally call private methods
+
+4. **Mock Object Callback Types**:
+   - **Issue**: `This expression is not callable. Type 'never' has no call signatures`
+   - **Solution**: Properly type callback properties in mock objects:
+   ```typescript
+   const request = {
+     onsuccess: null as ((event: Event) => void) | null,
+     onerror: null as ((event: Event) => void) | null
+   }
+   ```
+
+5. **AI SDK Import Issues**:
+   - **Issue**: Module has no exported member or wrong export names
+   - **Solution**: Check actual exports and use correct import names
+   - **Example**: `createOpenAI` → `createOpenAICompatible`
+
+6. **Type Import Conflicts**:
+   - **Issue**: Type refers to a value but is being used as a type
+   - **Solution**: Use proper type imports with aliases:
+   ```typescript
+   import type { Message as MessageType } from '../types/chat'
+   ```
+
+7. **Vitest Global Types**:
+   - **Issue**: Cannot find name 'describe', 'it', 'expect'
+   - **Solution**: Add `"types": ["vitest/globals"]` to `tsconfig.app.json`
+
+8. **Type Casting for Complex Objects**:
+   - **Issue**: Type conversion may be a mistake
+   - **Solution**: Use `as unknown as TargetType` for complex mock objects
+   - **When**: Mock objects that don't fully implement interfaces
+
+### Error Resolution Workflow:
+
+1. **Run Build**: `npm run build` to identify all errors
+2. **Categorize Errors**: Group similar errors together
+3. **Fix Systematically**: Start with simple import/unused variable issues
+4. **Test Incrementally**: Run build after each batch of fixes
+5. **Verify Tests**: Run `npm test` to ensure fixes don't break functionality
+
+### Prevention Guidelines:
+
+1. **Always run** `npm run build` and `npm test` before committing changes
+2. **Use strict TypeScript settings** - maintain existing strict mode configuration
+3. **Type mock objects properly** from the start when writing tests
+4. **Import types explicitly** with `import type` when only using for typing
+5. **Keep vitest configuration** up to date with proper global types
+
+### Mock Type Patterns:
+
+For consistent mock typing across the codebase:
+
+```typescript
+// Vitest mock functions
+let mockFunction: ReturnType<typeof vi.fn>
+
+// IDB request mocks  
+const request = {
+  onsuccess: null as ((event: Event) => void) | null,
+  onerror: null as ((event: Event) => void) | null,
+  result: null as any
+}
+
+// Complex object mocks
+const mockObject = {
+  // ... properties
+} as unknown as ExpectedInterface
+```
