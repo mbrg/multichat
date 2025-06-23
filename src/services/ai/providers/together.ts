@@ -8,6 +8,7 @@ import type {
   ResponseWithLogprobs,
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
+import { SecureStorage } from '../../../utils/crypto'
 
 export class TogetherProvider implements AIProvider {
   name = 'Together AI'
@@ -95,9 +96,7 @@ export class TogetherProvider implements AIProvider {
   }
 
   private async getApiKey(): Promise<string | null> {
-    // This will be replaced with secure storage integration
-    const apiKey = localStorage.getItem('together-api-key')
-    return apiKey
+    return await SecureStorage.decryptAndRetrieve('together-api-key')
   }
 
   private estimateProbability(temperature: number): number {

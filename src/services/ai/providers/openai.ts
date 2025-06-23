@@ -8,6 +8,7 @@ import type {
   ResponseWithLogprobs,
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
+import { SecureStorage } from '../../../utils/crypto'
 
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI'
@@ -79,9 +80,7 @@ export class OpenAIProvider implements AIProvider {
   }
 
   private async getApiKey(): Promise<string | null> {
-    // This will be replaced with secure storage integration
-    const apiKey = localStorage.getItem('openai-api-key')
-    return apiKey
+    return await SecureStorage.decryptAndRetrieve('openai-api-key')
   }
 
   private estimateProbability(temperature: number): number {

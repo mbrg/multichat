@@ -8,6 +8,7 @@ import type {
   ResponseWithLogprobs,
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
+import { SecureStorage } from '../../../utils/crypto'
 
 export class MistralProvider implements AIProvider {
   name = 'Mistral'
@@ -79,9 +80,7 @@ export class MistralProvider implements AIProvider {
   }
 
   private async getApiKey(): Promise<string | null> {
-    // This will be replaced with secure storage integration
-    const apiKey = localStorage.getItem('mistral-api-key')
-    return apiKey
+    return await SecureStorage.decryptAndRetrieve('mistral-api-key')
   }
 
   private extractLogprobs(): number[] | undefined {

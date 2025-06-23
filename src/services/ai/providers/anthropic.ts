@@ -8,6 +8,7 @@ import type {
   ResponseWithLogprobs,
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
+import { SecureStorage } from '../../../utils/crypto'
 
 export class AnthropicProvider implements AIProvider {
   name = 'Anthropic'
@@ -77,9 +78,7 @@ export class AnthropicProvider implements AIProvider {
   }
 
   private async getApiKey(): Promise<string | null> {
-    // This will be replaced with secure storage integration
-    const apiKey = localStorage.getItem('anthropic-api-key')
-    return apiKey
+    return await SecureStorage.decryptAndRetrieve('anthropic-api-key')
   }
 
   private estimateProbability(temperature: number): number {
