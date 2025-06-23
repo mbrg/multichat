@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import Image from 'next/image'
 import type { MessageProps } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
 import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
@@ -48,9 +49,11 @@ const Message: React.FC<MessageProps> = ({
           {isUser ? (
             'U'
           ) : (
-            <img
+            <Image
               src={openaiLogo}
               alt="AI"
+              width={24}
+              height={24}
               className="w-full h-full object-contain"
             />
           )}

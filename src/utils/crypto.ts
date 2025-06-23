@@ -21,7 +21,7 @@ export class SecureStorage {
    */
   private static openDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-      if (!window.indexedDB) {
+      if (typeof window === 'undefined' || !window.indexedDB) {
         reject(new Error('IndexedDB not available'))
         return
       }
@@ -99,7 +99,7 @@ export class SecureStorage {
       let key: CryptoKey | null = null
 
       // Try to retrieve existing key (if IndexedDB is available)
-      if (window.indexedDB) {
+      if (typeof window !== 'undefined' && window.indexedDB) {
         key = await this.retrieveCryptoKey()
       }
 
@@ -107,7 +107,7 @@ export class SecureStorage {
       if (!key) {
         key = await this.generateKey()
         // Only store if IndexedDB is available
-        if (window.indexedDB) {
+        if (typeof window !== 'undefined' && window.indexedDB) {
           try {
             await this.storeCryptoKey(key)
           } catch (error) {
@@ -223,7 +223,16 @@ export class SecureStorage {
     value: string
   ): Promise<void> {
     const encrypted = await this.encrypt(value)
-    localStorage.setItem(key, encrypted)
+    const storage =
+      typeof window !== 'undefined'
+        ? localStorage
+        : {
+            setItem: () => {},
+            getItem: () => null,
+            removeItem: () => {},
+            clear: () => {},
+          }
+    storage.setItem(key, encrypted)
     this.resetIdleTimer()
   }
 
@@ -231,7 +240,16 @@ export class SecureStorage {
    * Retrieves and decrypts data from localStorage
    */
   public static async decryptAndRetrieve(key: string): Promise<string | null> {
-    const encrypted = localStorage.getItem(key)
+    const storage =
+      typeof window !== 'undefined'
+        ? localStorage
+        : {
+            setItem: () => {},
+            getItem: () => null,
+            removeItem: () => {},
+            clear: () => {},
+          }
+    const encrypted = storage.getItem(key)
     if (!encrypted) return null
 
     try {
@@ -240,7 +258,16 @@ export class SecureStorage {
       return decrypted
     } catch {
       // Remove corrupted data
-      localStorage.removeItem(key)
+      const storage =
+        typeof window !== 'undefined'
+          ? localStorage
+          : {
+              setItem: () => {},
+              getItem: () => null,
+              removeItem: () => {},
+              clear: () => {},
+            }
+      storage.removeItem(key)
       return null
     }
   }
@@ -249,7 +276,16 @@ export class SecureStorage {
    * Removes a specific encrypted key from storage
    */
   public static remove(key: string): void {
-    localStorage.removeItem(key)
+    const storage =
+      typeof window !== 'undefined'
+        ? localStorage
+        : {
+            setItem: () => {},
+            getItem: () => null,
+            removeItem: () => {},
+            clear: () => {},
+          }
+    storage.removeItem(key)
   }
 
   /**
@@ -257,10 +293,19 @@ export class SecureStorage {
    */
   public static clearAll(): void {
     // Clear localStorage
-    localStorage.clear()
+    const storage =
+      typeof window !== 'undefined'
+        ? localStorage
+        : {
+            setItem: () => {},
+            getItem: () => null,
+            removeItem: () => {},
+            clear: () => {},
+          }
+    storage.clear()
 
     // Clear IndexedDB
-    if (window.indexedDB) {
+    if (typeof window !== 'undefined' && window.indexedDB) {
       indexedDB.deleteDatabase(this.DB_NAME)
     }
 
@@ -295,17 +340,21 @@ export class SecureStorage {
 }
 
 // Auto-lock on page unload
-window.addEventListener('beforeunload', () => {
-  SecureStorage.lockNow()
-})
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    SecureStorage.lockNow()
+  })
+}
 
 // Reset idle timer on user activity
-;['mousedown', 'keydown', 'scroll', 'touchstart'].forEach((event) => {
-  document.addEventListener(
-    event,
-    () => {
-      SecureStorage.resetTimer()
-    },
-    { passive: true }
-  )
-})
+if (typeof window !== 'undefined') {
+  ;['mousedown', 'keydown', 'scroll', 'touchstart'].forEach((event) => {
+    document.addEventListener(
+      event,
+      () => {
+        SecureStorage.resetTimer()
+      },
+      { passive: true }
+    )
+  })
+}

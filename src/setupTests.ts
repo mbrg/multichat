@@ -164,7 +164,7 @@ const createMockRequest = (shouldSucceed = true) => {
                   // Return the most recent key
                   const latestKeyId = storedKeys[storedKeys.length - 1]
                   const keyData = new TextEncoder().encode(latestKeyId)
-                  getRequest.result = keyData
+                  getRequest.result = keyData.buffer as ArrayBuffer
                 }
                 if (getRequest.onsuccess) getRequest.onsuccess({} as Event)
               })

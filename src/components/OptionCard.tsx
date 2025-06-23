@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import type { ResponseOption } from '../types'
 import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
 
@@ -14,9 +15,11 @@ const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
 
   const getModelIcon = () => {
     return (
-      <img
+      <Image
         src={openaiLogo}
         alt="OpenAI"
+        width={16}
+        height={16}
         className="w-full h-full object-contain"
       />
     )

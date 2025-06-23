@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import type { AttachmentPreviewProps } from '../types/chat'
 
 const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
@@ -30,10 +31,13 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
     <div className={`relative group ${className}`}>
       {isImage && attachment.preview ? (
         <div className="relative">
-          <img
+          <Image
             src={attachment.preview}
             alt={attachment.name}
+            width={192}
+            height={192}
             className="rounded-lg max-h-48 object-cover"
+            unoptimized
           />
           {onRemove && (
             <button

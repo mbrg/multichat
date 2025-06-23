@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useApiKeys } from '../hooks/useApiKeys'
 
 interface SettingsProps {
@@ -158,9 +159,11 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
                       src={provider.icon}
                       alt={provider.name}
+                      width={16}
+                      height={16}
                       className="w-4 h-4 rounded flex-shrink-0"
                     />
                     <span className="text-sm text-[#aaa]">{provider.name}</span>
