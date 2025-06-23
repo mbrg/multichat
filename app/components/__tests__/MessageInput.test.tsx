@@ -1,7 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useSession } from 'next-auth/react'
 import MessageInput from '../MessageInput'
+
+// Mock next-auth to return authenticated session for these tests
+vi.mock('next-auth/react', async () => {
+  const actual = await vi.importActual('next-auth/react')
+  return {
+    ...actual,
+    useSession: vi.fn(() => ({
+      data: { user: { name: 'Test User', email: 'test@example.com' } },
+      status: 'authenticated',
+    })),
+  }
+})
 
 // Mock FileReader
 class MockFileReader {

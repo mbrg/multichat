@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import type { ChatContainerProps, Message as MessageType } from '../types/chat'
 import Message from './Message'
 import MessageInput from './MessageInput'
 import Settings from './Settings'
+import AuthPopup from './AuthPopup'
+import Menu from './Menu'
+import { useAuthPopup } from '../hooks/useAuthPopup'
 
 const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
@@ -13,6 +17,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const { isPopupOpen, closePopup } = useAuthPopup()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -39,12 +44,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         <div className="text-lg font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
           Infinite Chat
         </div>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="border border-[#3a3a3a] text-[#888] hover:text-[#e0e0e0] hover:border-[#667eea] px-3 py-2 rounded-md text-sm transition-colors whitespace-nowrap"
-        >
-          ⚙️ API Keys
-        </button>
+        <Menu onOpenSettings={() => setShowSettings(true)} />
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 flex flex-col gap-4 -webkit-overflow-scrolling-touch">
@@ -82,6 +82,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
       {/* Settings Modal */}
       <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      
+      {/* Auth Popup */}
+      <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>
   )
 }

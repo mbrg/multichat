@@ -3,6 +3,18 @@ import { render, screen, act } from '@testing-library/react'
 import ChatContainer from '../ChatContainer'
 import type { Message } from '../../types/chat'
 
+// Mock next-auth to return authenticated session for these tests
+vi.mock('next-auth/react', async () => {
+  const actual = await vi.importActual('next-auth/react')
+  return {
+    ...actual,
+    useSession: vi.fn(() => ({
+      data: { user: { name: 'Test User', email: 'test@example.com' } },
+      status: 'authenticated',
+    })),
+  }
+})
+
 // Mock the Settings component to avoid useApiKeys side effects
 vi.mock('../Settings', () => ({
   default: ({ isOpen }: { isOpen: boolean }) =>

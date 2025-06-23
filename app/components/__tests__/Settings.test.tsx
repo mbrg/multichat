@@ -2,6 +2,20 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Settings from '../Settings'
 
+// Mock next-auth to return authenticated session for these tests
+vi.mock('next-auth/react', async () => {
+  const actual = await vi.importActual('next-auth/react')
+  return {
+    ...actual,
+    useSession: vi.fn(() => ({
+      data: { user: { name: 'Test User', email: 'test@example.com' } },
+      status: 'authenticated',
+    })),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }
+})
+
 // Mock the useApiKeys hook
 const mockSaveApiKey = vi.fn()
 const mockToggleProvider = vi.fn()

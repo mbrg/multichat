@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useSession, signIn, signOut } from 'next-auth/react'
 import { useApiKeys } from '../hooks/useApiKeys'
+import AuthPopup from './AuthPopup'
+import { useAuthPopup } from '../hooks/useAuthPopup'
 import openaiLogo from '../assets/OpenAI-white-monoblossom.svg'
 import geminiLogo from '../assets/gemini.svg'
 import huggingfaceLogo from '../assets/huggingface.svg'
@@ -19,6 +22,8 @@ interface Provider {
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
+  const { data: session, status } = useSession()
+  const { isPopupOpen, checkAuthAndRun, closePopup } = useAuthPopup()
   const {
     enabledProviders,
     isLoading,
@@ -230,6 +235,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
         )}
       </div>
+      
+      <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>
   )
 }

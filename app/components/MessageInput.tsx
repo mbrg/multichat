@@ -1,6 +1,8 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react'
 import type { MessageInputProps, Attachment } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
+import AuthPopup from './AuthPopup'
+import { useAuthPopup } from '../hooks/useAuthPopup'
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
@@ -13,6 +15,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [isDragOver, setIsDragOver] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { isPopupOpen, checkAuthAndRun, closePopup } = useAuthPopup()
 
   const SUPPORTED_FILE_TYPES = useMemo(
     () => [
@@ -37,18 +40,20 @@ const MessageInput: React.FC<MessageInputProps> = ({
     (e: React.FormEvent) => {
       e.preventDefault()
       if (message.trim() || attachments.length > 0) {
-        onSendMessage(
-          message.trim(),
-          attachments.length > 0 ? attachments : undefined
-        )
-        setMessage('')
-        setAttachments([])
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto'
-        }
+        checkAuthAndRun(() => {
+          onSendMessage(
+            message.trim(),
+            attachments.length > 0 ? attachments : undefined
+          )
+          setMessage('')
+          setAttachments([])
+          if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto'
+          }
+        })
       }
     },
-    [message, attachments, onSendMessage]
+    [message, attachments, onSendMessage, checkAuthAndRun]
   )
 
   const handleKeyDown = useCallback(
@@ -266,6 +271,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
           </div>
         )}
       </form>
+      
+      <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>
   )
 }

@@ -1,6 +1,17 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Mock next-auth/react globally
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(() => ({
+    data: null,
+    status: 'unauthenticated',
+  })),
+  signIn: vi.fn(),
+  signOut: vi.fn(),
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
+
 // Mock DOM methods not available in JSDOM
 Object.defineProperty(Element.prototype, 'scrollIntoView', {
   value: vi.fn(),
