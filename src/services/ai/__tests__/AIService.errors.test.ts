@@ -21,6 +21,7 @@ vi.mock('@ai-sdk/mistral', () => ({
 
 vi.mock('@ai-sdk/openai-compatible', () => ({
   createOpenAI: vi.fn(() => ({})),
+  createOpenAICompatible: vi.fn(() => vi.fn(() => ({}))),
 }))
 
 vi.mock('ai', () => ({
@@ -41,9 +42,13 @@ Object.defineProperty(window, 'localStorage', {
 describe('AIService Error Handling User Flows', () => {
   let aiService: AIService
   let mockGenerateText: ReturnType<typeof vi.fn>
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(async () => {
     vi.clearAllMocks()
+
+    // Spy on console.error to capture and assert error logs
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     // Get the mocked generateText function
     const { generateText } = await import('ai')
@@ -53,6 +58,7 @@ describe('AIService Error Handling User Flows', () => {
   })
 
   afterEach(() => {
+    consoleErrorSpy.mockRestore()
     vi.restoreAllMocks()
   })
 
@@ -75,11 +81,17 @@ describe('AIService Error Handling User Flows', () => {
     })
 
     it('prevents users from using invalid credentials', async () => {
-      mockGenerateText.mockRejectedValueOnce(new Error('Invalid API key'))
+      const error = new Error('Invalid API key')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       const isValid = await aiService.validateApiKey('openai', 'invalid-key')
 
       expect(isValid).toBe(false)
+      // Assert that console.error was called with the expected error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API key validation failed:',
+        error
+      )
     })
 
     it('verifies Anthropic credentials to ensure service availability', async () => {
@@ -94,6 +106,8 @@ describe('AIService Error Handling User Flows', () => {
       )
 
       expect(isValid).toBe(true)
+      // Assert that console.error was NOT called for successful validation
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
     })
 
     it('tests Google API access when user configures Gemini', async () => {
@@ -108,20 +122,90 @@ describe('AIService Error Handling User Flows', () => {
       )
 
       expect(isValid).toBe(true)
+      // Assert that console.error was NOT called for successful validation
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
     })
 
     it('provides helpful guidance when network connection fails', async () => {
-      mockGenerateText.mockRejectedValueOnce(new Error('Network timeout'))
+      const error = new Error('Network timeout')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       const isValid = await aiService.validateApiKey('openai', 'test-key')
 
       expect(isValid).toBe(false)
+      // Assert that console.error was called with the network error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API key validation failed:',
+        error
+      )
     })
 
     it('protects users from configuring unsupported AI services', async () => {
       await expect(
         aiService.validateApiKey('unknown-provider', 'test-key')
       ).rejects.toThrow('Provider not found: unknown-provider')
+    })
+
+    it('logs console error when Anthropic validation fails', async () => {
+      const error = new Error('Invalid Anthropic API key')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      const isValid = await aiService.validateApiKey('anthropic', 'invalid-key')
+
+      expect(isValid).toBe(false)
+      // Assert that console.error was called with Anthropic-specific error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Anthropic API key validation failed:',
+        error
+      )
+    })
+
+    it('logs console error when Google validation fails', async () => {
+      const error = new Error('Invalid Google API key')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      const isValid = await aiService.validateApiKey('google', 'invalid-key')
+
+      expect(isValid).toBe(false)
+      // Assert that console.error was called with Google-specific error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Google API key validation failed:',
+        error
+      )
+    })
+
+    it('logs console error when Mistral validation fails', async () => {
+      const error = new Error('Invalid Mistral API key')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      const isValid = await aiService.validateApiKey('mistral', 'invalid-key')
+
+      expect(isValid).toBe(false)
+      // Assert that console.error was called with Mistral-specific error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Mistral API key validation failed:',
+        error
+      )
+    })
+
+    it('logs console error when Together validation fails', async () => {
+      const error = new Error('Invalid Together API key')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      // Ensure localStorage returns the test key
+      mockLocalStorage.getItem.mockImplementation((key) => {
+        if (key === 'together-api-key') return 'invalid-key'
+        return null
+      })
+
+      const isValid = await aiService.validateApiKey('together', 'invalid-key')
+
+      expect(isValid).toBe(false)
+      // Assert that console.error was called with Together-specific error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Together AI API key validation failed:',
+        error
+      )
     })
   })
 
@@ -144,29 +228,38 @@ describe('AIService Error Handling User Flows', () => {
     })
 
     it('should provide clear error when OpenAI rate limit is exceeded', async () => {
-      mockGenerateText.mockRejectedValueOnce(
-        new Error('Rate limit exceeded. Please try again later.')
-      )
+      const error = new Error('Rate limit exceeded. Please try again later.')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
         aiService.generateSingleResponse(testMessages, 'gpt-4')
       ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with the rate limit error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API error:',
+        error
+      )
     })
 
     it('should provide clear error when API quota is exhausted', async () => {
-      mockGenerateText.mockRejectedValueOnce(
-        new Error('Insufficient quota. Please check your billing.')
-      )
+      const error = new Error('Insufficient quota. Please check your billing.')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
         aiService.generateSingleResponse(testMessages, 'gpt-4')
       ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with the quota error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API error:',
+        error
+      )
     })
 
     it('should handle service outages gracefully for users', async () => {
-      mockGenerateText.mockRejectedValueOnce(
-        new Error('Service temporarily unavailable')
-      )
+      const error = new Error('Service temporarily unavailable')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
         aiService.generateSingleResponse(
@@ -174,34 +267,102 @@ describe('AIService Error Handling User Flows', () => {
           'claude-3-5-sonnet-20241022'
         )
       ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with the service outage error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Anthropic API error:',
+        error
+      )
     })
 
     it('should handle authentication errors clearly for users', async () => {
-      mockGenerateText.mockRejectedValueOnce(
-        new Error('Invalid authentication credentials')
-      )
+      const error = new Error('Invalid authentication credentials')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
         aiService.generateSingleResponse(testMessages, 'gpt-4')
       ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with the auth error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API error:',
+        error
+      )
     })
 
     it('should handle content policy violations appropriately', async () => {
-      mockGenerateText.mockRejectedValueOnce(
-        new Error('Content violates usage policies')
-      )
+      const error = new Error('Content violates usage policies')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
         aiService.generateSingleResponse(testMessages, 'gpt-4')
       ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with the policy violation error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API error:',
+        error
+      )
     })
 
     it('should handle timeout errors with user-friendly messages', async () => {
-      mockGenerateText.mockRejectedValueOnce(new Error('Request timeout'))
+      const error = new Error('Request timeout')
+      mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
         aiService.generateSingleResponse(testMessages, 'gpt-4')
       ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with the timeout error
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'OpenAI API error:',
+        error
+      )
+    })
+
+    it('should log Google API errors with proper provider prefix', async () => {
+      const error = new Error('Google API rate limit exceeded')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      await expect(
+        aiService.generateSingleResponse(testMessages, 'gemini-2.0-flash-exp')
+      ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with Google-specific error prefix
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Google API error:',
+        error
+      )
+    })
+
+    it('should log Mistral API errors with proper provider prefix', async () => {
+      const error = new Error('Mistral API authentication failed')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      await expect(
+        aiService.generateSingleResponse(testMessages, 'mistral-large-latest')
+      ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with Mistral-specific error prefix
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Mistral API error:',
+        error
+      )
+    })
+
+    it('should log Together API errors with proper provider prefix', async () => {
+      const error = new Error('Together API service unavailable')
+      mockGenerateText.mockRejectedValueOnce(error)
+
+      await expect(
+        aiService.generateSingleResponse(testMessages, 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo')
+      ).rejects.toThrow(/Failed to generate response:/)
+
+      // Assert that console.error was called with Together-specific error prefix
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Together AI API error:',
+        error
+      )
     })
   })
 
