@@ -1,11 +1,50 @@
-# React + TypeScript + Vite
+# Infinite Chat - Multi-Model AI Chat Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-ready web application that creates an "infinite chat" experience, showing multiple AI response possibilities from various models simultaneously.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Multi-Model Support**: Integrates with OpenAI, Anthropic, Google, Mistral, and HuggingFace
+- **Infinite Possibilities Panel**: Multiple AI responses with probability scores
+- **Secure API Key Storage**: Client-side encryption using Web Crypto API
+- **File Upload Support**: Images, audio, and document attachments
+- **Responsive Design**: Mobile-optimized interface with dark theme
+- **Real-time Streaming**: Live response generation
+
+## Tech Stack
+
+- **Frontend**: React 19 + TypeScript + Vite
+- **Styling**: Tailwind CSS
+- **AI Integration**: Vercel AI SDK
+- **Deployment**: Vercel
+- **Security**: Web Crypto API with AES-GCM encryption
+- **Testing**: Vitest + React Testing Library (230+ tests)
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Type checking
+npm run typecheck
+
+# Linting
+npm run lint
+```
+
+## Deployment
+
+This project is deployed on Vercel. Pushes to the main branch automatically trigger new deployments.
 
 ## Expanding the ESLint configuration
 

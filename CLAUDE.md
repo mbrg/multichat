@@ -20,7 +20,7 @@ This is an "Infinite Chat" project that transforms a proof-of-concept chat inter
 - **Frontend**: ✅ React with TypeScript (Vite)
 - **AI Integration**: 🔄 Vercel AI SDK (pending - Issue #5)
 - **Build Tool**: ✅ Vite configured and working
-- **Deployment**: 🔄 GitHub Pages setup (pending - Issue #16)
+- **Deployment**: ✅ Vercel deployment configured and working
 - **Security**: ✅ Web Crypto API with AES-GCM encryption
 - **Styling**: ✅ Tailwind CSS integrated
 
@@ -51,8 +51,8 @@ npm run build
 # Preview production build
 npm run preview
 
-# Deploy to GitHub Pages
-npm run deploy
+# Deploy to Vercel (automatic on git push)
+# Manual preview: npm run preview
 
 # Run tests
 npm test
