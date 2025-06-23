@@ -142,6 +142,33 @@ The test mocks are designed to simulate real crypto operations:
 
 ## Development Guidelines
 
+### Devlog Requirements
+**CRITICAL**: Always create a devlog entry when working on any issue. This ensures knowledge sharing between human and AI developers.
+
+#### When to Create a Devlog Entry
+- When starting work on any issue from the project plan
+- When completing any significant feature or component
+- When making architectural decisions or changes
+- When fixing critical bugs or security issues
+
+#### Devlog Entry Process
+1. **Before Starting**: Read existing devlogs in `devlog/` directory to understand related work
+2. **During Work**: Take notes on decisions, trade-offs, and implementation details
+3. **After Completion**: Create a comprehensive devlog entry using the template
+
+#### Devlog File Naming Convention
+- Format: `YYYY-MM-DD_HHMM_descriptive-issue-name.md`
+- Example: `2024-12-23_1430_secure-api-key-integration.md`
+- Use the template from `devlog/TEMPLATE.md`
+
+#### Required Devlog Sections
+- **Issue Details**: Link to project plan issue, dependencies, timeline
+- **Architecture Decisions**: Why specific approaches were chosen
+- **Implementation Notes**: Key algorithms, patterns, trade-offs
+- **Integration Points**: How the work connects to other system parts
+- **Testing Strategy**: Coverage and approach taken
+- **Future Work**: Known issues or improvements needed
+
 ### Testing Requirements
 **CRITICAL**: Always create comprehensive tests for any code you build. This includes:
 
@@ -203,7 +230,8 @@ Based on the project plan, the next issues to tackle are:
 ### Development Workflow Requirements
 **CRITICAL**: When completing any new feature or component:
 
-1. **Always update this CLAUDE.md file** to reflect:
+1. **Create a devlog entry** following the template in `devlog/TEMPLATE.md`
+2. **Always update this CLAUDE.md file** to reflect:
    - New completed features in the "Completed Features" section
    - New components in the "Components Implemented" section  
    - Updated test counts in the "Test Coverage" section
