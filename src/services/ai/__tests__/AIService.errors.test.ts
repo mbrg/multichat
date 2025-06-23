@@ -60,8 +60,12 @@ describe('AIService Error Handling User Flows', () => {
     // Get the mocked SecureStorage functions
     const { SecureStorage } = await import('../../../utils/crypto')
     mockSecureStorage = {
-      encryptAndStore: SecureStorage.encryptAndStore as ReturnType<typeof vi.fn>,
-      decryptAndRetrieve: SecureStorage.decryptAndRetrieve as ReturnType<typeof vi.fn>,
+      encryptAndStore: SecureStorage.encryptAndStore as ReturnType<
+        typeof vi.fn
+      >,
+      decryptAndRetrieve: SecureStorage.decryptAndRetrieve as ReturnType<
+        typeof vi.fn
+      >,
       remove: SecureStorage.remove as ReturnType<typeof vi.fn>,
     }
 
@@ -247,10 +251,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with the rate limit error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'OpenAI API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('OpenAI API error:', error)
     })
 
     it('should provide clear error when API quota is exhausted', async () => {
@@ -262,10 +263,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with the quota error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'OpenAI API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('OpenAI API error:', error)
     })
 
     it('should handle service outages gracefully for users', async () => {
@@ -295,10 +293,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with the auth error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'OpenAI API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('OpenAI API error:', error)
     })
 
     it('should handle content policy violations appropriately', async () => {
@@ -310,10 +305,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with the policy violation error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'OpenAI API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('OpenAI API error:', error)
     })
 
     it('should handle timeout errors with user-friendly messages', async () => {
@@ -325,10 +317,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with the timeout error
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'OpenAI API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('OpenAI API error:', error)
     })
 
     it('should log Google API errors with proper provider prefix', async () => {
@@ -340,10 +329,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with Google-specific error prefix
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Google API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Google API error:', error)
     })
 
     it('should log Mistral API errors with proper provider prefix', async () => {
@@ -355,10 +341,7 @@ describe('AIService Error Handling User Flows', () => {
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with Mistral-specific error prefix
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Mistral API error:',
-        error
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Mistral API error:', error)
     })
 
     it('should log Together API errors with proper provider prefix', async () => {
@@ -366,7 +349,10 @@ describe('AIService Error Handling User Flows', () => {
       mockGenerateText.mockRejectedValueOnce(error)
 
       await expect(
-        aiService.generateSingleResponse(testMessages, 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo')
+        aiService.generateSingleResponse(
+          testMessages,
+          'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo'
+        )
       ).rejects.toThrow(/Failed to generate response:/)
 
       // Assert that console.error was called with Together-specific error prefix

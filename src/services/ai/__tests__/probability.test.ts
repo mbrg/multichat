@@ -55,8 +55,12 @@ describe('AI Probability Calculation User Flows', () => {
     // Get the mocked SecureStorage functions
     const { SecureStorage } = await import('../../../utils/crypto')
     mockSecureStorage = {
-      encryptAndStore: SecureStorage.encryptAndStore as ReturnType<typeof vi.fn>,
-      decryptAndRetrieve: SecureStorage.decryptAndRetrieve as ReturnType<typeof vi.fn>,
+      encryptAndStore: SecureStorage.encryptAndStore as ReturnType<
+        typeof vi.fn
+      >,
+      decryptAndRetrieve: SecureStorage.decryptAndRetrieve as ReturnType<
+        typeof vi.fn
+      >,
       remove: SecureStorage.remove as ReturnType<typeof vi.fn>,
     }
 
