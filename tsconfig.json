@@ -32,7 +32,6 @@
   ],
   "exclude": [
     "node_modules",
-    "vite.config.ts",
     "vitest.config.ts"
   ]
 }

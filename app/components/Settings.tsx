@@ -141,7 +141,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
         {!isLoading && (
           <div className="p-6 space-y-6">
             {/* Revert to defaults button */}
-            {import.meta.env.DEV && (
+            {process.env.NODE_ENV === 'development' && (
               <div className="flex justify-end pb-4 border-b border-[#2a2a2a]">
                 <button
                   onClick={clearAllKeys}

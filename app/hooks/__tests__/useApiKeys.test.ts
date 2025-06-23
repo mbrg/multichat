@@ -13,8 +13,9 @@ vi.mock('../../utils/crypto', () => ({
 }))
 
 // Mock the environment
-vi.stubEnv('VITE_OPENAI', 'sk-env-openai')
-vi.stubEnv('VITE_ANTHROPIC', 'sk-env-anthropic')
+vi.stubEnv('NEXT_PUBLIC_OPENAI', 'sk-env-openai')
+vi.stubEnv('NEXT_PUBLIC_ANTHROPIC', 'sk-env-anthropic')
+vi.stubEnv('NODE_ENV', 'development')
 
 const mockedSecureStorage = vi.mocked(SecureStorage)
 

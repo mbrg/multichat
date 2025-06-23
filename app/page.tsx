@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import ChatDemo from '../src/components/ChatDemo'
+import ChatDemo from './components/ChatDemo'
 
 export default function Home() {
   useEffect(() => {

@@ -122,21 +122,13 @@ const ChatDemo: React.FC = () => {
   )
 
   return (
-    <div
-      style={{
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      }}
-      className="h-screen bg-[#0a0a0a] text-gray-200"
-    >
-      <ChatContainer
-        messages={messages}
-        onSendMessage={handleSendMessage}
-        onSelectPossibility={handleSelectPossibility}
-        isLoading={isLoading}
-        className="bg-[#0a0a0a] h-full"
-      />
-    </div>
+    <ChatContainer
+      messages={messages}
+      onSendMessage={handleSendMessage}
+      onSelectPossibility={handleSelectPossibility}
+      isLoading={isLoading}
+      className="h-screen"
+    />
   )
 }
 

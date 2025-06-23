@@ -23,13 +23,13 @@ const loadEnvDefaults = async (
   loadedFromStorage: string[]
 ) => {
   // Only load env vars as defaults when no stored keys exist
-  // Must use VITE_ prefix for Vite to expose them to the browser
+  // Must use NEXT_PUBLIC_ prefix for Next.js to expose them to the browser
   const envKeys: Record<string, string | undefined> = {
-    openai: import.meta.env.VITE_OPENAI,
-    anthropic: import.meta.env.VITE_ANTHROPIC,
-    google: import.meta.env.VITE_GOOGLE,
-    mistral: import.meta.env.VITE_MISTRAL,
-    together: import.meta.env.VITE_TOGETHER,
+    openai: process.env.NEXT_PUBLIC_OPENAI,
+    anthropic: process.env.NEXT_PUBLIC_ANTHROPIC,
+    google: process.env.NEXT_PUBLIC_GOOGLE,
+    mistral: process.env.NEXT_PUBLIC_MISTRAL,
+    together: process.env.NEXT_PUBLIC_TOGETHER,
   }
 
   const loadedProviders: string[] = []
@@ -136,7 +136,7 @@ export const useApiKeys = () => {
       }
 
       // In development, pre-populate from env vars if no stored keys exist
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         await loadEnvDefaults(keys, providers, loadedFromStorage)
       }
 
@@ -226,7 +226,7 @@ export const useApiKeys = () => {
     })
 
     // In development, force reload from environment after clearing
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       // Small delay to ensure storage is cleared
       await new Promise((resolve) => setTimeout(resolve, 100))
 
