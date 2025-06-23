@@ -227,6 +227,13 @@ export class SecureStorage {
   }
 
   /**
+   * Removes a specific encrypted key from storage
+   */
+  public static remove(key: string): void {
+    localStorage.removeItem(key)
+  }
+
+  /**
    * Clears all stored data and locks the storage
    */
   public static clearAll(): void {

@@ -28,21 +28,24 @@ vi.mock('ai', () => ({
   generateText: vi.fn(),
 }))
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-}
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-})
+// Mock SecureStorage
+vi.mock('../../../utils/crypto', () => ({
+  SecureStorage: {
+    encryptAndStore: vi.fn().mockResolvedValue(undefined),
+    decryptAndRetrieve: vi.fn().mockResolvedValue(null),
+    remove: vi.fn().mockResolvedValue(undefined),
+  },
+}))
 
 describe('AIService Error Handling User Flows', () => {
   let aiService: AIService
   let mockGenerateText: ReturnType<typeof vi.fn>
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>
+  let mockSecureStorage: {
+    encryptAndStore: ReturnType<typeof vi.fn>
+    decryptAndRetrieve: ReturnType<typeof vi.fn>
+    remove: ReturnType<typeof vi.fn>
+  }
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -53,6 +56,14 @@ describe('AIService Error Handling User Flows', () => {
     // Get the mocked generateText function
     const { generateText } = await import('ai')
     mockGenerateText = generateText as ReturnType<typeof vi.fn>
+
+    // Get the mocked SecureStorage functions
+    const { SecureStorage } = await import('../../../utils/crypto')
+    mockSecureStorage = {
+      encryptAndStore: SecureStorage.encryptAndStore as ReturnType<typeof vi.fn>,
+      decryptAndRetrieve: SecureStorage.decryptAndRetrieve as ReturnType<typeof vi.fn>,
+      remove: SecureStorage.remove as ReturnType<typeof vi.fn>,
+    }
 
     aiService = new AIService()
   })
@@ -192,8 +203,8 @@ describe('AIService Error Handling User Flows', () => {
       const error = new Error('Invalid Together API key')
       mockGenerateText.mockRejectedValueOnce(error)
 
-      // Ensure localStorage returns the test key
-      mockLocalStorage.getItem.mockImplementation((key) => {
+      // Ensure SecureStorage returns the test key
+      mockSecureStorage.decryptAndRetrieve.mockImplementation(async (key) => {
         if (key === 'together-api-key') return 'invalid-key'
         return null
       })
@@ -221,7 +232,7 @@ describe('AIService Error Handling User Flows', () => {
 
     beforeEach(() => {
       // Mock API keys being available
-      mockLocalStorage.getItem.mockImplementation((key) => {
+      mockSecureStorage.decryptAndRetrieve.mockImplementation(async (key) => {
         if (key.includes('api-key')) return 'test-api-key'
         return null
       })
@@ -368,7 +379,7 @@ describe('AIService Error Handling User Flows', () => {
 
   describe('Configuration Error User Scenarios', () => {
     it('should provide helpful guidance when no API key is configured', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null)
+      mockSecureStorage.decryptAndRetrieve.mockResolvedValue(null)
 
       await expect(
         aiService.generateSingleResponse([], 'gpt-4')
@@ -384,7 +395,7 @@ describe('AIService Error Handling User Flows', () => {
     })
 
     it('should validate model existence before attempting generation', async () => {
-      mockLocalStorage.getItem.mockReturnValue('test-key')
+      mockSecureStorage.decryptAndRetrieve.mockResolvedValue('test-key')
 
       await expect(
         aiService.generateSingleResponse([], 'nonexistent-model')
@@ -392,7 +403,7 @@ describe('AIService Error Handling User Flows', () => {
     })
 
     it('should handle empty message arrays gracefully', async () => {
-      mockLocalStorage.getItem.mockReturnValue('test-key')
+      mockSecureStorage.decryptAndRetrieve.mockResolvedValue('test-key')
       mockGenerateText.mockResolvedValueOnce({
         text: 'Response with no context',
         finishReason: 'stop',

@@ -27,20 +27,23 @@ vi.mock('ai', () => ({
   generateText: vi.fn(),
 }))
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-}
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-})
+// Mock SecureStorage
+vi.mock('../../../utils/crypto', () => ({
+  SecureStorage: {
+    encryptAndStore: vi.fn().mockResolvedValue(undefined),
+    decryptAndRetrieve: vi.fn().mockResolvedValue(null),
+    remove: vi.fn().mockResolvedValue(undefined),
+  },
+}))
 
 describe('AIService User Flows', () => {
   let aiService: AIService
   let mockGenerateText: ReturnType<typeof vi.fn>
+  let mockSecureStorage: {
+    encryptAndStore: ReturnType<typeof vi.fn>
+    decryptAndRetrieve: ReturnType<typeof vi.fn>
+    remove: ReturnType<typeof vi.fn>
+  }
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -48,6 +51,14 @@ describe('AIService User Flows', () => {
     // Get the mocked generateText function
     const { generateText } = await import('ai')
     mockGenerateText = generateText as ReturnType<typeof vi.fn>
+
+    // Get the mocked SecureStorage functions
+    const { SecureStorage } = await import('../../../utils/crypto')
+    mockSecureStorage = {
+      encryptAndStore: SecureStorage.encryptAndStore as ReturnType<typeof vi.fn>,
+      decryptAndRetrieve: SecureStorage.decryptAndRetrieve as ReturnType<typeof vi.fn>,
+      remove: SecureStorage.remove as ReturnType<typeof vi.fn>,
+    }
 
     // Mock the generateText function with default success response
     mockGenerateText.mockResolvedValue({
@@ -61,7 +72,7 @@ describe('AIService User Flows', () => {
     })
 
     // Mock API keys being available
-    mockLocalStorage.getItem.mockImplementation((key) => {
+    mockSecureStorage.decryptAndRetrieve.mockImplementation(async (key) => {
       if (key.includes('api-key')) return 'test-api-key'
       return null
     })
@@ -198,7 +209,7 @@ describe('AIService User Flows', () => {
 
   describe('Error Handling for User Scenarios', () => {
     it('should provide helpful error when user has not configured API key', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null)
+      mockSecureStorage.decryptAndRetrieve.mockResolvedValue(null)
 
       await expect(
         aiService.generateSingleResponse([], 'gpt-4')

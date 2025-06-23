@@ -3,6 +3,7 @@ import { AnthropicProvider } from './providers/anthropic'
 import { GoogleProvider } from './providers/google'
 import { MistralProvider } from './providers/mistral'
 import { TogetherProvider } from './providers/together'
+import { SecureStorage } from '../../utils/crypto'
 import type {
   AIProvider,
   Message,
@@ -146,25 +147,25 @@ export class AIService {
 
     // Store the API key temporarily for validation
     const storageKey = `${providerName}-api-key`
-    const originalKey = localStorage.getItem(storageKey)
-    localStorage.setItem(storageKey, apiKey)
+    const originalKey = await SecureStorage.decryptAndRetrieve(storageKey)
+    await SecureStorage.encryptAndStore(storageKey, apiKey)
 
     try {
       const isValid = await provider.validateApiKey()
       if (!isValid && originalKey) {
         // Restore original key if validation failed
-        localStorage.setItem(storageKey, originalKey)
+        await SecureStorage.encryptAndStore(storageKey, originalKey)
       } else if (!isValid) {
         // Remove invalid key
-        localStorage.removeItem(storageKey)
+        await SecureStorage.remove(storageKey)
       }
       return isValid
     } catch (error) {
       // Restore original key on error
       if (originalKey) {
-        localStorage.setItem(storageKey, originalKey)
+        await SecureStorage.encryptAndStore(storageKey, originalKey)
       } else {
-        localStorage.removeItem(storageKey)
+        await SecureStorage.remove(storageKey)
       }
       throw error
     }
