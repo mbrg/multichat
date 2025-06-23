@@ -10,6 +10,11 @@
 ## Summary
 Successfully implemented real logprob-based probability calculation for providers that support it, added temperature indicators to the UI, and removed mock probability estimation methods. Updated all related types and tests to handle null probability values.
 
+**Post-implementation fixes (2024-12-23 12:00):**
+- Fixed 2 failing temperature tests by adding temperature options to test calls
+- Updated UI labels for clarity: kept "T:" for temperature, added "P:" prefix for probabilities
+- All 268 tests now passing
+
 ## Changes Made
 
 ### Files Modified
@@ -22,8 +27,8 @@ Successfully implemented real logprob-based probability calculation for provider
 - `src/types/ai.ts` - Updated interfaces to allow null probability values
 - `src/types/index.ts` - Updated interfaces to allow null probability values
 - `src/types/chat.ts` - Added temperature field to Message interface
-- `src/components/Message.tsx` - Added temperature display with orange color
-- `src/components/OptionCard.tsx` - Added temperature display with orange color
+- `src/components/Message.tsx` - Added temperature display with orange color, formatted to 1 decimal, added "P:" prefix to probabilities
+- `src/components/OptionCard.tsx` - Added temperature display with orange color, formatted to 1 decimal, added "P:" prefix to probabilities
 - `src/components/PossibilitiesPanel.tsx` - Updated sorting for null probabilities
 - `src/hooks/usePossibilities.ts` - Updated sorting for null probabilities
 
@@ -31,9 +36,11 @@ Successfully implemented real logprob-based probability calculation for provider
 - None
 
 ### Tests Added/Modified
-- `src/services/ai/__tests__/probability.test.ts` - Updated all tests to handle null probabilities and real logprobs
+- `src/services/ai/__tests__/probability.test.ts` - Updated all tests to handle null probabilities and real logprobs, fixed temperature option requirements
 - `src/services/ai/__tests__/AIService.test.ts` - Updated tests to expect null probabilities for non-logprob providers
 - `src/services/ai/__tests__/AIService.variations.test.ts` - Added null checks for probability comparisons
+- `src/components/__tests__/Message.test.tsx` - Updated to expect "P:" prefix in probability displays
+- `src/components/__tests__/Message.possibilities.test.tsx` - Updated to expect "P:" prefix in probability displays
 
 ## Architecture Decisions
 
@@ -58,7 +65,8 @@ Successfully implemented real logprob-based probability calculation for provider
 ### Key Algorithms/Logic
 - **Logprob to Probability**: `Math.exp(avgLogprob)` where `avgLogprob = sum(logprobs) / length`
 - **Null-safe Sorting**: Null values sorted after numeric values consistently
-- **Temperature Display**: Orange color-coded temperature indicators in UI
+- **Temperature Display**: Orange color-coded temperature indicators in UI, formatted to 1 decimal place
+- **UI Label Clarity**: Added "P:" prefix to probability displays, kept "T:" for temperature
 
 ### External Dependencies
 - Vercel AI SDK for logprob structures (though logprob request API not yet implemented)
@@ -73,7 +81,9 @@ Successfully implemented real logprob-based probability calculation for provider
 - Updated 11 probability tests to use mock logprobs for realistic scenarios
 - Added null checks in all probability comparison tests
 - Maintained test coverage while improving accuracy of test scenarios
-- Reduced failing tests from 15 to 2 (96% improvement)
+- Fixed final 2 failing tests by adding temperature options to test calls
+- Updated component tests to expect new "P:" probability display format
+- Final result: All 268 tests passing (100% success rate)
 
 ## Known Issues/Future Work
 - **Logprob Request API**: Need to research proper way to request logprobs from each provider
