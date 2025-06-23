@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useApiKeys } from '../hooks/useApiKeys'
+import openaiLogo from '../assets/OpenAI-white-monoblossom.svg'
+import geminiLogo from '../assets/gemini.svg'
+import huggingfaceLogo from '../assets/huggingface.svg'
 
 interface SettingsProps {
   isOpen: boolean
@@ -29,35 +32,35 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     {
       id: 'openai',
       name: 'OpenAI API Key',
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
+      icon: openaiLogo,
       placeholder: 'sk-...',
       enabled: enabledProviders.openai,
     },
     {
       id: 'anthropic',
       name: 'Anthropic API Key',
-      icon: 'https://asset.brandfetch.io/id__Lq5DDK/idHMNckids.svg',
+      icon: openaiLogo,
       placeholder: 'sk-ant-...',
       enabled: enabledProviders.anthropic,
     },
     {
       id: 'google',
       name: 'Google API Key',
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg',
+      icon: geminiLogo,
       placeholder: 'AIza...',
       enabled: enabledProviders.google,
     },
     {
       id: 'mistral',
       name: 'Mistral API Key',
-      icon: 'https://mistral.ai/images/logo_hubc88c4ece131b91c7cb753f40e9e1cc5_2589_256x0_resize_q97_h2_lanczos_3.webp',
+      icon: openaiLogo,
       placeholder: '...',
       enabled: enabledProviders.mistral,
     },
     {
       id: 'together',
       name: 'Together API Key',
-      icon: 'https://assets-global.website-files.com/64f6f2c0e3f4c5a91c1e823a/6597f6c926a699b7e7e2b32b_together-logo.svg',
+      icon: huggingfaceLogo,
       placeholder: '...',
       enabled: enabledProviders.together,
     },
