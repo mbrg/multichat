@@ -27,3 +27,7 @@ dist-ssr
 .env
 .vercel
 .next
+
+# TypeScript build info
+*.tsbuildinfo
+.tsbuildinfo
