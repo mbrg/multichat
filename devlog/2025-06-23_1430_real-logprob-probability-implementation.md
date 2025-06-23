@@ -1,16 +1,16 @@
-# 2024-12-23 14:30 - Real Logprob Probability Implementation (Task U4)
+# 2025-06-23 14:30 - Real Logprob Probability Implementation (Task U4)
 
 ## Issue Details
 **Issue Title**: Remove Providers Without Logprob Support / Implement Real Probability Calculation
 **Issue Description**: Replace mock probability estimation with real logprob-based probability calculation for providers that support it, and add temperature indicators to UI instead of fake probability scores
 **Dependencies**: All AI provider files, UI components (Message, OptionCard), provider tests
-**Started**: 2024-12-23 14:30
-**Completed**: 2024-12-23 15:38
+**Started**: 2025-06-23 14:30
+**Completed**: 2025-06-23 15:38
 
 ## Summary
 Successfully implemented real logprob-based probability calculation for providers that support it, added temperature indicators to the UI, and removed mock probability estimation methods. Updated all related types and tests to handle null probability values.
 
-**Post-implementation fixes (2024-12-23 12:00-12:15):**
+**Post-implementation fixes (2025-06-23 12:00-12:15):**
 - Fixed 2 failing temperature tests by adding temperature options to test calls
 - Updated UI labels for clarity: kept "T:" for temperature, added "P:" prefix for probabilities
 - Fixed 10 ESLint errors by replacing 'any' types with proper LogProbData type definitions
