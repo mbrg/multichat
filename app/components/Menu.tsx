@@ -6,10 +6,11 @@ import AuthPopup from './AuthPopup'
 
 interface MenuProps {
   onOpenSettings: () => void
+  onOpenSystemInstructions: () => void
   className?: string
 }
 
-const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
+const Menu: React.FC<MenuProps> = ({ onOpenSettings, onOpenSystemInstructions, className = '' }) => {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()
@@ -24,10 +25,7 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
     }
 
     if (isOpen) {
-      // Use click event instead of mousedown to avoid conflicts with button clicks
-      setTimeout(() => {
-        document.addEventListener('click', handleClickOutside)
-      }, 0)
+      document.addEventListener('click', handleClickOutside)
       return () => {
         document.removeEventListener('click', handleClickOutside)
       }
@@ -39,6 +37,13 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
     e.stopPropagation()
     setIsOpen(false)
     onOpenSettings()
+  }
+
+  const handleSystemInstructionsClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsOpen(false)
+    onOpenSystemInstructions()
   }
 
   const handleSignInClick = (e: React.MouseEvent) => {
@@ -59,7 +64,10 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
     <div ref={menuRef} className={`relative ${className}`}>
       {/* Menu Toggle Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsOpen(!isOpen)
+        }}
         className="flex items-center justify-center w-10 h-10 rounded-md hover:bg-[#2a2a2a] transition-colors"
         aria-label="Menu"
       >
@@ -126,6 +134,18 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
               <div className="flex-1">
                 <p className="text-sm text-[#e0e0e0]">API Keys</p>
                 <p className="text-xs text-[#888]">Configure AI providers</p>
+              </div>
+            </button>
+
+            {/* System Instructions */}
+            <button
+              onClick={handleSystemInstructionsClick}
+              className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-[#2a2a2a] transition-colors"
+            >
+              <span className="text-lg">📋</span>
+              <div className="flex-1">
+                <p className="text-sm text-[#e0e0e0]">System Instructions</p>
+                <p className="text-xs text-[#888]">Customize AI behavior</p>
               </div>
             </button>
 

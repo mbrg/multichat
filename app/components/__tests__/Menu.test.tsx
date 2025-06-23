@@ -21,6 +21,7 @@ vi.mock('next/image', () => ({
 
 describe('Menu', () => {
   const mockOnOpenSettings = vi.fn()
+  const mockOnOpenSystemInstructions = vi.fn()
   const mockCheckAuthAndRun = vi.fn()
 
   beforeEach(() => {
@@ -33,7 +34,7 @@ describe('Menu', () => {
   it('renders menu toggle button', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     const menuButton = screen.getByLabelText('Menu')
     expect(menuButton).toBeInTheDocument()
@@ -42,26 +43,29 @@ describe('Menu', () => {
   it('toggles menu visibility when clicked', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     const menuButton = screen.getByLabelText('Menu')
     
     // Menu should not be visible initially
     expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
+    expect(screen.queryByText('System Instructions')).not.toBeInTheDocument()
     
     // Click to open menu
     fireEvent.click(menuButton)
     expect(screen.getByText('API Keys')).toBeInTheDocument()
+    expect(screen.getByText('System Instructions')).toBeInTheDocument()
     
     // Click to close menu
     fireEvent.click(menuButton)
     expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
+    expect(screen.queryByText('System Instructions')).not.toBeInTheDocument()
   })
 
   it('shows sign in button when not authenticated', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     
@@ -79,7 +83,7 @@ describe('Menu', () => {
     }
     ;(useSession as any).mockReturnValue({ data: mockSession, status: 'authenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     
@@ -99,7 +103,7 @@ describe('Menu', () => {
     }
     ;(useSession as any).mockReturnValue({ data: mockSession, status: 'authenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('API Keys'))
@@ -116,15 +120,13 @@ describe('Menu', () => {
   it('handles API Keys click when not authenticated', async () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    mockCheckAuthAndRun.mockImplementation((callback) => callback())
-    
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('API Keys'))
     
-    expect(mockCheckAuthAndRun).toHaveBeenCalledTimes(1)
     expect(mockOnOpenSettings).toHaveBeenCalledTimes(1)
+    expect(mockCheckAuthAndRun).not.toHaveBeenCalled()
     
     // Menu should close after clicking
     await waitFor(() => {
@@ -132,10 +134,26 @@ describe('Menu', () => {
     })
   })
 
+  it('handles System Instructions click', async () => {
+    ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
+    
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
+    
+    fireEvent.click(screen.getByLabelText('Menu'))
+    fireEvent.click(screen.getByText('System Instructions'))
+    
+    expect(mockOnOpenSystemInstructions).toHaveBeenCalledTimes(1)
+    
+    // Menu should close after clicking
+    await waitFor(() => {
+      expect(screen.queryByText('System Instructions')).not.toBeInTheDocument()
+    })
+  })
+
   it('handles sign in click', async () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('Sign in'))
@@ -157,7 +175,7 @@ describe('Menu', () => {
     }
     ;(useSession as any).mockReturnValue({ data: mockSession, status: 'authenticated' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('Sign out'))
@@ -173,7 +191,7 @@ describe('Menu', () => {
   it('shows loading state', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'loading' })
     
-    render(<Menu onOpenSettings={mockOnOpenSettings} />)
+    render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />)
     
     fireEvent.click(screen.getByLabelText('Menu'))
     
@@ -183,12 +201,12 @@ describe('Menu', () => {
     expect(spinner).toHaveClass('animate-spin')
   })
 
-  it('closes menu when clicking outside', async () => {
+  it('closes menu when clicking outside', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    const { container } = render(
+    render(
       <div>
-        <Menu onOpenSettings={mockOnOpenSettings} />
+        <Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} />
         <div data-testid="outside">Outside element</div>
       </div>
     )
@@ -197,17 +215,15 @@ describe('Menu', () => {
     expect(screen.getByText('API Keys')).toBeInTheDocument()
     
     // Click outside
-    fireEvent.mouseDown(screen.getByTestId('outside'))
+    fireEvent.click(screen.getByTestId('outside'))
     
-    await waitFor(() => {
-      expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
-    })
+    expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
   })
 
   it('applies custom className', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' })
     
-    const { container } = render(<Menu onOpenSettings={mockOnOpenSettings} className="custom-class" />)
+    const { container } = render(<Menu onOpenSettings={mockOnOpenSettings} onOpenSystemInstructions={mockOnOpenSystemInstructions} className="custom-class" />)
     
     const menuContainer = container.querySelector('.custom-class')
     expect(menuContainer).toBeInTheDocument()

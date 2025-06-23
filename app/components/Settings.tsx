@@ -71,22 +71,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     },
   ]
 
-  const [systemPrompt, setSystemPrompt] = useState(
-    'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
-  )
 
-  // Load settings on mount
-  useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = () => {
-    // Load system prompt from localStorage
-    const savedPrompt = localStorage.getItem('systemPrompt')
-    if (savedPrompt) {
-      setSystemPrompt(savedPrompt)
-    }
-  }
 
   const handleApiKeyChange = async (providerId: string, value: string) => {
     try {
@@ -108,10 +93,6 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     toggleProvider(providerId as keyof typeof enabledProviders)
   }
 
-  const handleSystemPromptChange = (value: string) => {
-    setSystemPrompt(value)
-    localStorage.setItem('systemPrompt', value)
-  }
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -211,27 +192,6 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               </div>
             ))}
 
-            {/* System Prompt Settings */}
-            <div className="pt-6 border-t-2 border-[#2a2a2a]">
-              <h3 className="text-base font-bold text-[#e0e0e0] mb-4">
-                System Prompt
-              </h3>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-[#666]">
-                    {systemPrompt.length} / 1000
-                  </span>
-                </div>
-                <textarea
-                  value={systemPrompt}
-                  onChange={(e) => handleSystemPromptChange(e.target.value)}
-                  placeholder="You are a helpful AI assistant..."
-                  maxLength={1000}
-                  className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-md px-3 py-2 text-[#e0e0e0] text-sm resize-y min-h-[100px] max-h-[200px] focus:outline-none focus:border-[#667eea] transition-colors"
-                />
-              </div>
-            </div>
           </div>
         )}
       </div>
