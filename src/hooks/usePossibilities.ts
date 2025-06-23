@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import type { ResponseOption, ModelInfo } from '../types'
+import { compareProbabilities } from '../utils/logprobs'
 
 interface UsePossibilitiesOptions {
   initialLoadCount?: number
@@ -31,10 +32,8 @@ export const usePossibilities = (
   const [displayedCount, setDisplayedCount] = useState(initialLoadCount)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Always sort by probability when displaying
-  const sortedResponses = [...responses].sort(
-    (a, b) => b.probability - a.probability
-  )
+  // Always sort by probability when displaying (null values go to end)
+  const sortedResponses = [...responses].sort((a, b) => compareProbabilities(a.probability, b.probability))
   const displayedResponses = sortedResponses.slice(0, displayedCount)
   const hasMore =
     displayedCount < sortedResponses.length && displayedCount < maxResponses
@@ -102,12 +101,14 @@ export const createMockResponse = (
   id: string,
   model: ModelInfo,
   content: string,
-  probability: number = Math.random()
+  probability: number = Math.random(),
+  temperature: number = 0.7
 ): ResponseOption => ({
   id,
   model,
   content,
   probability,
+  temperature,
   isStreaming: false,
   timestamp: new Date(),
   logprobs: Array.from({ length: content.split(' ').length }, () =>
@@ -150,7 +151,8 @@ export const generateVariationsForModel = (
         `${model.id}-var-${i}-${Date.now()}`,
         model,
         content,
-        probability
+        probability,
+        0.1 + Math.random() * 0.9 // Random temperature between 0.1 and 1.0
       )
     )
   }

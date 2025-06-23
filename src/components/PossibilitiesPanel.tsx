@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import type { ResponseOption } from '../types'
 import OptionCard from './OptionCard'
+import { compareProbabilities } from '../utils/logprobs'
 
 interface PossibilitiesPanelProps {
   responses: ResponseOption[]
@@ -20,7 +21,7 @@ const PossibilitiesPanel: React.FC<PossibilitiesPanelProps> = ({
   onSelectResponse,
 }) => {
   const sortedResponses = useMemo(
-    () => [...responses].sort((a, b) => b.probability - a.probability),
+    () => [...responses].sort((a, b) => compareProbabilities(a.probability, b.probability)),
     [responses]
   )
 

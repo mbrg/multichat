@@ -16,7 +16,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit",
-    "ci": "npm run lint > /dev/null 2>&1 && npm run format:check > /dev/null 2>&1 && npm run typecheck > /dev/null 2>&1 && npm test > /dev/null 2>&1 && npm run build > /dev/null 2>&1"
+    "ci": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",

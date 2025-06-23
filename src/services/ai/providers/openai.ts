@@ -9,6 +9,7 @@ import type {
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { SecureStorage } from '../../../utils/crypto'
+import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
 
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI'
@@ -39,14 +40,15 @@ export class OpenAIProvider implements AIProvider {
         frequencyPenalty: options.frequencyPenalty,
         presencePenalty: options.presencePenalty,
         // stop: options.stop // Not supported by all models
+        // Note: logprobs would be requested via provider options if supported by the model
       })
 
-      // Calculate estimated probability based on temperature
-      const probability = this.estimateProbability(options.temperature ?? 0.7)
+      // Calculate real probability from logprobs if available
+      const probability = calculateProbabilityFromLogprobs(result.logprobs)
 
       return {
         content: result.text,
-        logprobs: undefined, // Simplified for now
+        logprobs: result.logprobs,
         probability,
         finishReason: result.finishReason || 'stop',
         usage: result.usage
@@ -83,10 +85,4 @@ export class OpenAIProvider implements AIProvider {
     return await SecureStorage.decryptAndRetrieve('openai-api-key')
   }
 
-  private estimateProbability(temperature: number): number {
-    // Estimate probability based on temperature and add some randomness
-    const baseProb = Math.max(0.2, 1.0 - temperature * 0.8)
-    const randomFactor = (Math.random() - 0.5) * 0.3
-    return Math.max(0.1, Math.min(0.95, baseProb + randomFactor))
-  }
 }

@@ -37,8 +37,8 @@ export interface GenerationOptions {
 
 export interface ResponseWithLogprobs {
   content: string
-  logprobs?: number[]
-  probability: number
+  logprobs?: any[] // AI SDK LogProbs type structure
+  probability: number | null // null when probability calculation unavailable
   finishReason?: string
   usage?: {
     promptTokens: number
@@ -51,8 +51,8 @@ export interface ResponseOption {
   id: string
   model: ModelInfo
   content: string
-  probability: number
-  logprobs?: number[]
+  probability: number | null // null when probability calculation unavailable
+  logprobs?: any[] // AI SDK LogProbs type structure
   isStreaming: boolean
   temperature?: number
   finishReason?: string

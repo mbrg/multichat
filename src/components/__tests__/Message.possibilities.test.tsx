@@ -84,7 +84,7 @@ describe('Message - Possibilities', () => {
     )
 
     expect(screen.getByText('claude-3')).toBeInTheDocument()
-    expect(screen.getByText('75%')).toBeInTheDocument()
+    expect(screen.getByText('P:75%')).toBeInTheDocument()
   })
 
   it('handles possibility click', () => {
@@ -132,7 +132,7 @@ describe('Message - Possibilities', () => {
       }
       if (p.probability) {
         expect(
-          screen.getByText(`${Math.round(p.probability * 100)}%`)
+          screen.getByText(`P:${Math.round(p.probability * 100)}%`)
         ).toBeInTheDocument()
       }
     })

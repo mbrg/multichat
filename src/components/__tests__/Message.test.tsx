@@ -72,7 +72,7 @@ describe('Message', () => {
 
     render(<Message message={message} />)
 
-    expect(screen.getByText('85%')).toBeInTheDocument()
+    expect(screen.getByText('P:85%')).toBeInTheDocument()
   })
 
   it('does not display probability for user messages', () => {

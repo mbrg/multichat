@@ -8,7 +8,7 @@ interface OptionCardProps {
 }
 
 const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
-  const probabilityPercentage = Math.round(response.probability * 100)
+  const probabilityPercentage = response.probability ? Math.round(response.probability * 100) : null
 
   const getModelIcon = () => {
     return (
@@ -56,9 +56,18 @@ const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
         </div>
       </div>
 
-      {/* Probability */}
-      <div className="bg-[#2a2a3a] px-2 py-1 rounded text-[#667eea] font-bold text-xs flex-shrink-0">
-        {probabilityPercentage}%
+      {/* Temperature and Probability */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {response.temperature !== undefined && (
+          <div className="bg-[#2a2a3a] px-2 py-1 rounded text-[#ffa726] font-bold text-xs" title="Temperature">
+            T:{response.temperature?.toFixed(1)}
+          </div>
+        )}
+        {probabilityPercentage && (
+          <div className="bg-[#2a2a3a] px-2 py-1 rounded text-[#667eea] font-bold text-xs" title="Probability Score">
+            P:{probabilityPercentage}%
+          </div>
+        )}
       </div>
     </div>
   )

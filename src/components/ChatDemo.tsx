@@ -46,6 +46,7 @@ const ChatDemo: React.FC = () => {
           content: `${responseType}: "${userContent}" (Variation ${i + 1})`,
           model,
           probability: Math.max(0.3, 0.9 - i * 0.01),
+          temperature: 0.1 + (i % 10) * 0.1, // Vary temperature from 0.1 to 1.0
           timestamp: new Date(),
           isPossibility: true,
         })

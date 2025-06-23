@@ -11,8 +11,9 @@ export interface ResponseOption {
   id: string
   model: ModelInfo
   content: string
-  probability: number
-  logprobs?: number[]
+  probability: number | null // null when probability calculation unavailable
+  temperature?: number // Temperature parameter used for generation
+  logprobs?: any[] // AI SDK LogProbs type structure
   isStreaming: boolean
   timestamp: Date
 }
@@ -22,7 +23,8 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
   model?: string
-  probability?: number
+  probability?: number | null // null when probability calculation unavailable
+  temperature?: number // Temperature parameter used for generation
   timestamp: Date
   attachments?: Attachment[]
 }

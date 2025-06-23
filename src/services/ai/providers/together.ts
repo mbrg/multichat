@@ -9,6 +9,7 @@ import type {
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { SecureStorage } from '../../../utils/crypto'
+import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
 
 export class TogetherProvider implements AIProvider {
   name = 'Together AI'
@@ -44,14 +45,15 @@ export class TogetherProvider implements AIProvider {
         topP: options.topP,
         frequencyPenalty: options.frequencyPenalty,
         presencePenalty: options.presencePenalty,
+        // Note: Together logprobs would be requested via provider options if supported
       })
 
-      // Estimate probability based on temperature
-      const probability = this.estimateProbability(options.temperature ?? 0.7)
+      // Calculate real probability from logprobs if available
+      const probability = calculateProbabilityFromLogprobs(result.logprobs)
 
       return {
         content: result.text,
-        logprobs: undefined, // Simplified for now
+        logprobs: result.logprobs,
         probability,
         finishReason: result.finishReason || 'stop',
         usage: result.usage
@@ -99,10 +101,4 @@ export class TogetherProvider implements AIProvider {
     return await SecureStorage.decryptAndRetrieve('together-api-key')
   }
 
-  private estimateProbability(temperature: number): number {
-    // Estimate probability based on temperature and add some randomness
-    const baseProb = Math.max(0.2, 1.0 - temperature * 0.7)
-    const randomFactor = (Math.random() - 0.5) * 0.25
-    return Math.max(0.1, Math.min(0.95, baseProb + randomFactor))
-  }
 }

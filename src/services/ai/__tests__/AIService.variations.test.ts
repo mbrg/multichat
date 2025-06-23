@@ -148,9 +148,15 @@ describe('AIService Multiple Variations User Flows', () => {
       )
 
       // Should be sorted by probability (highest first)
-      expect(variations[0].probability).toBeGreaterThanOrEqual(
-        variations[1].probability
-      )
+      const prob0 = variations[0].probability
+      const prob1 = variations[1].probability
+      
+      if (prob0 !== null && prob1 !== null) {
+        expect(prob0).toBeGreaterThanOrEqual(prob1)
+      } else if (prob0 === null && prob1 !== null) {
+        expect.unreachable('Null probability should not come before non-null')
+      }
+      // Both null or first is non-null, second is null - both are acceptable for sorting
     })
 
     it('should generate 5 variations when user wants maximum creativity options', async () => {
@@ -255,9 +261,16 @@ describe('AIService Multiple Variations User Flows', () => {
 
       // Check that responses are sorted by probability
       for (let i = 0; i < responses.length - 1; i++) {
-        expect(responses[i].probability).toBeGreaterThanOrEqual(
-          responses[i + 1].probability
-        )
+        const currentProb = responses[i].probability
+        const nextProb = responses[i + 1].probability
+        
+        // Handle null probability sorting (nulls should come after numbers)
+        if (currentProb !== null && nextProb !== null) {
+          expect(currentProb).toBeGreaterThanOrEqual(nextProb)
+        } else if (currentProb === null && nextProb !== null) {
+          expect.unreachable('Null probability should not come before non-null')
+        }
+        // Both null or first is non-null, second is null - both are acceptable for sorting
       }
     })
 

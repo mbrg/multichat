@@ -9,6 +9,7 @@ import type {
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { SecureStorage } from '../../../utils/crypto'
+import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
 
 export class AnthropicProvider implements AIProvider {
   name = 'Anthropic'
@@ -39,12 +40,12 @@ export class AnthropicProvider implements AIProvider {
         topK: options.topK,
       })
 
-      // Anthropic doesn't provide logprobs, so we estimate probability
-      const probability = this.estimateProbability(options.temperature ?? 0.7)
+      // Anthropic doesn't provide logprobs, use shared utility for consistency
+      const probability = calculateProbabilityFromLogprobs(result.logprobs)
 
       return {
         content: result.text,
-        logprobs: undefined, // Anthropic doesn't provide logprobs
+        logprobs: result.logprobs,
         probability,
         finishReason: result.finishReason || 'stop',
         usage: result.usage
@@ -81,11 +82,4 @@ export class AnthropicProvider implements AIProvider {
     return await SecureStorage.decryptAndRetrieve('anthropic-api-key')
   }
 
-  private estimateProbability(temperature: number): number {
-    // Since Anthropic doesn't provide logprobs, we estimate probability
-    // based on temperature and add some randomness for variety
-    const baseProb = Math.max(0.2, 1.0 - temperature * 0.8)
-    const randomFactor = (Math.random() - 0.5) * 0.3
-    return Math.max(0.1, Math.min(0.95, baseProb + randomFactor))
-  }
 }

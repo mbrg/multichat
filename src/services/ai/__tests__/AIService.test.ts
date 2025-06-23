@@ -111,11 +111,10 @@ describe('AIService User Flows', () => {
           provider: 'openai',
         }),
         content: 'Test response from AI',
-        probability: expect.any(Number),
         isStreaming: false,
       })
-      expect(response.probability).toBeGreaterThan(0)
-      expect(response.probability).toBeLessThanOrEqual(1)
+      // OpenAI without logprobs in mock will have null probability
+      expect(response.probability).toBeNull()
     })
 
     it('should generate a response from Anthropic when user requests Claude', async () => {
@@ -131,9 +130,10 @@ describe('AIService User Flows', () => {
           provider: 'anthropic',
         }),
         content: 'Test response from AI',
-        probability: expect.any(Number),
         isStreaming: false,
       })
+      // Anthropic doesn't support logprobs, so probability should be null
+      expect(response.probability).toBeNull()
     })
 
     it('should generate a response from Google when user requests Gemini', async () => {

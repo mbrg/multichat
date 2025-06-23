@@ -4,6 +4,7 @@ import { GoogleProvider } from './providers/google'
 import { MistralProvider } from './providers/mistral'
 import { TogetherProvider } from './providers/together'
 import { SecureStorage } from '../../utils/crypto'
+import { compareProbabilities } from '../../utils/logprobs'
 import type {
   AIProvider,
   Message,
@@ -97,8 +98,8 @@ export class AIService {
 
     try {
       const responses = await Promise.all(promises)
-      // Sort by probability (highest first)
-      return responses.sort((a, b) => b.probability - a.probability)
+      // Sort by probability (highest first), handle null values
+      return responses.sort((a, b) => compareProbabilities(a.probability, b.probability))
     } catch (error) {
       throw new Error(
         `Failed to generate variations: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -130,8 +131,8 @@ export class AIService {
         )
         .flatMap((result) => result.value)
 
-      // Sort all responses by probability
-      return successfulResponses.sort((a, b) => b.probability - a.probability)
+      // Sort all responses by probability, handle null values
+      return successfulResponses.sort((a, b) => compareProbabilities(a.probability, b.probability))
     } catch (error) {
       throw new Error(
         `Failed to generate multi-model responses: ${error instanceof Error ? error.message : 'Unknown error'}`
