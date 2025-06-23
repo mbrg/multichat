@@ -11,7 +11,8 @@
       "Bash(find:*)",
       "Bash(npx prettier:*)",
       "Bash(npm run ci:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(rg:*)"
     ],
     "deny": []
   }
