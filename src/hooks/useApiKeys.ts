@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { SecureStorage } from '../utils/crypto'
 
 export interface ApiKeys {
@@ -17,6 +17,76 @@ export interface EnabledProviders {
   together: boolean
 }
 
+const loadEnvDefaults = async (
+  keys: ApiKeys,
+  providers: string[],
+  loadedFromStorage: string[]
+) => {
+  // Only load env vars as defaults when no stored keys exist
+  // Must use VITE_ prefix for Vite to expose them to the browser
+  const envKeys: Record<string, string | undefined> = {
+    openai: import.meta.env.VITE_OPENAI,
+    anthropic: import.meta.env.VITE_ANTHROPIC,
+    google: import.meta.env.VITE_GOOGLE,
+    mistral: import.meta.env.VITE_MISTRAL,
+    together: import.meta.env.VITE_TOGETHER,
+  }
+
+  const loadedProviders: string[] = []
+
+  for (const provider of providers) {
+    const envKey = envKeys[provider]
+    // Only use env key if no stored key exists for this provider
+    if (
+      envKey &&
+      !keys[provider as keyof ApiKeys] &&
+      !loadedFromStorage.includes(provider)
+    ) {
+      try {
+        await SecureStorage.encryptAndStore(`apiKey_${provider}`, envKey)
+        keys[provider as keyof ApiKeys] = envKey
+        loadedProviders.push(provider)
+      } catch (error) {
+        console.warn(
+          'Failed to store environment key in secure storage:',
+          error
+        )
+        // Still use the key even if storage fails
+        keys[provider as keyof ApiKeys] = envKey
+        loadedProviders.push(provider)
+      }
+    }
+  }
+
+  if (loadedProviders.length > 0) {
+    console.log(
+      `Development mode: Loaded API keys from environment for: ${loadedProviders.join(', ')}`
+    )
+  } else {
+    // Check if we have any env vars defined
+    const hasAnyEnvVars = Object.values(envKeys).some(
+      (key) => key !== undefined
+    )
+    const skippedProviders = providers.filter(
+      (p) =>
+        envKeys[p] &&
+        (keys[p as keyof ApiKeys] || loadedFromStorage.includes(p))
+    )
+
+    if (hasAnyEnvVars) {
+      if (skippedProviders.length > 0) {
+        console.log(
+          `Environment variables found but not loaded for: ${skippedProviders.join(', ')} (keys already exist)`
+        )
+      } else {
+        console.log('No environment variables to load')
+      }
+    } else {
+      console.log('No environment variables defined')
+    }
+  }
+}
+
 export const useApiKeys = () => {
   const [apiKeys, setApiKeys] = useState<ApiKeys>({})
   const [enabledProviders, setEnabledProviders] = useState<EnabledProviders>({
@@ -27,10 +97,14 @@ export const useApiKeys = () => {
     together: false,
   })
   const [isLoading, setIsLoading] = useState(true)
+  const hasInitialized = useRef(false)
 
   // Load API keys and settings on mount
   useEffect(() => {
-    loadApiKeys()
+    if (!hasInitialized.current) {
+      hasInitialized.current = true
+      loadApiKeys()
+    }
   }, [])
 
   const loadApiKeys = async () => {
@@ -38,14 +112,34 @@ export const useApiKeys = () => {
     try {
       const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
       const keys: ApiKeys = {}
+      const loadedFromStorage: string[] = []
 
-      // Load API keys from secure storage
+      // Load API keys from secure storage only
       for (const provider of providers) {
-        const key = await SecureStorage.decryptAndRetrieve(`apiKey_${provider}`)
-        if (key) {
-          keys[provider as keyof ApiKeys] = key
+        try {
+          const storedKey = await SecureStorage.decryptAndRetrieve(
+            `apiKey_${provider}`
+          )
+          if (storedKey) {
+            keys[provider as keyof ApiKeys] = storedKey
+            loadedFromStorage.push(provider)
+          }
+        } catch (error) {
+          console.warn(`Failed to decrypt ${provider} key:`, error)
         }
       }
+
+      if (loadedFromStorage.length > 0) {
+        console.log(
+          `Loaded API keys from secure storage for: ${loadedFromStorage.join(', ')}`
+        )
+      }
+
+      // In development, pre-populate from env vars if no stored keys exist
+      if (import.meta.env.DEV) {
+        await loadEnvDefaults(keys, providers, loadedFromStorage)
+      }
+
       setApiKeys(keys)
 
       // Auto-enable providers that have API keys, load manual settings from localStorage
@@ -87,7 +181,7 @@ export const useApiKeys = () => {
         setEnabledProviders((prev) => ({ ...prev, [provider]: false }))
       }
     } catch (error) {
-      console.error(`Error saving ${provider} API key:`, error)
+      console.error('Error saving API key:', error)
       throw error
     }
   }
@@ -116,7 +210,10 @@ export const useApiKeys = () => {
     return Boolean(apiKeys[provider])
   }
 
-  const clearAllKeys = () => {
+  const clearAllKeys = async () => {
+    console.log('Reverting to defaults, loading from environment...')
+
+    // Clear all storage
     SecureStorage.clearAll()
     setApiKeys({})
     localStorage.removeItem('enabledProviders')
@@ -127,6 +224,15 @@ export const useApiKeys = () => {
       mistral: false,
       together: false,
     })
+
+    // In development, force reload from environment after clearing
+    if (import.meta.env.DEV) {
+      // Small delay to ensure storage is cleared
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      // Force reload - this time loadEnvDefaults should find no existing keys
+      await loadApiKeys()
+    }
   }
 
   return {

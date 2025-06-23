@@ -12,6 +12,10 @@ vi.mock('../../utils/crypto', () => ({
   },
 }))
 
+// Mock the environment
+vi.stubEnv('VITE_OPENAI', 'sk-env-openai')
+vi.stubEnv('VITE_ANTHROPIC', 'sk-env-anthropic')
+
 const mockedSecureStorage = vi.mocked(SecureStorage)
 
 describe('useApiKeys Hook', () => {
@@ -40,10 +44,14 @@ describe('useApiKeys Hook', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.apiKeys).toEqual({})
+    // In dev mode with env vars, keys will be loaded from environment
+    expect(result.current.apiKeys).toEqual({
+      openai: 'sk-env-openai',
+      anthropic: 'sk-env-anthropic',
+    })
     expect(result.current.enabledProviders).toEqual({
-      openai: false,
-      anthropic: false,
+      openai: true,
+      anthropic: true,
       google: false,
       mistral: false,
       together: false,
@@ -82,7 +90,7 @@ describe('useApiKeys Hook', () => {
     })
 
     expect(result.current.enabledProviders.openai).toBe(true)
-    expect(result.current.enabledProviders.anthropic).toBe(false)
+    expect(result.current.enabledProviders.anthropic).toBe(true) // Loaded from env
   })
 
   it('saves API key to secure storage', async () => {
@@ -133,14 +141,10 @@ describe('useApiKeys Hook', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // First add a key to enable the provider
-    await act(async () => {
-      await result.current.saveApiKey('openai', 'sk-test-key')
-    })
-
+    // OpenAI is already enabled from env vars
     expect(result.current.enabledProviders.openai).toBe(true)
 
-    // Then toggle it off
+    // Toggle it off
     act(() => {
       result.current.toggleProvider('openai')
     })
@@ -150,7 +154,7 @@ describe('useApiKeys Hook', () => {
       'enabledProviders',
       JSON.stringify({
         openai: false,
-        anthropic: false,
+        anthropic: true, // Still enabled from env
         google: false,
         mistral: false,
         together: false,
@@ -171,7 +175,7 @@ describe('useApiKeys Hook', () => {
     })
 
     expect(result.current.getApiKey('openai')).toBe('sk-test-key')
-    expect(result.current.getApiKey('anthropic')).toBeUndefined()
+    expect(result.current.getApiKey('anthropic')).toBe('sk-env-anthropic') // From env
   })
 
   it('clears all keys and resets state', async () => {
@@ -225,7 +229,7 @@ describe('useApiKeys Hook', () => {
     }).rejects.toThrow('Storage error')
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Error saving openai API key:',
+      'Error saving API key:',
       expect.any(Error)
     )
 

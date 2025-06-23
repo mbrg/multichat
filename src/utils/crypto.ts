@@ -21,6 +21,10 @@ export class SecureStorage {
    */
   private static openDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
+      if (!window.indexedDB) {
+        reject(new Error('IndexedDB not available'))
+        return
+      }
       const request = indexedDB.open(this.DB_NAME, this.DB_VERSION)
 
       request.onerror = () => reject(request.error)
@@ -92,13 +96,28 @@ export class SecureStorage {
     }
 
     this.keyPromise = (async () => {
-      // Try to retrieve existing key
-      let key = await this.retrieveCryptoKey()
+      let key: CryptoKey | null = null
+
+      // Try to retrieve existing key (if IndexedDB is available)
+      if (window.indexedDB) {
+        key = await this.retrieveCryptoKey()
+      }
 
       // Generate new key if none exists
       if (!key) {
         key = await this.generateKey()
-        await this.storeCryptoKey(key)
+        // Only store if IndexedDB is available
+        if (window.indexedDB) {
+          try {
+            await this.storeCryptoKey(key)
+          } catch (error) {
+            // IndexedDB storage failed, continue with session-only key
+            console.warn(
+              'Failed to store crypto key, using session-only storage:',
+              error
+            )
+          }
+        }
       }
 
       // Reset idle timer
@@ -241,7 +260,9 @@ export class SecureStorage {
     localStorage.clear()
 
     // Clear IndexedDB
-    indexedDB.deleteDatabase(this.DB_NAME)
+    if (window.indexedDB) {
+      indexedDB.deleteDatabase(this.DB_NAME)
+    }
 
     // Lock storage
     this.lock()

@@ -15,8 +15,14 @@ interface Provider {
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
-  const { enabledProviders, isLoading, saveApiKey, toggleProvider, getApiKey } =
-    useApiKeys()
+  const {
+    enabledProviders,
+    isLoading,
+    saveApiKey,
+    toggleProvider,
+    getApiKey,
+    clearAllKeys,
+  } = useApiKeys()
 
   const providers: Provider[] = [
     {
@@ -82,6 +88,14 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   }
 
   const handleToggleProvider = (providerId: string) => {
+    // Don't allow enabling if no API key is provided
+    const hasKey = getApiKey(providerId as keyof typeof enabledProviders)
+    if (
+      !hasKey &&
+      !enabledProviders[providerId as keyof typeof enabledProviders]
+    ) {
+      return // Don't enable without API key
+    }
     toggleProvider(providerId as keyof typeof enabledProviders)
   }
 
@@ -125,6 +139,18 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
         {/* API Keys Section */}
         {!isLoading && (
           <div className="p-6 space-y-6">
+            {/* Revert to defaults button */}
+            {import.meta.env.DEV && (
+              <div className="flex justify-end pb-4 border-b border-[#2a2a2a]">
+                <button
+                  onClick={clearAllKeys}
+                  className="px-4 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors"
+                >
+                  Revert to defaults
+                </button>
+              </div>
+            )}
+
             {providers.map((provider) => (
               <div
                 key={provider.id}
@@ -141,9 +167,14 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   </div>
                   <button
                     onClick={() => handleToggleProvider(provider.id)}
+                    disabled={
+                      !getApiKey(
+                        provider.id as keyof typeof enabledProviders
+                      ) && !provider.enabled
+                    }
                     className={`relative w-11 h-6 rounded-full transition-colors ${
                       provider.enabled ? 'bg-[#667eea]' : 'bg-[#2a2a2a]'
-                    }`}
+                    } ${!getApiKey(provider.id as keyof typeof enabledProviders) && !provider.enabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <div
                       className={`absolute top-0.5 w-5 h-5 bg-[#0a0a0a] rounded-full transition-transform ${
@@ -152,18 +183,20 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                     />
                   </button>
                 </div>
-                <input
-                  type="password"
-                  placeholder={provider.placeholder}
-                  value={
-                    getApiKey(provider.id as keyof typeof enabledProviders) ||
-                    ''
-                  }
-                  onChange={(e) =>
-                    handleApiKeyChange(provider.id, e.target.value)
-                  }
-                  className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-md px-3 py-2 text-[#e0e0e0] text-sm font-mono focus:outline-none focus:border-[#667eea] transition-colors"
-                />
+                <div className="relative">
+                  <input
+                    type="password"
+                    placeholder={provider.placeholder}
+                    value={
+                      getApiKey(provider.id as keyof typeof enabledProviders) ||
+                      ''
+                    }
+                    onChange={(e) =>
+                      handleApiKeyChange(provider.id, e.target.value)
+                    }
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-md px-3 py-2 text-[#e0e0e0] text-sm font-mono focus:outline-none focus:border-[#667eea] transition-colors"
+                  />
+                </div>
               </div>
             ))}
 
