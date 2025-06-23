@@ -81,5 +81,4 @@ export class AnthropicProvider implements AIProvider {
   private async getApiKey(): Promise<string | null> {
     return await SecureStorage.decryptAndRetrieve('anthropic-api-key')
   }
-
 }

@@ -12,7 +12,7 @@ describe('Logprob Utility Functions', () => {
       it('should calculate probability from single token logprob', () => {
         const logprobs = [{ token: 'hello', logprob: -0.1 }]
         const result = calculateProbabilityFromLogprobs(logprobs)
-        
+
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(Math.exp(-0.1), 5)
         expect(result).toBeGreaterThan(0)
@@ -23,13 +23,13 @@ describe('Logprob Utility Functions', () => {
         const logprobs = [
           { token: 'hello', logprob: -0.1 },
           { token: ' world', logprob: -0.3 },
-          { token: '!', logprob: -0.2 }
+          { token: '!', logprob: -0.2 },
         ]
         const result = calculateProbabilityFromLogprobs(logprobs)
-        
+
         const expectedAvg = (-0.1 + -0.3 + -0.2) / 3 // -0.2
         const expectedProb = Math.exp(expectedAvg)
-        
+
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(expectedProb, 5)
       })
@@ -37,10 +37,10 @@ describe('Logprob Utility Functions', () => {
       it('should handle high confidence responses (low negative logprobs)', () => {
         const logprobs = [
           { token: 'the', logprob: -0.01 },
-          { token: ' answer', logprob: -0.02 }
+          { token: ' answer', logprob: -0.02 },
         ]
         const result = calculateProbabilityFromLogprobs(logprobs)
-        
+
         expect(result).not.toBeNull()
         expect(result).toBeGreaterThan(0.9) // High confidence
       })
@@ -48,10 +48,10 @@ describe('Logprob Utility Functions', () => {
       it('should handle low confidence responses (high negative logprobs)', () => {
         const logprobs = [
           { token: 'maybe', logprob: -2.5 },
-          { token: ' perhaps', logprob: -3.0 }
+          { token: ' perhaps', logprob: -3.0 },
         ]
         const result = calculateProbabilityFromLogprobs(logprobs)
-        
+
         expect(result).not.toBeNull()
         expect(result).toBeLessThan(0.1) // Low confidence
       })
@@ -59,14 +59,14 @@ describe('Logprob Utility Functions', () => {
       it('should clamp extremely high probabilities to 0.99', () => {
         const logprobs = [{ token: 'certain', logprob: 5.0 }] // Unrealistically high
         const result = calculateProbabilityFromLogprobs(logprobs)
-        
+
         expect(result).toBe(0.99)
       })
 
       it('should clamp extremely low probabilities to 0.01', () => {
         const logprobs = [{ token: 'unlikely', logprob: -10.0 }] // Very low
         const result = calculateProbabilityFromLogprobs(logprobs)
-        
+
         expect(result).toBe(0.01)
       })
     })
@@ -91,9 +91,9 @@ describe('Logprob Utility Functions', () => {
         const logprobs = [
           { token: 'hello' }, // No logprob field
           { token: 'world', logprob: undefined },
-          { token: '!', logprob: null }
-        ] as any
-        
+          { token: '!', logprob: null },
+        ] as unknown as import('../logprobs').LogProbData
+
         const result = calculateProbabilityFromLogprobs(logprobs)
         expect(result).toBeNull()
       })
@@ -101,9 +101,9 @@ describe('Logprob Utility Functions', () => {
       it('should return null for logprobs with invalid logprob types', () => {
         const logprobs = [
           { token: 'hello', logprob: 'invalid' },
-          { token: 'world', logprob: NaN }
-        ] as any
-        
+          { token: 'world', logprob: NaN },
+        ] as unknown as import('../logprobs').LogProbData
+
         const result = calculateProbabilityFromLogprobs(logprobs)
         expect(result).toBeNull()
       })
@@ -112,12 +112,12 @@ describe('Logprob Utility Functions', () => {
         const logprobs = [
           { token: 'valid', logprob: -0.2 },
           { token: 'invalid' }, // No logprob
-          { token: 'also_valid', logprob: -0.3 }
-        ] as any
-        
+          { token: 'also_valid', logprob: -0.3 },
+        ] as unknown as import('../logprobs').LogProbData
+
         const result = calculateProbabilityFromLogprobs(logprobs)
         const expectedAvg = (-0.2 + -0.3) / 2 // Only valid ones
-        
+
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(Math.exp(expectedAvg), 5)
       })
@@ -128,19 +128,17 @@ describe('Logprob Utility Functions', () => {
         const logprobs = [
           'not an object',
           null,
-          { token: 'valid', logprob: -0.1 }
-        ] as any
-        
+          { token: 'valid', logprob: -0.1 },
+        ] as unknown as import('../logprobs').LogProbData
+
         const result = calculateProbabilityFromLogprobs(logprobs)
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(Math.exp(-0.1), 5)
       })
 
       it('should handle infinite logprob values', () => {
-        const logprobs = [
-          { token: 'infinite', logprob: -Infinity }
-        ]
-        
+        const logprobs = [{ token: 'infinite', logprob: -Infinity }]
+
         const result = calculateProbabilityFromLogprobs(logprobs)
         expect(result).toBeNull() // Infinite values are treated as invalid
       })
@@ -149,13 +147,13 @@ describe('Logprob Utility Functions', () => {
         const malformedData = [
           { randomField: 'value' },
           { token: 'test', probability: 0.5 }, // Wrong field name
-          { token: 'test', logprob: { nested: -0.1 } } // Wrong type
-        ] as any
-        
+          { token: 'test', logprob: { nested: -0.1 } }, // Wrong type
+        ] as unknown as import('../logprobs').LogProbData
+
         expect(() => {
           calculateProbabilityFromLogprobs(malformedData)
         }).not.toThrow()
-        
+
         const result = calculateProbabilityFromLogprobs(malformedData)
         expect(result).toBeNull() // Should gracefully return null
       })
@@ -164,36 +162,34 @@ describe('Logprob Utility Functions', () => {
     describe('Real-world provider data structures', () => {
       it('should handle OpenAI-style logprob structure', () => {
         const openaiLogprobs = [
-          { 
+          {
             token: 'Hello',
             logprob: -0.1,
             topLogprobs: [
               { token: 'Hello', logprob: -0.1 },
-              { token: 'Hi', logprob: -0.5 }
-            ]
+              { token: 'Hi', logprob: -0.5 },
+            ],
           },
           {
             token: ' world',
             logprob: -0.2,
             topLogprobs: [
               { token: ' world', logprob: -0.2 },
-              { token: ' there', logprob: -0.8 }
-            ]
-          }
+              { token: ' there', logprob: -0.8 },
+            ],
+          },
         ]
-        
+
         const result = calculateProbabilityFromLogprobs(openaiLogprobs)
         const expectedAvg = (-0.1 + -0.2) / 2
-        
+
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(Math.exp(expectedAvg), 5)
       })
 
       it('should handle minimal logprob structure', () => {
-        const minimalLogprobs = [
-          { token: 'test', logprob: -0.5 }
-        ]
-        
+        const minimalLogprobs = [{ token: 'test', logprob: -0.5 }]
+
         const result = calculateProbabilityFromLogprobs(minimalLogprobs)
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(Math.exp(-0.5), 5)
@@ -214,7 +210,9 @@ describe('Logprob Utility Functions', () => {
     })
 
     it('should return false for invalid logprobs', () => {
-      const invalidLogprobs = [{ token: 'test' }] as any
+      const invalidLogprobs = [
+        { token: 'test' },
+      ] as unknown as import('../logprobs').LogProbData
       expect(hasLogprobSupport(invalidLogprobs)).toBe(false)
     })
   })
@@ -258,7 +256,7 @@ describe('Logprob Utility Functions', () => {
     it('should sort arrays correctly using compareProbabilities', () => {
       const probabilities = [null, 0.3, 0.8, null, 0.1, 0.9]
       const sorted = probabilities.sort(compareProbabilities)
-      
+
       expect(sorted).toEqual([0.9, 0.8, 0.3, 0.1, null, null])
     })
 
@@ -274,17 +272,17 @@ describe('Logprob Utility Functions', () => {
       const logprobs = [
         { token: 'The', logprob: -0.1 },
         { token: ' answer', logprob: -0.2 },
-        { token: ' is', logprob: -0.15 }
+        { token: ' is', logprob: -0.15 },
       ]
-      
+
       // Calculate probability
       const probability = calculateProbabilityFromLogprobs(logprobs)
       expect(probability).not.toBeNull()
-      
+
       // Check support
       const hasSupport = hasLogprobSupport(logprobs)
       expect(hasSupport).toBe(true)
-      
+
       // Format for display
       const formatted = formatProbabilityForDisplay(probability)
       expect(formatted).toMatch(/^\d+%$/)
@@ -292,15 +290,15 @@ describe('Logprob Utility Functions', () => {
 
     it('should handle workflow with missing logprobs', () => {
       const logprobs = undefined
-      
+
       // Calculate probability
       const probability = calculateProbabilityFromLogprobs(logprobs)
       expect(probability).toBeNull()
-      
+
       // Check support
       const hasSupport = hasLogprobSupport(logprobs)
       expect(hasSupport).toBe(false)
-      
+
       // Format for display
       const formatted = formatProbabilityForDisplay(probability)
       expect(formatted).toBe('N/A')
@@ -308,10 +306,10 @@ describe('Logprob Utility Functions', () => {
 
     it('should maintain consistency across multiple calculations', () => {
       const sameLogprobs = [{ token: 'consistent', logprob: -0.3 }]
-      
+
       const prob1 = calculateProbabilityFromLogprobs(sameLogprobs)
       const prob2 = calculateProbabilityFromLogprobs(sameLogprobs)
-      
+
       expect(prob1).toBe(prob2)
       expect(prob1).toBeCloseTo(Math.exp(-0.3), 10)
     })

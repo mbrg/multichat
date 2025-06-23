@@ -100,5 +100,4 @@ export class TogetherProvider implements AIProvider {
   private async getApiKey(): Promise<string | null> {
     return await SecureStorage.decryptAndRetrieve('together-api-key')
   }
-
 }

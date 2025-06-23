@@ -84,5 +84,4 @@ export class OpenAIProvider implements AIProvider {
   private async getApiKey(): Promise<string | null> {
     return await SecureStorage.decryptAndRetrieve('openai-api-key')
   }
-
 }

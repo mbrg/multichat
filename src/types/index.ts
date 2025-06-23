@@ -13,7 +13,7 @@ export interface ResponseOption {
   content: string
   probability: number | null // null when probability calculation unavailable
   temperature?: number // Temperature parameter used for generation
-  logprobs?: any[] // AI SDK LogProbs type structure
+  logprobs?: import('../utils/logprobs').LogProbData // AI SDK LogProbs type structure
   isStreaming: boolean
   timestamp: Date
 }

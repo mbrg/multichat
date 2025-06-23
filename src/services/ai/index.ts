@@ -99,7 +99,9 @@ export class AIService {
     try {
       const responses = await Promise.all(promises)
       // Sort by probability (highest first), handle null values
-      return responses.sort((a, b) => compareProbabilities(a.probability, b.probability))
+      return responses.sort((a, b) =>
+        compareProbabilities(a.probability, b.probability)
+      )
     } catch (error) {
       throw new Error(
         `Failed to generate variations: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -132,7 +134,9 @@ export class AIService {
         .flatMap((result) => result.value)
 
       // Sort all responses by probability, handle null values
-      return successfulResponses.sort((a, b) => compareProbabilities(a.probability, b.probability))
+      return successfulResponses.sort((a, b) =>
+        compareProbabilities(a.probability, b.probability)
+      )
     } catch (error) {
       throw new Error(
         `Failed to generate multi-model responses: ${error instanceof Error ? error.message : 'Unknown error'}`

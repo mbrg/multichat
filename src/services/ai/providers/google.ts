@@ -81,5 +81,4 @@ export class GoogleProvider implements AIProvider {
   private async getApiKey(): Promise<string | null> {
     return await SecureStorage.decryptAndRetrieve('google-api-key')
   }
-
 }

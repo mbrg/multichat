@@ -21,7 +21,10 @@ const PossibilitiesPanel: React.FC<PossibilitiesPanelProps> = ({
   onSelectResponse,
 }) => {
   const sortedResponses = useMemo(
-    () => [...responses].sort((a, b) => compareProbabilities(a.probability, b.probability)),
+    () =>
+      [...responses].sort((a, b) =>
+        compareProbabilities(a.probability, b.probability)
+      ),
     [responses]
   )
 

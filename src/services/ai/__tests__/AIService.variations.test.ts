@@ -150,7 +150,7 @@ describe('AIService Multiple Variations User Flows', () => {
       // Should be sorted by probability (highest first)
       const prob0 = variations[0].probability
       const prob1 = variations[1].probability
-      
+
       if (prob0 !== null && prob1 !== null) {
         expect(prob0).toBeGreaterThanOrEqual(prob1)
       } else if (prob0 === null && prob1 !== null) {
@@ -263,7 +263,7 @@ describe('AIService Multiple Variations User Flows', () => {
       for (let i = 0; i < responses.length - 1; i++) {
         const currentProb = responses[i].probability
         const nextProb = responses[i + 1].probability
-        
+
         // Handle null probability sorting (nulls should come after numbers)
         if (currentProb !== null && nextProb !== null) {
           expect(currentProb).toBeGreaterThanOrEqual(nextProb)

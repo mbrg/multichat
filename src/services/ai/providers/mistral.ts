@@ -81,5 +81,4 @@ export class MistralProvider implements AIProvider {
   private async getApiKey(): Promise<string | null> {
     return await SecureStorage.decryptAndRetrieve('mistral-api-key')
   }
-
 }

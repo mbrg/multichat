@@ -95,8 +95,8 @@ describe('AI Probability Calculation User Flows', () => {
         usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
         logprobs: [
           { token: 'Quantum', logprob: -0.1 },
-          { token: ' computing', logprob: -0.2 }
-        ]
+          { token: ' computing', logprob: -0.2 },
+        ],
       })
 
       const response = await aiService.generateSingleResponse(
@@ -118,16 +118,16 @@ describe('AI Probability Calculation User Flows', () => {
           finishReason: 'stop',
           logprobs: [
             { token: 'Test', logprob: -0.1 }, // Higher confidence (lower temp)
-            { token: ' response', logprob: -0.1 }
-          ]
+            { token: ' response', logprob: -0.1 },
+          ],
         })
         .mockResolvedValueOnce({
           text: 'Test response',
           finishReason: 'stop',
           logprobs: [
             { token: 'Test', logprob: -0.5 }, // Lower confidence (higher temp)
-            { token: ' response', logprob: -0.6 }
-          ]
+            { token: ' response', logprob: -0.6 },
+          ],
         })
 
       const conservativeResponse = await aiService.generateSingleResponse(
@@ -144,10 +144,10 @@ describe('AI Probability Calculation User Flows', () => {
       // Lower temperature should generally result in higher confidence
       const conservativeProb = conservativeResponse.probability
       const creativeProb = creativeResponse.probability
-      
+
       expect(conservativeProb).not.toBeNull()
       expect(creativeProb).not.toBeNull()
-      
+
       if (conservativeProb !== null && creativeProb !== null) {
         expect(conservativeProb).toBeGreaterThan(creativeProb)
       }
@@ -159,7 +159,10 @@ describe('AI Probability Calculation User Flows', () => {
         .mockResolvedValueOnce({
           text: 'Test response',
           finishReason: 'stop',
-          logprobs: [{ token: 'Test', logprob: -0.3 }, { token: ' response', logprob: -0.2 }]
+          logprobs: [
+            { token: 'Test', logprob: -0.3 },
+            { token: ' response', logprob: -0.2 },
+          ],
         })
         .mockResolvedValueOnce({
           text: 'Test response',
@@ -188,7 +191,7 @@ describe('AI Probability Calculation User Flows', () => {
       // OpenAI should have real probability from logprobs
       expect(openaiResponse.probability).toBeGreaterThan(0)
       expect(openaiResponse.probability).toBeLessThanOrEqual(1)
-      
+
       // Anthropic and Google should have null probability
       expect(anthropicResponse.probability).toBeNull()
       expect(googleResponse.probability).toBeNull()
@@ -199,17 +202,26 @@ describe('AI Probability Calculation User Flows', () => {
         .mockResolvedValueOnce({
           text: 'Response 1',
           finishReason: 'stop',
-          logprobs: [{ token: 'Response', logprob: -0.1 }, { token: ' 1', logprob: -0.2 }]
+          logprobs: [
+            { token: 'Response', logprob: -0.1 },
+            { token: ' 1', logprob: -0.2 },
+          ],
         })
         .mockResolvedValueOnce({
           text: 'Response 2',
           finishReason: 'stop',
-          logprobs: [{ token: 'Response', logprob: -0.3 }, { token: ' 2', logprob: -0.4 }]
+          logprobs: [
+            { token: 'Response', logprob: -0.3 },
+            { token: ' 2', logprob: -0.4 },
+          ],
         })
         .mockResolvedValueOnce({
           text: 'Response 3',
           finishReason: 'stop',
-          logprobs: [{ token: 'Response', logprob: -0.5 }, { token: ' 3', logprob: -0.6 }]
+          logprobs: [
+            { token: 'Response', logprob: -0.5 },
+            { token: ' 3', logprob: -0.6 },
+          ],
         })
 
       const variations = await aiService.generateVariations(
@@ -246,20 +258,29 @@ describe('AI Probability Calculation User Flows', () => {
     it('should sort variations by probability for user ranking', async () => {
       // Mock responses with different logprob values for sorting
       mockGenerateText
-        .mockResolvedValueOnce({ 
-          text: 'Response 1', 
+        .mockResolvedValueOnce({
+          text: 'Response 1',
           finishReason: 'stop',
-          logprobs: [{ token: 'Response', logprob: -0.1 }, { token: ' 1', logprob: -0.1 }] // Highest
+          logprobs: [
+            { token: 'Response', logprob: -0.1 },
+            { token: ' 1', logprob: -0.1 },
+          ], // Highest
         })
-        .mockResolvedValueOnce({ 
-          text: 'Response 2', 
+        .mockResolvedValueOnce({
+          text: 'Response 2',
           finishReason: 'stop',
-          logprobs: [{ token: 'Response', logprob: -0.3 }, { token: ' 2', logprob: -0.3 }] // Middle
+          logprobs: [
+            { token: 'Response', logprob: -0.3 },
+            { token: ' 2', logprob: -0.3 },
+          ], // Middle
         })
-        .mockResolvedValueOnce({ 
-          text: 'Response 3', 
+        .mockResolvedValueOnce({
+          text: 'Response 3',
           finishReason: 'stop',
-          logprobs: [{ token: 'Response', logprob: -0.5 }, { token: ' 3', logprob: -0.5 }] // Lowest
+          logprobs: [
+            { token: 'Response', logprob: -0.5 },
+            { token: ' 3', logprob: -0.5 },
+          ], // Lowest
         })
 
       const variations = await aiService.generateVariations(
@@ -272,7 +293,7 @@ describe('AI Probability Calculation User Flows', () => {
       for (let i = 0; i < variations.length - 1; i++) {
         const currentProb = variations[i].probability
         const nextProb = variations[i + 1].probability
-        
+
         // Handle null values in sorting (null should come after numbers)
         if (currentProb !== null && nextProb !== null) {
           expect(currentProb).toBeGreaterThanOrEqual(nextProb)
@@ -287,17 +308,25 @@ describe('AI Probability Calculation User Flows', () => {
       // Mock different responses for different providers
       mockGenerateText.mockImplementation(async ({ model }) => {
         // OpenAI models get logprobs
-        if (model && typeof model === 'object' && 'provider' in model && model.provider === 'openai') {
+        if (
+          model &&
+          typeof model === 'object' &&
+          'provider' in model &&
+          model.provider === 'openai'
+        ) {
           return {
             text: 'Test response',
             finishReason: 'stop',
-            logprobs: [{ token: 'Test', logprob: -0.2 }, { token: ' response', logprob: -0.3 }]
+            logprobs: [
+              { token: 'Test', logprob: -0.2 },
+              { token: ' response', logprob: -0.3 },
+            ],
           }
         }
         // Other providers don't get logprobs
         return {
-          text: 'Test response', 
-          finishReason: 'stop'
+          text: 'Test response',
+          finishReason: 'stop',
         }
       })
 
@@ -317,7 +346,7 @@ describe('AI Probability Calculation User Flows', () => {
       for (let i = 0; i < responses.length - 1; i++) {
         const currentProb = responses[i].probability
         const nextProb = responses[i + 1].probability
-        
+
         if (currentProb === null) {
           hasSeenNull = true
         } else if (hasSeenNull && nextProb !== null) {
@@ -346,17 +375,26 @@ describe('AI Probability Calculation User Flows', () => {
         .mockResolvedValueOnce({
           text: 'Test response',
           finishReason: 'stop',
-          logprobs: [{ token: 'Test', logprob: -0.1 }, { token: ' response', logprob: -0.1 }] // High confidence
+          logprobs: [
+            { token: 'Test', logprob: -0.1 },
+            { token: ' response', logprob: -0.1 },
+          ], // High confidence
         })
         .mockResolvedValueOnce({
           text: 'Test response',
           finishReason: 'stop',
-          logprobs: [{ token: 'Test', logprob: -0.3 }, { token: ' response', logprob: -0.3 }] // Medium confidence
+          logprobs: [
+            { token: 'Test', logprob: -0.3 },
+            { token: ' response', logprob: -0.3 },
+          ], // Medium confidence
         })
         .mockResolvedValueOnce({
           text: 'Test response',
           finishReason: 'stop',
-          logprobs: [{ token: 'Test', logprob: -0.6 }, { token: ' response', logprob: -0.6 }] // Lower confidence
+          logprobs: [
+            { token: 'Test', logprob: -0.6 },
+            { token: ' response', logprob: -0.6 },
+          ], // Lower confidence
         })
 
       const responses = await Promise.all([
@@ -374,10 +412,10 @@ describe('AI Probability Calculation User Flows', () => {
       // Generally expect probability to decrease with higher temperature
       const lowTempProb = responses[0].probability
       const highTempProb = responses[2].probability
-      
+
       expect(lowTempProb).not.toBeNull()
       expect(highTempProb).not.toBeNull()
-      
+
       if (lowTempProb !== null && highTempProb !== null) {
         expect(lowTempProb).toBeGreaterThan(0.3)
         expect(highTempProb).toBeLessThan(0.8)
@@ -430,7 +468,7 @@ describe('AI Probability Calculation User Flows', () => {
 
       // Should not have logprobs for Anthropic
       expect(response.logprobs).toBeUndefined()
-      
+
       // Should still have temperature information
       expect(response.temperature).toBeDefined()
     })
@@ -440,25 +478,42 @@ describe('AI Probability Calculation User Flows', () => {
       let callCount = 0
       mockGenerateText.mockImplementation(async () => {
         callCount++
-        if (callCount === 1 || callCount === 4) { // OpenAI and Mistral
+        if (callCount === 1 || callCount === 4) {
+          // OpenAI and Mistral
           return {
             text: 'Test response',
             finishReason: 'stop',
-            logprobs: [{ token: 'Test', logprob: -0.2 }, { token: ' response', logprob: -0.3 }]
+            logprobs: [
+              { token: 'Test', logprob: -0.2 },
+              { token: ' response', logprob: -0.3 },
+            ],
           }
-        } else { // Anthropic and Google
+        } else {
+          // Anthropic and Google
           return {
             text: 'Test response',
-            finishReason: 'stop'
+            finishReason: 'stop',
           }
         }
       })
 
       const providers = [
         { model: 'gpt-4', provider: 'openai', hasLogprobs: true },
-        { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic', hasLogprobs: false },
-        { model: 'gemini-2.0-flash-exp', provider: 'google', hasLogprobs: false },
-        { model: 'mistral-large-latest', provider: 'mistral', hasLogprobs: true },
+        {
+          model: 'claude-3-5-sonnet-20241022',
+          provider: 'anthropic',
+          hasLogprobs: false,
+        },
+        {
+          model: 'gemini-2.0-flash-exp',
+          provider: 'google',
+          hasLogprobs: false,
+        },
+        {
+          model: 'mistral-large-latest',
+          provider: 'mistral',
+          hasLogprobs: true,
+        },
       ]
 
       for (const { model, hasLogprobs } of providers) {
@@ -470,7 +525,7 @@ describe('AI Probability Calculation User Flows', () => {
 
         // All should provide consistent interface
         expect(response.probability).toBeDefined()
-        
+
         if (hasLogprobs) {
           expect(typeof response.probability).toBe('number')
           expect(response.probability).toBeGreaterThan(0)
@@ -478,7 +533,7 @@ describe('AI Probability Calculation User Flows', () => {
         } else {
           expect(response.probability).toBeNull()
         }
-        
+
         // All should have temperature information
         expect(response.temperature).toBeDefined()
       }
@@ -499,7 +554,10 @@ describe('AI Probability Calculation User Flows', () => {
       mockGenerateText.mockResolvedValue({
         text: 'Test response',
         finishReason: 'stop',
-        logprobs: [{ token: 'Test', logprob: -0.3 }, { token: ' response', logprob: -0.2 }]
+        logprobs: [
+          { token: 'Test', logprob: -0.3 },
+          { token: ' response', logprob: -0.2 },
+        ],
       })
 
       const response = await aiService.generateSingleResponse(
@@ -509,7 +567,7 @@ describe('AI Probability Calculation User Flows', () => {
 
       // Should have a real probability from logprobs
       expect(response.probability).not.toBeNull()
-      
+
       if (response.probability !== null) {
         // Probability should be a decimal that can be easily converted to percentage
         const percentage = Math.round(response.probability * 100)
@@ -525,8 +583,8 @@ describe('AI Probability Calculation User Flows', () => {
         finishReason: 'stop',
         logprobs: [
           { token: 'Test', logprob: Math.random() * -0.5 }, // Random logprobs for variation
-          { token: ' response', logprob: Math.random() * -0.5 }
-        ]
+          { token: ' response', logprob: Math.random() * -0.5 },
+        ],
       }))
 
       const variations = await aiService.generateVariations(

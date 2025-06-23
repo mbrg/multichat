@@ -33,7 +33,9 @@ export const usePossibilities = (
   const [isLoading, setIsLoading] = useState(false)
 
   // Always sort by probability when displaying (null values go to end)
-  const sortedResponses = [...responses].sort((a, b) => compareProbabilities(a.probability, b.probability))
+  const sortedResponses = [...responses].sort((a, b) =>
+    compareProbabilities(a.probability, b.probability)
+  )
   const displayedResponses = sortedResponses.slice(0, displayedCount)
   const hasMore =
     displayedCount < sortedResponses.length && displayedCount < maxResponses
@@ -111,9 +113,10 @@ export const createMockResponse = (
   temperature,
   isStreaming: false,
   timestamp: new Date(),
-  logprobs: Array.from({ length: content.split(' ').length }, () =>
-    Math.log(probability)
-  ),
+  logprobs: content.split(' ').map((token) => ({
+    token: token,
+    logprob: Math.log(probability) + (Math.random() - 0.5) * 0.1, // Add slight variance
+  })),
 })
 
 export const generateVariationsForModel = (
