@@ -129,9 +129,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           <div className="p-6 bg-amber-900/20 border-b border-[#2a2a2a]">
             <div className="flex items-center gap-2 text-amber-400 text-sm">
               <span>⚠️</span>
-              <span>
-                Sign in to securely store your API keys.
-              </span>
+              <span>Sign in to securely store your API keys.</span>
             </div>
           </div>
         )}
