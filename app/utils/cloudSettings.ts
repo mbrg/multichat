@@ -1,6 +1,20 @@
+export interface SystemInstruction {
+  id: string
+  name: string
+  content: string
+  enabled: boolean
+}
+
+export interface Temperature {
+  id: string
+  value: number
+}
+
 export interface UserSettings {
   systemPrompt?: string
   enabledProviders?: string
+  systemInstructions?: SystemInstruction[]
+  temperatures?: Temperature[]
   [key: string]: any
 }
 
@@ -66,6 +80,34 @@ export class CloudSettings {
     await this.updateSettings({ systemPrompt: prompt })
   }
 
+  // System instructions methods
+  static async getSystemInstructions(): Promise<SystemInstruction[]> {
+    const settings = await this.getSettings()
+    return settings.systemInstructions || [{
+      id: 'default',
+      name: 'default',
+      content: 'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.',
+      enabled: true
+    }]
+  }
+
+  static async setSystemInstructions(instructions: SystemInstruction[]): Promise<void> {
+    await this.updateSettings({ systemInstructions: instructions })
+  }
+
+  // Temperature methods
+  static async getTemperatures(): Promise<Temperature[]> {
+    const settings = await this.getSettings()
+    return settings.temperatures || [{
+      id: 'default',
+      value: 0.7
+    }]
+  }
+
+  static async setTemperatures(temperatures: Temperature[]): Promise<void> {
+    await this.updateSettings({ temperatures: temperatures })
+  }
+
   static async getEnabledProviders(): Promise<string | undefined> {
     const settings = await this.getSettings()
     return settings.enabledProviders
@@ -73,5 +115,25 @@ export class CloudSettings {
 
   static async setEnabledProviders(providers: string): Promise<void> {
     await this.updateSettings({ enabledProviders: providers })
+  }
+
+  // Reset all settings to defaults
+  static async resetToDefaults(): Promise<void> {
+    const defaultInstructions: SystemInstruction[] = [{
+      id: 'default',
+      name: 'default',
+      content: 'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.',
+      enabled: true
+    }]
+    
+    const defaultTemperatures: Temperature[] = [{
+      id: 'default',
+      value: 0.7
+    }]
+    
+    await this.updateSettings({
+      systemInstructions: defaultInstructions,
+      temperatures: defaultTemperatures
+    })
   }
 }

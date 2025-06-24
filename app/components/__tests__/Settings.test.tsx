@@ -2,6 +2,33 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Settings from '../Settings'
 
+// Mock CloudSettings
+const mockSystemInstructions = [
+  {
+    id: 'default',
+    name: 'default',
+    content: 'You are a helpful AI assistant.',
+    enabled: true
+  }
+]
+
+const mockTemperatures = [
+  {
+    id: 'default',
+    value: 0.7
+  }
+]
+
+vi.mock('../../utils/cloudSettings', () => ({
+  CloudSettings: {
+    getSystemInstructions: vi.fn(() => Promise.resolve(mockSystemInstructions)),
+    getTemperatures: vi.fn(() => Promise.resolve(mockTemperatures)),
+    setSystemInstructions: vi.fn(() => Promise.resolve()),
+    setTemperatures: vi.fn(() => Promise.resolve()),
+    resetToDefaults: vi.fn(() => Promise.resolve()),
+  },
+}))
+
 // Mock next-auth to return authenticated session for these tests
 vi.mock('next-auth/react', async () => {
   const actual = await vi.importActual('next-auth/react')
@@ -21,6 +48,7 @@ const mockSaveApiKey = vi.fn()
 const mockClearApiKey = vi.fn()
 const mockToggleProvider = vi.fn()
 const mockGetApiKey = vi.fn()
+const mockClearAllKeys = vi.fn()
 
 vi.mock('../../hooks/useApiKeys', () => ({
   useApiKeys: () => ({
@@ -41,7 +69,31 @@ vi.mock('../../hooks/useApiKeys', () => ({
     clearApiKey: mockClearApiKey,
     toggleProvider: mockToggleProvider,
     getApiKey: mockGetApiKey,
+    clearAllKeys: mockClearAllKeys,
   }),
+}))
+
+// Mock useAuthPopup
+vi.mock('../../hooks/useAuthPopup', () => ({
+  useAuthPopup: () => ({
+    isPopupOpen: false,
+    checkAuthAndRun: vi.fn(),
+    closePopup: vi.fn(),
+  }),
+}))
+
+// Mock Next.js Image component
+vi.mock('next/image', () => ({
+  default: ({ src, alt, width, height, className }: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+    />
+  ),
 }))
 
 describe('Settings Component', () => {
@@ -63,17 +115,17 @@ describe('Settings Component', () => {
     })
   })
 
-  it('renders settings modal when open', () => {
+  it('renders settings modal when open', async () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
     expect(screen.getByText('API Keys')).toBeInTheDocument()
-    expect(screen.getByText('Configured API Keys')).toBeInTheDocument()
+    expect(screen.getByText('⚙️')).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
     render(<Settings isOpen={false} onClose={() => {}} />)
 
-    expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument()
   })
 
   it('calls onClose when close button is clicked', () => {
@@ -152,5 +204,25 @@ describe('Settings Component', () => {
     fireEvent.click(removeButtons[0])
 
     expect(mockClearApiKey).toHaveBeenCalledWith('openai')
+  })
+
+  it('opens to system instructions section when specified', async () => {
+    render(<Settings isOpen={true} onClose={() => {}} initialSection="system-instructions" />)
+
+    await waitFor(() => {
+      expect(screen.getByText('System Instructions')).toBeInTheDocument()
+      expect(screen.getByText('System Instructions (1/3)')).toBeInTheDocument()
+      expect(screen.getByText('default')).toBeInTheDocument()
+    })
+  })
+
+  it('opens to temperatures section when specified', async () => {
+    render(<Settings isOpen={true} onClose={() => {}} initialSection="temperatures" />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Temperatures')).toBeInTheDocument()
+      expect(screen.getByText('Temperatures (1/3)')).toBeInTheDocument()
+      expect(screen.getByText('0.7')).toBeInTheDocument()
+    })
   })
 })

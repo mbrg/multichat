@@ -4,7 +4,6 @@ import type { ChatContainerProps, Message as MessageType } from '../types/chat'
 import Message from './Message'
 import MessageInput from './MessageInput'
 import Settings from './Settings'
-import SystemInstructions from './SystemInstructions'
 import AuthPopup from './AuthPopup'
 import Menu from './Menu'
 import { useAuthPopup } from '../hooks/useAuthPopup'
@@ -18,7 +17,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [showSystemInstructions, setShowSystemInstructions] = useState(false)
+  const [settingsSection, setSettingsSection] = useState<'api-keys' | 'system-instructions' | 'temperatures' | undefined>()
   const { isPopupOpen, closePopup } = useAuthPopup()
 
   useEffect(() => {
@@ -47,8 +46,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           Infinite Chat
         </div>
         <Menu
-          onOpenSettings={() => setShowSettings(true)}
-          onOpenSystemInstructions={() => setShowSystemInstructions(true)}
+          onOpenSettings={(section) => {
+            setSettingsSection(section)
+            setShowSettings(true)
+          }}
         />
       </div>
 
@@ -86,12 +87,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       </div>
 
       {/* Settings Modal */}
-      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
-
-      {/* System Instructions Modal */}
-      <SystemInstructions
-        isOpen={showSystemInstructions}
-        onClose={() => setShowSystemInstructions(false)}
+      <Settings 
+        isOpen={showSettings} 
+        onClose={() => {
+          setShowSettings(false)
+          setSettingsSection(undefined)
+        }} 
+        initialSection={settingsSection}
       />
 
       {/* Auth Popup */}

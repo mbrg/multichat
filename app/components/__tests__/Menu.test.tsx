@@ -3,6 +3,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { useSession, signOut } from 'next-auth/react'
 import Menu from '../Menu'
 import { useAuthPopup } from '../../hooks/useAuthPopup'
+import { useApiKeys } from '../../hooks/useApiKeys'
+import { CloudSettings } from '../../utils/cloudSettings'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -11,6 +13,29 @@ vi.mock('next-auth/react', () => ({
 
 vi.mock('../../hooks/useAuthPopup', () => ({
   useAuthPopup: vi.fn(),
+}))
+
+vi.mock('../../hooks/useApiKeys', () => ({
+  useApiKeys: vi.fn(() => ({
+    getApiKey: vi.fn((provider: string) => {
+      if (provider === 'openai') return '***'
+      return undefined
+    }),
+    hasApiKey: vi.fn((provider: string) => {
+      return provider === 'openai'
+    }),
+  })),
+}))
+
+vi.mock('../../utils/cloudSettings', () => ({
+  CloudSettings: {
+    getSystemInstructions: vi.fn(() => Promise.resolve([
+      { id: '1', name: 'default', content: 'Be helpful', enabled: true }
+    ])),
+    getTemperatures: vi.fn(() => Promise.resolve([
+      { id: '1', value: 0.7 }
+    ])),
+  },
 }))
 
 vi.mock('next/image', () => ({
@@ -28,7 +53,6 @@ vi.mock('next/image', () => ({
 
 describe('Menu', () => {
   const mockOnOpenSettings = vi.fn()
-  const mockOnOpenSystemInstructions = vi.fn()
   const mockCheckAuthAndRun = vi.fn()
 
   beforeEach(() => {
@@ -47,7 +71,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -64,7 +87,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -72,17 +94,15 @@ describe('Menu', () => {
 
     // Menu should not be visible initially
     expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
-    expect(screen.queryByText('System Instructions')).not.toBeInTheDocument()
 
     // Click to open menu
     fireEvent.click(menuButton)
     expect(screen.getByText('API Keys')).toBeInTheDocument()
-    expect(screen.getByText('System Instructions')).toBeInTheDocument()
+    expect(screen.getByText('Settings')).toBeInTheDocument()
 
     // Click to close menu
     fireEvent.click(menuButton)
     expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
-    expect(screen.queryByText('System Instructions')).not.toBeInTheDocument()
   })
 
   it('shows sign in button when not authenticated', () => {
@@ -94,7 +114,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -120,7 +139,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -148,7 +166,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -156,6 +173,7 @@ describe('Menu', () => {
     fireEvent.click(screen.getByText('API Keys'))
 
     expect(mockOnOpenSettings).toHaveBeenCalledTimes(1)
+    expect(mockOnOpenSettings).toHaveBeenCalledWith('api-keys')
     expect(mockCheckAuthAndRun).not.toHaveBeenCalled()
 
     // Menu should close after clicking
@@ -164,7 +182,7 @@ describe('Menu', () => {
     })
   })
 
-  it('handles API Keys click when not authenticated', async () => {
+  it('handles System Instructions click when not authenticated', async () => {
     ;(useSession as any).mockReturnValue({
       data: null,
       status: 'unauthenticated',
@@ -173,39 +191,15 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
-      />
-    )
-
-    fireEvent.click(screen.getByLabelText('Menu'))
-    fireEvent.click(screen.getByText('API Keys'))
-
-    expect(mockOnOpenSettings).toHaveBeenCalledTimes(1)
-    expect(mockCheckAuthAndRun).not.toHaveBeenCalled()
-
-    // Menu should close after clicking
-    await waitFor(() => {
-      expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
-    })
-  })
-
-  it('handles System Instructions click', async () => {
-    ;(useSession as any).mockReturnValue({
-      data: null,
-      status: 'unauthenticated',
-    })
-
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('System Instructions'))
 
-    expect(mockOnOpenSystemInstructions).toHaveBeenCalledTimes(1)
+    expect(mockOnOpenSettings).toHaveBeenCalledTimes(1)
+    expect(mockOnOpenSettings).toHaveBeenCalledWith('system-instructions')
+    expect(mockCheckAuthAndRun).not.toHaveBeenCalled()
 
     // Menu should close after clicking
     await waitFor(() => {
@@ -222,7 +216,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -252,7 +245,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -273,7 +265,6 @@ describe('Menu', () => {
     render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
       />
     )
 
@@ -295,19 +286,18 @@ describe('Menu', () => {
       <div>
         <Menu
           onOpenSettings={mockOnOpenSettings}
-          onOpenSystemInstructions={mockOnOpenSystemInstructions}
         />
         <div data-testid="outside">Outside element</div>
       </div>
     )
 
     fireEvent.click(screen.getByLabelText('Menu'))
-    expect(screen.getByText('API Keys')).toBeInTheDocument()
+    expect(screen.getByText('Settings')).toBeInTheDocument()
 
     // Click outside
     fireEvent.click(screen.getByTestId('outside'))
 
-    expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument()
   })
 
   it('applies custom className', () => {
@@ -319,12 +309,147 @@ describe('Menu', () => {
     const { container } = render(
       <Menu
         onOpenSettings={mockOnOpenSettings}
-        onOpenSystemInstructions={mockOnOpenSystemInstructions}
         className="custom-class"
       />
     )
 
     const menuContainer = container.querySelector('.custom-class')
     expect(menuContainer).toBeInTheDocument()
+  })
+
+  it('shows correct permutation count with 1 API key, 1 instruction, 1 temperature', async () => {
+    const mockSession = {
+      user: {
+        name: 'Test User',
+        email: 'test@example.com',
+      },
+    }
+    ;(useSession as any).mockReturnValue({
+      data: mockSession,
+      status: 'authenticated',
+    })
+
+    render(
+      <Menu
+        onOpenSettings={mockOnOpenSettings}
+      />
+    )
+
+    fireEvent.click(screen.getByLabelText('Menu'))
+
+    await waitFor(() => {
+      expect(screen.getByText('1 permutations')).toBeInTheDocument()
+    })
+  })
+
+  it('shows correct permutation count with multiple configurations', async () => {
+    const mockSession = {
+      user: {
+        name: 'Test User',
+        email: 'test@example.com',
+      },
+    }
+    ;(useSession as any).mockReturnValue({
+      data: mockSession,
+      status: 'authenticated',
+    })
+
+    // Override the default mocks for this test
+    vi.mocked(useApiKeys).mockReturnValue({
+      ...vi.mocked(useApiKeys)(),
+      hasApiKey: vi.fn((provider: string) => {
+        return provider === 'openai' || provider === 'anthropic'
+      }),
+    })
+
+    // Override CloudSettings mocks
+    const mockCloudSettings = vi.mocked(CloudSettings)
+    mockCloudSettings.getSystemInstructions.mockResolvedValue([
+      { id: '1', name: 'default', content: 'Be helpful', enabled: true },
+      { id: '2', name: 'creative', content: 'Be creative', enabled: true }
+    ])
+    mockCloudSettings.getTemperatures.mockResolvedValue([
+      { id: '1', value: 0.3 },
+      { id: '2', value: 0.7 },
+      { id: '3', value: 1.0 }
+    ])
+
+    render(
+      <Menu
+        onOpenSettings={mockOnOpenSettings}
+      />
+    )
+
+    fireEvent.click(screen.getByLabelText('Menu'))
+
+    // Should be 2 * 2 * 3 = 12 permutations
+    await waitFor(() => {
+      expect(screen.getByText('12 permutations')).toBeInTheDocument()
+    })
+  })
+
+  it('shows 0 permutations when no API keys configured', async () => {
+    const mockSession = {
+      user: {
+        name: 'Test User',
+        email: 'test@example.com',
+      },
+    }
+    ;(useSession as any).mockReturnValue({
+      data: mockSession,
+      status: 'authenticated',
+    })
+
+    // Override the default mocks for this test
+    vi.mocked(useApiKeys).mockReturnValue({
+      ...vi.mocked(useApiKeys)(),
+      hasApiKey: vi.fn(() => false),
+    })
+
+    render(
+      <Menu
+        onOpenSettings={mockOnOpenSettings}
+      />
+    )
+
+    fireEvent.click(screen.getByLabelText('Menu'))
+
+    // Should be 0 * 1 * 1 = 0 permutations
+    await waitFor(() => {
+      expect(screen.getByText('0 permutations')).toBeInTheDocument()
+    })
+  })
+
+  it('handles disabled system instructions correctly', async () => {
+    const mockSession = {
+      user: {
+        name: 'Test User',
+        email: 'test@example.com',
+      },
+    }
+    ;(useSession as any).mockReturnValue({
+      data: mockSession,
+      status: 'authenticated',
+    })
+
+    // Override CloudSettings mocks
+    const mockCloudSettings = vi.mocked(CloudSettings)
+    mockCloudSettings.getSystemInstructions.mockResolvedValue([
+      { id: '1', name: 'default', content: 'Be helpful', enabled: true },
+      { id: '2', name: 'creative', content: 'Be creative', enabled: false }
+    ])
+
+    render(
+      <Menu
+        onOpenSettings={mockOnOpenSettings}
+      />
+    )
+
+    fireEvent.click(screen.getByLabelText('Menu'))
+
+    // Should only count enabled instructions: 1 * 1 * 1 = 1 permutation
+    await waitFor(() => {
+      expect(screen.getByText('1 permutations')).toBeInTheDocument()
+    })
   })
 })

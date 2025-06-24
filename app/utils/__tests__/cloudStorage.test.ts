@@ -73,7 +73,6 @@ describe('CloudStorage (Legacy Wrapper)', () => {
           together: undefined,
         },
         systemInstructions: 'Be helpful',
-        systemPrompt: 'Be helpful',
         enabledProviders: '{"openai":true}',
       })
     })

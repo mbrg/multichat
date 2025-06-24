@@ -8,7 +8,7 @@
  */
 
 import { CloudApiKeys, ApiKeyStatus } from './cloudApiKeys'
-import { CloudSettings, UserSettings } from './cloudSettings'
+import { CloudSettings, UserSettings, SystemInstruction, Temperature } from './cloudSettings'
 
 export interface UserSecrets {
   apiKeys?: {
@@ -36,15 +36,22 @@ export class CloudStorage {
       )
     }
 
-    // Store other settings
-    const settings: UserSettings = { ...secrets }
-    delete settings.apiKeys // Remove API keys from settings
-
-    // Handle systemInstructions -> systemPrompt mapping
-    if (settings.systemInstructions !== undefined) {
-      settings.systemPrompt = settings.systemInstructions
-      delete settings.systemInstructions
-    }
+    // Store other settings, converting from legacy format
+    const settings: UserSettings = {}
+    
+    // Copy all properties except apiKeys and handle legacy systemInstructions
+    Object.entries(secrets).forEach(([key, value]) => {
+      if (key === 'apiKeys') {
+        // Skip API keys
+        return
+      } else if (key === 'systemInstructions' && typeof value === 'string') {
+        // Convert legacy systemInstructions to systemPrompt
+        settings.systemPrompt = value
+      } else if (key !== 'systemInstructions') {
+        // Copy other settings as-is
+        ;(settings as any)[key] = value
+      }
+    })
 
     await CloudSettings.updateSettings(settings)
   }
@@ -59,9 +66,17 @@ export class CloudStorage {
       CloudSettings.getSettings(),
     ])
 
-    // Map settings back to legacy format
-    const secrets: UserSecrets = { ...settings }
-
+    // Map settings back to legacy format (excluding new types)
+    const secrets: UserSecrets = {
+      ...settings,
+      systemInstructions: settings.systemPrompt,
+    }
+    
+    // Remove new array-based properties from legacy interface
+    delete (secrets as any).systemInstructions
+    delete (secrets as any).temperatures
+    delete (secrets as any).systemPrompt
+    
     // Map systemPrompt back to systemInstructions for backward compatibility
     if (settings.systemPrompt !== undefined) {
       secrets.systemInstructions = settings.systemPrompt

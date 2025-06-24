@@ -3,22 +3,47 @@ import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
 import { useAuthPopup } from '../hooks/useAuthPopup'
 import AuthPopup from './AuthPopup'
+import { useApiKeys } from '../hooks/useApiKeys'
+import { CloudSettings } from '../utils/cloudSettings'
 
 interface MenuProps {
-  onOpenSettings: () => void
-  onOpenSystemInstructions: () => void
+  onOpenSettings: (section?: 'api-keys' | 'system-instructions' | 'temperatures') => void
   className?: string
 }
 
 const Menu: React.FC<MenuProps> = ({
   onOpenSettings,
-  onOpenSystemInstructions,
   className = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [instructionCount, setInstructionCount] = useState(0)
+  const [temperatureCount, setTemperatureCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()
   const { isPopupOpen, checkAuthAndRun, closePopup } = useAuthPopup()
+  const { hasApiKey } = useApiKeys()
+
+  // Load counts when menu opens
+  useEffect(() => {
+    const loadCounts = async () => {
+      if (session?.user) {
+        try {
+          const [instructions, temps] = await Promise.all([
+            CloudSettings.getSystemInstructions(),
+            CloudSettings.getTemperatures()
+          ])
+          setInstructionCount(instructions.filter(i => i.enabled).length)
+          setTemperatureCount(temps.length)
+        } catch (error) {
+          console.warn('Failed to load counts:', error)
+        }
+      }
+    }
+
+    if (isOpen) {
+      loadCounts()
+    }
+  }, [isOpen, session])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -36,18 +61,25 @@ const Menu: React.FC<MenuProps> = ({
     }
   }, [isOpen])
 
-  const handleApiKeysClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsOpen(false)
-    onOpenSettings()
+  // Calculate number of configured API keys
+  const getConfiguredApiKeyCount = () => {
+    const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
+    return providers.filter(provider => hasApiKey(provider as any)).length
   }
 
-  const handleSystemInstructionsClick = (e: React.MouseEvent) => {
+  // Calculate total permutations
+  const calculatePermutations = () => {
+    const apiKeyCount = getConfiguredApiKeyCount()
+    const enabledInstructionCount = Math.max(1, instructionCount) // At least 1 (default)
+    const tempCount = Math.max(1, temperatureCount) // At least 1 (default)
+    return apiKeyCount * enabledInstructionCount * tempCount
+  }
+
+  const handleMenuItemClick = (e: React.MouseEvent, section?: 'api-keys' | 'system-instructions' | 'temperatures') => {
     e.preventDefault()
     e.stopPropagation()
     setIsOpen(false)
-    onOpenSystemInstructions()
+    onOpenSettings(section)
   }
 
   const handleSignInClick = (e: React.MouseEvent) => {
@@ -101,7 +133,7 @@ const Menu: React.FC<MenuProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-[90vw] min-w-[320px] sm:w-72 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-xl z-50">
           {/* User Section */}
           {status !== 'loading' && session && (
             <div className="p-4 border-b border-[#2a2a2a]">
@@ -129,27 +161,47 @@ const Menu: React.FC<MenuProps> = ({
 
           {/* Menu Items */}
           <div className="py-2">
+            {/* Settings Section */}
+            <div className="px-4 py-2">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-medium text-[#aaa] uppercase tracking-wider">Settings</p>
+                <p className="text-xs text-[#667eea]">{calculatePermutations()} permutations</p>
+              </div>
+            </div>
+
             {/* API Keys */}
             <button
-              onClick={handleApiKeysClick}
+              onClick={(e) => handleMenuItemClick(e, 'api-keys')}
               className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-[#2a2a2a] transition-colors"
             >
-              <span className="text-lg">⚙️</span>
+              <span className="text-lg">🔑</span>
               <div className="flex-1">
                 <p className="text-sm text-[#e0e0e0]">API Keys</p>
-                <p className="text-xs text-[#888]">Configure AI providers</p>
+                <p className="text-xs text-[#888]">Manage provider API keys</p>
               </div>
             </button>
 
             {/* System Instructions */}
             <button
-              onClick={handleSystemInstructionsClick}
+              onClick={(e) => handleMenuItemClick(e, 'system-instructions')}
               className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-[#2a2a2a] transition-colors"
             >
-              <span className="text-lg">📋</span>
+              <span className="text-lg">📝</span>
               <div className="flex-1">
                 <p className="text-sm text-[#e0e0e0]">System Instructions</p>
-                <p className="text-xs text-[#888]">Customize AI behavior</p>
+                <p className="text-xs text-[#888]">Configure AI behavior</p>
+              </div>
+            </button>
+
+            {/* Temperatures */}
+            <button
+              onClick={(e) => handleMenuItemClick(e, 'temperatures')}
+              className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-[#2a2a2a] transition-colors"
+            >
+              <span className="text-lg">🌡️</span>
+              <div className="flex-1">
+                <p className="text-sm text-[#e0e0e0]">Temperatures</p>
+                <p className="text-xs text-[#888]">Response randomness</p>
               </div>
             </button>
 
