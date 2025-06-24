@@ -143,10 +143,13 @@ NEXTAUTH_SECRET=your-secret-key
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
 
-# Optional: Vercel KV for future server-side key storage
-KV_URL=...
-KV_REST_API_URL=...
-KV_REST_API_TOKEN=...
+# Secrets Encryption (dedicated key for user secret encryption)
+KV_ENCRYPTION_KEY=your-secrets-encryption-key
+
+# Vercel KV (for cloud storage of encrypted secrets)
+KV_URL=your-kv-url
+KV_REST_API_URL=your-kv-rest-api-url
+KV_REST_API_TOKEN=your-kv-rest-api-token
 ```
 
 ## AI Integration
