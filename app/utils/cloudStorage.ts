@@ -8,7 +8,12 @@
  */
 
 import { CloudApiKeys, ApiKeyStatus } from './cloudApiKeys'
-import { CloudSettings, UserSettings, SystemInstruction, Temperature } from './cloudSettings'
+import {
+  CloudSettings,
+  UserSettings,
+  SystemInstruction,
+  Temperature,
+} from './cloudSettings'
 
 export interface UserSecrets {
   apiKeys?: {
@@ -38,7 +43,7 @@ export class CloudStorage {
 
     // Store other settings, converting from legacy format
     const settings: UserSettings = {}
-    
+
     // Copy all properties except apiKeys and handle legacy systemInstructions
     Object.entries(secrets).forEach(([key, value]) => {
       if (key === 'apiKeys') {
@@ -71,12 +76,12 @@ export class CloudStorage {
       ...settings,
       systemInstructions: settings.systemPrompt,
     }
-    
+
     // Remove new array-based properties from legacy interface
     delete (secrets as any).systemInstructions
     delete (secrets as any).temperatures
     delete (secrets as any).systemPrompt
-    
+
     // Map systemPrompt back to systemInstructions for backward compatibility
     if (settings.systemPrompt !== undefined) {
       secrets.systemInstructions = settings.systemPrompt

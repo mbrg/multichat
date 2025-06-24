@@ -7,14 +7,13 @@ import { useApiKeys } from '../hooks/useApiKeys'
 import { CloudSettings } from '../utils/cloudSettings'
 
 interface MenuProps {
-  onOpenSettings: (section?: 'api-keys' | 'system-instructions' | 'temperatures') => void
+  onOpenSettings: (
+    section?: 'api-keys' | 'system-instructions' | 'temperatures'
+  ) => void
   className?: string
 }
 
-const Menu: React.FC<MenuProps> = ({
-  onOpenSettings,
-  className = '',
-}) => {
+const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()
@@ -36,8 +35,10 @@ const Menu: React.FC<MenuProps> = ({
     }
   }, [isOpen])
 
-
-  const handleMenuItemClick = (e: React.MouseEvent, section?: 'api-keys' | 'system-instructions' | 'temperatures') => {
+  const handleMenuItemClick = (
+    e: React.MouseEvent,
+    section?: 'api-keys' | 'system-instructions' | 'temperatures'
+  ) => {
     e.preventDefault()
     e.stopPropagation()
     setIsOpen(false)
@@ -125,7 +126,9 @@ const Menu: React.FC<MenuProps> = ({
           <div className="py-2">
             {/* Settings Section */}
             <div className="px-4 py-2">
-              <p className="text-xs font-medium text-[#aaa] uppercase tracking-wider">Settings</p>
+              <p className="text-xs font-medium text-[#aaa] uppercase tracking-wider">
+                Settings
+              </p>
             </div>
 
             {/* API Keys */}

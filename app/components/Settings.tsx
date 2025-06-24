@@ -4,7 +4,11 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import { useApiKeys } from '../hooks/useApiKeys'
 import AuthPopup from './AuthPopup'
 import { useAuthPopup } from '../hooks/useAuthPopup'
-import { CloudSettings, SystemInstruction, Temperature } from '../utils/cloudSettings'
+import {
+  CloudSettings,
+  SystemInstruction,
+  Temperature,
+} from '../utils/cloudSettings'
 import openaiLogo from '../assets/OpenAI-white-monoblossom.svg'
 import geminiLogo from '../assets/gemini.svg'
 import huggingfaceLogo from '../assets/huggingface.svg'
@@ -27,7 +31,11 @@ type SettingsSection = 'api-keys' | 'system-instructions' | 'temperatures'
 
 const SYSTEM_INSTRUCTION_MAX_CHARS = 6000
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) => {
+const Settings: React.FC<SettingsProps> = ({
+  isOpen,
+  onClose,
+  initialSection,
+}) => {
   const { data: session, status } = useSession()
   const { isPopupOpen, checkAuthAndRun, closePopup } = useAuthPopup()
   const {
@@ -42,20 +50,25 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
   } = useApiKeys()
 
   // Local state for UI
-  const [activeSection, setActiveSection] = useState<SettingsSection>(initialSection || 'api-keys')
+  const [activeSection, setActiveSection] = useState<SettingsSection>(
+    initialSection || 'api-keys'
+  )
   const [showAddForm, setShowAddForm] = useState(false)
   const [newKeyProvider, setNewKeyProvider] = useState<string>('')
   const [newKeyValue, setNewKeyValue] = useState<string>('')
   const [error, setError] = useState<string>('')
 
   // System instructions state
-  const [systemInstructions, setSystemInstructions] = useState<SystemInstruction[]>([])
+  const [systemInstructions, setSystemInstructions] = useState<
+    SystemInstruction[]
+  >([])
   const [showAddInstructionForm, setShowAddInstructionForm] = useState(false)
-  const [editingInstruction, setEditingInstruction] = useState<SystemInstruction | null>(null)
+  const [editingInstruction, setEditingInstruction] =
+    useState<SystemInstruction | null>(null)
   const [newInstructionName, setNewInstructionName] = useState('')
   const [newInstructionContent, setNewInstructionContent] = useState('')
 
-  // Temperatures state  
+  // Temperatures state
   const [temperatures, setTemperatures] = useState<Temperature[]>([])
   const [showAddTemperatureForm, setShowAddTemperatureForm] = useState(false)
   const [newTemperatureValue, setNewTemperatureValue] = useState('')
@@ -100,7 +113,11 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
 
   const sections = [
     { id: 'api-keys' as const, label: 'API Keys', icon: '⚙️' },
-    { id: 'system-instructions' as const, label: 'System Instructions', icon: '📝' },
+    {
+      id: 'system-instructions' as const,
+      label: 'System Instructions',
+      icon: '📝',
+    },
     { id: 'temperatures' as const, label: 'Temperatures', icon: '🌡️' },
   ]
 
@@ -122,7 +139,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
     try {
       const [instructions, temps] = await Promise.all([
         CloudSettings.getSystemInstructions(),
-        CloudSettings.getTemperatures()
+        CloudSettings.getTemperatures(),
       ])
       setSystemInstructions(instructions)
       setTemperatures(temps)
@@ -132,7 +149,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
   }
 
   // Validation helper for instruction names
-  const validateInstructionName = (name: string, excludeId?: string): string | null => {
+  const validateInstructionName = (
+    name: string,
+    excludeId?: string
+  ): string | null => {
     if (!name.trim()) {
       return 'Name is required'
     }
@@ -146,7 +166,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
       return 'Name can only contain lowercase letters, numbers, hyphens, and underscores'
     }
     const existingInstruction = systemInstructions.find(
-      inst => inst.name === name && inst.id !== excludeId
+      (inst) => inst.name === name && inst.id !== excludeId
     )
     if (existingInstruction) {
       return 'Name must be unique'
@@ -234,7 +254,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
   // System instructions handlers
   const handleAddSystemInstruction = async () => {
     setError('')
-    
+
     const nameError = validateInstructionName(newInstructionName)
     if (nameError) {
       setError(nameError)
@@ -256,7 +276,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
       id: Date.now().toString(),
       name: newInstructionName.trim(),
       content: newInstructionContent.trim(),
-      enabled: true
+      enabled: true,
     }
 
     try {
@@ -274,10 +294,13 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
 
   const handleEditSystemInstruction = async () => {
     if (!editingInstruction) return
-    
+
     setError('')
-    
-    const nameError = validateInstructionName(newInstructionName, editingInstruction.id)
+
+    const nameError = validateInstructionName(
+      newInstructionName,
+      editingInstruction.id
+    )
     if (nameError) {
       setError(nameError)
       return
@@ -290,9 +313,13 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
     }
 
     try {
-      const updatedInstructions = systemInstructions.map(inst =>
+      const updatedInstructions = systemInstructions.map((inst) =>
         inst.id === editingInstruction.id
-          ? { ...inst, name: newInstructionName.trim(), content: newInstructionContent.trim() }
+          ? {
+              ...inst,
+              name: newInstructionName.trim(),
+              content: newInstructionContent.trim(),
+            }
           : inst
       )
       await CloudSettings.setSystemInstructions(updatedInstructions)
@@ -308,7 +335,9 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
 
   const handleDeleteSystemInstruction = async (id: string) => {
     try {
-      const updatedInstructions = systemInstructions.filter(inst => inst.id !== id)
+      const updatedInstructions = systemInstructions.filter(
+        (inst) => inst.id !== id
+      )
       await CloudSettings.setSystemInstructions(updatedInstructions)
       setSystemInstructions(updatedInstructions)
     } catch (error) {
@@ -318,7 +347,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
 
   const handleToggleSystemInstruction = async (id: string) => {
     try {
-      const updatedInstructions = systemInstructions.map(inst =>
+      const updatedInstructions = systemInstructions.map((inst) =>
         inst.id === id ? { ...inst, enabled: !inst.enabled } : inst
       )
       await CloudSettings.setSystemInstructions(updatedInstructions)
@@ -331,7 +360,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
   // Temperature handlers
   const handleAddTemperature = async () => {
     setError('')
-    
+
     const value = parseFloat(newTemperatureValue)
     if (isNaN(value) || value < 0 || value > 1) {
       setError('Temperature must be a number between 0 and 1')
@@ -343,14 +372,14 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
       return
     }
 
-    if (temperatures.some(temp => temp.value === value)) {
+    if (temperatures.some((temp) => temp.value === value)) {
       setError('Temperature value already exists')
       return
     }
 
     const newTemperature: Temperature = {
       id: Date.now().toString(),
-      value: value
+      value: value,
     }
 
     try {
@@ -367,7 +396,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
 
   const handleDeleteTemperature = async (id: string) => {
     try {
-      const updatedTemperatures = temperatures.filter(temp => temp.id !== id)
+      const updatedTemperatures = temperatures.filter((temp) => temp.id !== id)
       await CloudSettings.setTemperatures(updatedTemperatures)
       setTemperatures(updatedTemperatures)
     } catch (error) {
@@ -378,10 +407,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
   // Reset all settings to defaults
   const handleResetToDefaults = async () => {
     try {
-      await Promise.all([
-        clearAllKeys(),
-        CloudSettings.resetToDefaults()
-      ])
+      await Promise.all([clearAllKeys(), CloudSettings.resetToDefaults()])
       await loadSettings()
     } catch (error) {
       console.error('Error resetting to defaults:', error)
@@ -413,8 +439,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a]">
           <h2 className="text-lg font-bold text-[#e0e0e0] flex items-center gap-2">
-            <span>{sections.find(s => s.id === activeSection)?.icon}</span>
-            <span>{sections.find(s => s.id === activeSection)?.label}</span>
+            <span>{sections.find((s) => s.id === activeSection)?.icon}</span>
+            <span>{sections.find((s) => s.id === activeSection)?.label}</span>
           </h2>
           <button
             onClick={onClose}
@@ -442,7 +468,6 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
         {/* Content */}
         {!isLoading && (
           <div className="p-6">
-
             {/* API Keys Section */}
             {activeSection === 'api-keys' && (
               <div className="space-y-6">
@@ -516,7 +541,9 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                             <button
                               onClick={() => handleToggleProvider(provider.id)}
                               className={`relative w-10 h-5 rounded-full transition-colors ${
-                                provider.enabled ? 'bg-[#667eea]' : 'bg-[#2a2a2a]'
+                                provider.enabled
+                                  ? 'bg-[#667eea]'
+                                  : 'bg-[#2a2a2a]'
                               }`}
                             >
                               <div
@@ -703,17 +730,21 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                     <h3 className="text-sm font-medium text-[#e0e0e0]">
                       System Instructions ({systemInstructions.length}/3)
                     </h3>
-                    {isAuthenticated && !showAddInstructionForm && !editingInstruction && systemInstructions.length < 3 && (
-                      <button
-                        onClick={() => setShowAddInstructionForm(true)}
-                        className="px-3 py-1.5 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
-                      >
-                        + Add Instruction
-                      </button>
-                    )}
+                    {isAuthenticated &&
+                      !showAddInstructionForm &&
+                      !editingInstruction &&
+                      systemInstructions.length < 3 && (
+                        <button
+                          onClick={() => setShowAddInstructionForm(true)}
+                          className="px-3 py-1.5 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
+                        >
+                          + Add Instruction
+                        </button>
+                      )}
                   </div>
 
-                  {systemInstructions.length === 0 && !showAddInstructionForm ? (
+                  {systemInstructions.length === 0 &&
+                  !showAddInstructionForm ? (
                     <div className="text-center py-8">
                       <div className="text-[#666] text-sm mb-2">
                         No system instructions configured
@@ -744,26 +775,35 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                                 <h4 className="text-sm font-medium text-[#e0e0e0]">
                                   {instruction.name}
                                 </h4>
-                                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                  instruction.enabled
-                                    ? 'bg-green-900/30 text-green-400'
-                                    : 'bg-gray-700/30 text-gray-400'
-                                }`}>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full ${
+                                    instruction.enabled
+                                      ? 'bg-green-900/30 text-green-400'
+                                      : 'bg-gray-700/30 text-gray-400'
+                                  }`}
+                                >
                                   {instruction.enabled ? 'Enabled' : 'Disabled'}
                                 </span>
                               </div>
                               <p className="text-xs text-[#888] line-clamp-2">
-                                {instruction.content} ({instruction.content.length} chars)
+                                {instruction.content} (
+                                {instruction.content.length} chars)
                               </p>
                             </div>
                             <div className="flex items-center gap-2 ml-2">
                               {/* Enable/Disable Toggle */}
                               <button
-                                onClick={() => handleToggleSystemInstruction(instruction.id)}
+                                onClick={() =>
+                                  handleToggleSystemInstruction(instruction.id)
+                                }
                                 className={`relative w-8 h-4 rounded-full transition-colors ${
-                                  instruction.enabled ? 'bg-[#667eea]' : 'bg-[#2a2a2a]'
+                                  instruction.enabled
+                                    ? 'bg-[#667eea]'
+                                    : 'bg-[#2a2a2a]'
                                 }`}
-                                title={instruction.enabled ? 'Disable' : 'Enable'}
+                                title={
+                                  instruction.enabled ? 'Disable' : 'Enable'
+                                }
                               >
                                 <div
                                   className={`absolute top-0.5 w-3 h-3 bg-[#0a0a0a] rounded-full transition-transform ${
@@ -783,18 +823,40 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                                 className="p-1 text-[#888] hover:text-[#667eea] hover:bg-[#667eea]/10 rounded-md transition-colors"
                                 title="Edit instruction"
                               >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
                                 </svg>
                               </button>
                               {/* Delete Button */}
                               <button
-                                onClick={() => handleDeleteSystemInstruction(instruction.id)}
+                                onClick={() =>
+                                  handleDeleteSystemInstruction(instruction.id)
+                                }
                                 className="p-1 text-[#888] hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                                 title="Delete instruction"
                               >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
                                 </svg>
                               </button>
                             </div>
@@ -806,86 +868,101 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                 </div>
 
                 {/* Add/Edit System Instruction Form */}
-                {(showAddInstructionForm || editingInstruction) && isAuthenticated && (
-                  <div className="border border-[#2a2a2a] rounded-lg p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium text-[#e0e0e0]">
-                        {editingInstruction ? 'Edit System Instruction' : 'Add New System Instruction'}
-                      </h4>
-                      <button
-                        onClick={() => {
-                          setShowAddInstructionForm(false)
-                          setEditingInstruction(null)
-                          setNewInstructionName('')
-                          setNewInstructionContent('')
-                          setError('')
-                        }}
-                        className="text-[#888] hover:text-[#e0e0e0] p-1"
-                      >
-                        ×
-                      </button>
-                    </div>
-
-                    {error && (
-                      <div className="p-3 bg-red-900/20 border border-red-400/20 rounded-md">
-                        <div className="text-red-400 text-sm">{error}</div>
+                {(showAddInstructionForm || editingInstruction) &&
+                  isAuthenticated && (
+                    <div className="border border-[#2a2a2a] rounded-lg p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-[#e0e0e0]">
+                          {editingInstruction
+                            ? 'Edit System Instruction'
+                            : 'Add New System Instruction'}
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setShowAddInstructionForm(false)
+                            setEditingInstruction(null)
+                            setNewInstructionName('')
+                            setNewInstructionContent('')
+                            setError('')
+                          }}
+                          className="text-[#888] hover:text-[#e0e0e0] p-1"
+                        >
+                          ×
+                        </button>
                       </div>
-                    )}
 
-                    {/* Name Input */}
-                    <div>
-                      <label className="block text-xs text-[#aaa] mb-2">
-                        Name (lowercase, max 20 chars, unique)
-                      </label>
-                      <input
-                        type="text"
-                        value={newInstructionName}
-                        onChange={(e) => setNewInstructionName(e.target.value)}
-                        placeholder="assistant-helper"
-                        maxLength={20}
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-[#e0e0e0] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#667eea]"
-                      />
-                    </div>
+                      {error && (
+                        <div className="p-3 bg-red-900/20 border border-red-400/20 rounded-md">
+                          <div className="text-red-400 text-sm">{error}</div>
+                        </div>
+                      )}
 
-                    {/* Content Input */}
-                    <div>
-                      <label className="block text-xs text-[#aaa] mb-2">
-                        Content ({newInstructionContent.length}/{SYSTEM_INSTRUCTION_MAX_CHARS})
-                      </label>
-                      <textarea
-                        value={newInstructionContent}
-                        onChange={(e) => setNewInstructionContent(e.target.value)}
-                        placeholder="You are a helpful AI assistant..."
-                        rows={4}
-                        maxLength={SYSTEM_INSTRUCTION_MAX_CHARS}
-                        className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-[#e0e0e0] rounded-md px-3 py-2 text-sm resize-y focus:outline-none focus:border-[#667eea]"
-                      />
-                    </div>
+                      {/* Name Input */}
+                      <div>
+                        <label className="block text-xs text-[#aaa] mb-2">
+                          Name (lowercase, max 20 chars, unique)
+                        </label>
+                        <input
+                          type="text"
+                          value={newInstructionName}
+                          onChange={(e) =>
+                            setNewInstructionName(e.target.value)
+                          }
+                          placeholder="assistant-helper"
+                          maxLength={20}
+                          className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-[#e0e0e0] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#667eea]"
+                        />
+                      </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={editingInstruction ? handleEditSystemInstruction : handleAddSystemInstruction}
-                        disabled={!newInstructionName.trim() || !newInstructionContent.trim()}
-                        className="px-4 py-2 text-sm text-white bg-[#667eea] hover:bg-[#5a6fd8] disabled:bg-[#2a2a2a] disabled:text-[#666] disabled:cursor-not-allowed rounded-md transition-colors"
-                      >
-                        {editingInstruction ? 'Update' : 'Add'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowAddInstructionForm(false)
-                          setEditingInstruction(null)
-                          setNewInstructionName('')
-                          setNewInstructionContent('')
-                          setError('')
-                        }}
-                        className="px-4 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors"
-                      >
-                        Cancel
-                      </button>
+                      {/* Content Input */}
+                      <div>
+                        <label className="block text-xs text-[#aaa] mb-2">
+                          Content ({newInstructionContent.length}/
+                          {SYSTEM_INSTRUCTION_MAX_CHARS})
+                        </label>
+                        <textarea
+                          value={newInstructionContent}
+                          onChange={(e) =>
+                            setNewInstructionContent(e.target.value)
+                          }
+                          placeholder="You are a helpful AI assistant..."
+                          rows={4}
+                          maxLength={SYSTEM_INSTRUCTION_MAX_CHARS}
+                          className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-[#e0e0e0] rounded-md px-3 py-2 text-sm resize-y focus:outline-none focus:border-[#667eea]"
+                        />
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={
+                            editingInstruction
+                              ? handleEditSystemInstruction
+                              : handleAddSystemInstruction
+                          }
+                          disabled={
+                            !newInstructionName.trim() ||
+                            !newInstructionContent.trim()
+                          }
+                          className="px-4 py-2 text-sm text-white bg-[#667eea] hover:bg-[#5a6fd8] disabled:bg-[#2a2a2a] disabled:text-[#666] disabled:cursor-not-allowed rounded-md transition-colors"
+                        >
+                          {editingInstruction ? 'Update' : 'Add'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowAddInstructionForm(false)
+                            setEditingInstruction(null)
+                            setNewInstructionName('')
+                            setNewInstructionContent('')
+                            setError('')
+                          }}
+                          className="px-4 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             )}
 
@@ -897,14 +974,16 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                     <h3 className="text-sm font-medium text-[#e0e0e0]">
                       Temperatures ({temperatures.length}/3)
                     </h3>
-                    {isAuthenticated && !showAddTemperatureForm && temperatures.length < 3 && (
-                      <button
-                        onClick={() => setShowAddTemperatureForm(true)}
-                        className="px-3 py-1.5 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
-                      >
-                        + Add Temperature
-                      </button>
-                    )}
+                    {isAuthenticated &&
+                      !showAddTemperatureForm &&
+                      temperatures.length < 3 && (
+                        <button
+                          onClick={() => setShowAddTemperatureForm(true)}
+                          className="px-3 py-1.5 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
+                        >
+                          + Add Temperature
+                        </button>
+                      )}
                   </div>
 
                   {temperatures.length === 0 && !showAddTemperatureForm ? (
@@ -941,7 +1020,9 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, initialSection }) 
                             </div>
                           </div>
                           <button
-                            onClick={() => handleDeleteTemperature(temperature.id)}
+                            onClick={() =>
+                              handleDeleteTemperature(temperature.id)
+                            }
                             className="p-1.5 text-[#888] hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                             title="Delete temperature"
                           >

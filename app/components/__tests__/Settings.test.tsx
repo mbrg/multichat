@@ -8,15 +8,15 @@ const mockSystemInstructions = [
     id: 'default',
     name: 'default',
     content: 'You are a helpful AI assistant.',
-    enabled: true
-  }
+    enabled: true,
+  },
 ]
 
 const mockTemperatures = [
   {
     id: 'default',
-    value: 0.7
-  }
+    value: 0.7,
+  },
 ]
 
 vi.mock('../../utils/cloudSettings', () => ({
@@ -207,7 +207,13 @@ describe('Settings Component', () => {
   })
 
   it('opens to system instructions section when specified', async () => {
-    render(<Settings isOpen={true} onClose={() => {}} initialSection="system-instructions" />)
+    render(
+      <Settings
+        isOpen={true}
+        onClose={() => {}}
+        initialSection="system-instructions"
+      />
+    )
 
     await waitFor(() => {
       expect(screen.getByText('System Instructions')).toBeInTheDocument()
@@ -217,7 +223,13 @@ describe('Settings Component', () => {
   })
 
   it('opens to temperatures section when specified', async () => {
-    render(<Settings isOpen={true} onClose={() => {}} initialSection="temperatures" />)
+    render(
+      <Settings
+        isOpen={true}
+        onClose={() => {}}
+        initialSection="temperatures"
+      />
+    )
 
     await waitFor(() => {
       expect(screen.getByText('Temperatures')).toBeInTheDocument()

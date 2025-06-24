@@ -29,12 +29,12 @@ vi.mock('../../hooks/useApiKeys', () => ({
 
 vi.mock('../../utils/cloudSettings', () => ({
   CloudSettings: {
-    getSystemInstructions: vi.fn(() => Promise.resolve([
-      { id: '1', name: 'default', content: 'Be helpful', enabled: true }
-    ])),
-    getTemperatures: vi.fn(() => Promise.resolve([
-      { id: '1', value: 0.7 }
-    ])),
+    getSystemInstructions: vi.fn(() =>
+      Promise.resolve([
+        { id: '1', name: 'default', content: 'Be helpful', enabled: true },
+      ])
+    ),
+    getTemperatures: vi.fn(() => Promise.resolve([{ id: '1', value: 0.7 }])),
   },
 }))
 
@@ -68,11 +68,7 @@ describe('Menu', () => {
       status: 'unauthenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     const menuButton = screen.getByLabelText('Menu')
     expect(menuButton).toBeInTheDocument()
@@ -84,11 +80,7 @@ describe('Menu', () => {
       status: 'unauthenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     const menuButton = screen.getByLabelText('Menu')
 
@@ -111,11 +103,7 @@ describe('Menu', () => {
       status: 'unauthenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
@@ -136,11 +124,7 @@ describe('Menu', () => {
       status: 'authenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
@@ -163,11 +147,7 @@ describe('Menu', () => {
       status: 'authenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('API Keys'))
@@ -188,11 +168,7 @@ describe('Menu', () => {
       status: 'unauthenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('System Instructions'))
@@ -213,11 +189,7 @@ describe('Menu', () => {
       status: 'unauthenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('Sign in'))
@@ -242,11 +214,7 @@ describe('Menu', () => {
       status: 'authenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
     fireEvent.click(screen.getByText('Sign out'))
@@ -262,11 +230,7 @@ describe('Menu', () => {
   it('shows loading state', () => {
     ;(useSession as any).mockReturnValue({ data: null, status: 'loading' })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
@@ -284,9 +248,7 @@ describe('Menu', () => {
 
     render(
       <div>
-        <Menu
-          onOpenSettings={mockOnOpenSettings}
-        />
+        <Menu onOpenSettings={mockOnOpenSettings} />
         <div data-testid="outside">Outside element</div>
       </div>
     )
@@ -307,10 +269,7 @@ describe('Menu', () => {
     })
 
     const { container } = render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-        className="custom-class"
-      />
+      <Menu onOpenSettings={mockOnOpenSettings} className="custom-class" />
     )
 
     const menuContainer = container.querySelector('.custom-class')
@@ -329,11 +288,7 @@ describe('Menu', () => {
       status: 'authenticated',
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
@@ -366,19 +321,15 @@ describe('Menu', () => {
     const mockCloudSettings = vi.mocked(CloudSettings)
     mockCloudSettings.getSystemInstructions.mockResolvedValue([
       { id: '1', name: 'default', content: 'Be helpful', enabled: true },
-      { id: '2', name: 'creative', content: 'Be creative', enabled: true }
+      { id: '2', name: 'creative', content: 'Be creative', enabled: true },
     ])
     mockCloudSettings.getTemperatures.mockResolvedValue([
       { id: '1', value: 0.3 },
       { id: '2', value: 0.7 },
-      { id: '3', value: 1.0 }
+      { id: '3', value: 1.0 },
     ])
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
@@ -406,11 +357,7 @@ describe('Menu', () => {
       hasApiKey: vi.fn(() => false),
     })
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
@@ -436,14 +383,10 @@ describe('Menu', () => {
     const mockCloudSettings = vi.mocked(CloudSettings)
     mockCloudSettings.getSystemInstructions.mockResolvedValue([
       { id: '1', name: 'default', content: 'Be helpful', enabled: true },
-      { id: '2', name: 'creative', content: 'Be creative', enabled: false }
+      { id: '2', name: 'creative', content: 'Be creative', enabled: false },
     ])
 
-    render(
-      <Menu
-        onOpenSettings={mockOnOpenSettings}
-      />
-    )
+    render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
