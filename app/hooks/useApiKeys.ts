@@ -54,7 +54,6 @@ export const useApiKeys = () => {
       try {
         const allKeys = await storageInstance.getAllApiKeys()
         Object.assign(keys, allKeys)
-        console.log(`Loaded API keys for: ${Object.keys(allKeys).join(', ')}`)
       } catch (error) {
         console.warn('Failed to load keys from storage:', error)
       }

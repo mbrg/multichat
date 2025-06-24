@@ -174,31 +174,6 @@ export class CloudStorage {
   }
 
   /**
-   * Migrates secrets from local storage to cloud storage
-   */
-  public static async migrateFromLocal(
-    localSecrets: UserSecrets
-  ): Promise<void> {
-    if (Object.keys(localSecrets).length === 0) {
-      return
-    }
-
-    const cloudSecrets = await this.getSecrets()
-
-    // Merge local secrets with cloud secrets (cloud takes precedence)
-    const mergedSecrets = {
-      ...localSecrets,
-      ...cloudSecrets,
-      apiKeys: {
-        ...localSecrets.apiKeys,
-        ...cloudSecrets.apiKeys,
-      },
-    }
-
-    await this.storeSecrets(mergedSecrets)
-  }
-
-  /**
    * Gets all API keys as a simple object
    */
   public static async getAllApiKeys(): Promise<Record<string, string>> {
