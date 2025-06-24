@@ -1,9 +1,8 @@
 /**
  * Server-side API key access utilities
  *
- * Provides secure access to API keys on the server-side by reading from:
- * 1. User's encrypted cloud storage (when user session is available)
- * 2. Environment variables (fallback, development mode)
+ * Provides secure access to API keys on the server-side by reading from
+ * user's encrypted cloud storage when user session is available.
  */
 
 import { getServerSession } from 'next-auth'
@@ -38,12 +37,10 @@ function decryptData(encryptedData: string, userId: string): string {
 
 export class ServerKeys {
   /**
-   * Get API key for a specific provider
-   * Attempts to load from user's cloud storage, falls back to environment variables
+   * Get API key for a specific provider from user's cloud storage
    */
   static async getApiKey(provider: string): Promise<string | null> {
     try {
-      // Try to get from user's encrypted storage first
       const session = await getServerSession(authOptions)
       if (session?.user?.id) {
         const userKey = `secrets:${session.user.id}`
@@ -59,9 +56,6 @@ export class ServerKeys {
 
           const apiKey = secrets.apiKeys?.[provider]
           if (apiKey) {
-            console.log(
-              `[ServerKeys] Using cloud storage API key for ${provider}`
-            )
             return apiKey
           }
         }
@@ -73,27 +67,6 @@ export class ServerKeys {
       )
     }
 
-    // Fallback to environment variables
-    const envKeyMap: Record<string, string> = {
-      openai: 'OPENAI_API_KEY',
-      anthropic: 'ANTHROPIC_API_KEY',
-      google: 'GOOGLE_API_KEY',
-      mistral: 'MISTRAL_API_KEY',
-      together: 'TOGETHER_API_KEY',
-    }
-
-    const envVarName = envKeyMap[provider]
-    if (envVarName) {
-      const envKey = process.env[envVarName]
-      if (envKey) {
-        console.log(
-          `[ServerKeys] Using environment variable ${envVarName} for ${provider}`
-        )
-        return envKey
-      }
-    }
-
-    console.warn(`[ServerKeys] No API key found for ${provider}`)
     return null
   }
 
