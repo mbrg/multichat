@@ -8,7 +8,7 @@ import type {
   ResponseWithLogprobs,
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
-import { SecureStorage } from '../../../utils/crypto'
+import { ServerKeys } from '../../../utils/serverKeys'
 import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
 
 export class GoogleProvider implements AIProvider {
@@ -79,6 +79,6 @@ export class GoogleProvider implements AIProvider {
   }
 
   private async getApiKey(): Promise<string | null> {
-    return await SecureStorage.decryptAndRetrieve('google-api-key')
+    return await ServerKeys.getApiKey('google')
   }
 }

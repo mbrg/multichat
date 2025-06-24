@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { SecureStorage } from '../utils/crypto'
+import { StorageService } from '../services/storage'
+import { ApiKeyStorage } from '../types/storage'
+import { useSession } from 'next-auth/react'
 
 export interface ApiKeys {
   openai?: string
@@ -17,77 +19,8 @@ export interface EnabledProviders {
   together: boolean
 }
 
-const loadEnvDefaults = async (
-  keys: ApiKeys,
-  providers: string[],
-  loadedFromStorage: string[]
-) => {
-  // Only load env vars as defaults when no stored keys exist
-  // Must use NEXT_PUBLIC_ prefix for Next.js to expose them to the browser
-  const envKeys: Record<string, string | undefined> = {
-    openai: process.env.NEXT_PUBLIC_OPENAI,
-    anthropic: process.env.NEXT_PUBLIC_ANTHROPIC,
-    google: process.env.NEXT_PUBLIC_GOOGLE,
-    mistral: process.env.NEXT_PUBLIC_MISTRAL,
-    together: process.env.NEXT_PUBLIC_TOGETHER,
-  }
-
-  const loadedProviders: string[] = []
-
-  for (const provider of providers) {
-    const envKey = envKeys[provider]
-    // Only use env key if no stored key exists for this provider
-    if (
-      envKey &&
-      !keys[provider as keyof ApiKeys] &&
-      !loadedFromStorage.includes(provider)
-    ) {
-      try {
-        await SecureStorage.encryptAndStore(`apiKey_${provider}`, envKey)
-        keys[provider as keyof ApiKeys] = envKey
-        loadedProviders.push(provider)
-      } catch (error) {
-        console.warn(
-          'Failed to store environment key in secure storage:',
-          error
-        )
-        // Still use the key even if storage fails
-        keys[provider as keyof ApiKeys] = envKey
-        loadedProviders.push(provider)
-      }
-    }
-  }
-
-  if (loadedProviders.length > 0) {
-    console.log(
-      `Development mode: Loaded API keys from environment for: ${loadedProviders.join(', ')}`
-    )
-  } else {
-    // Check if we have any env vars defined
-    const hasAnyEnvVars = Object.values(envKeys).some(
-      (key) => key !== undefined
-    )
-    const skippedProviders = providers.filter(
-      (p) =>
-        envKeys[p] &&
-        (keys[p as keyof ApiKeys] || loadedFromStorage.includes(p))
-    )
-
-    if (hasAnyEnvVars) {
-      if (skippedProviders.length > 0) {
-        console.log(
-          `Environment variables found but not loaded for: ${skippedProviders.join(', ')} (keys already exist)`
-        )
-      } else {
-        console.log('No environment variables to load')
-      }
-    } else {
-      console.log('No environment variables defined')
-    }
-  }
-}
-
 export const useApiKeys = () => {
+  const { data: session, status } = useSession()
   const [apiKeys, setApiKeys] = useState<ApiKeys>({})
   const [enabledProviders, setEnabledProviders] = useState<EnabledProviders>({
     openai: false,
@@ -97,47 +30,33 @@ export const useApiKeys = () => {
     together: false,
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
   const hasInitialized = useRef(false)
 
   // Load API keys and settings on mount
   useEffect(() => {
-    if (!hasInitialized.current) {
+    if (status !== 'loading' && !hasInitialized.current) {
       hasInitialized.current = true
       loadApiKeys()
     }
-  }, [])
+  }, [session, status])
 
   const loadApiKeys = async () => {
     setIsLoading(true)
     try {
       const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
       const keys: ApiKeys = {}
-      const loadedFromStorage: string[] = []
 
-      // Load API keys from secure storage only
-      for (const provider of providers) {
-        try {
-          const storedKey = await SecureStorage.decryptAndRetrieve(
-            `apiKey_${provider}`
-          )
-          if (storedKey) {
-            keys[provider as keyof ApiKeys] = storedKey
-            loadedFromStorage.push(provider)
-          }
-        } catch (error) {
-          console.warn(`Failed to decrypt ${provider} key:`, error)
-        }
-      }
+      // Get appropriate storage implementation
+      const storageInstance = await StorageService.getStorage()
+      setStorage(storageInstance)
 
-      if (loadedFromStorage.length > 0) {
-        console.log(
-          `Loaded API keys from secure storage for: ${loadedFromStorage.join(', ')}`
-        )
-      }
-
-      // In development, pre-populate from env vars if no stored keys exist
-      if (process.env.NODE_ENV === 'development') {
-        await loadEnvDefaults(keys, providers, loadedFromStorage)
+      try {
+        const allKeys = await storageInstance.getAllApiKeys()
+        Object.assign(keys, allKeys)
+        console.log(`Loaded API keys for: ${Object.keys(allKeys).join(', ')}`)
+      } catch (error) {
+        console.warn('Failed to load keys from storage:', error)
       }
 
       setApiKeys(keys)
@@ -163,15 +82,20 @@ export const useApiKeys = () => {
   }
 
   const saveApiKey = async (provider: keyof ApiKeys, key: string) => {
+    if (!storage) {
+      console.error('Storage not initialized')
+      return
+    }
+
     try {
       if (key.trim()) {
-        await SecureStorage.encryptAndStore(`apiKey_${provider}`, key)
+        await storage.storeApiKey(provider, key)
         setApiKeys((prev) => ({ ...prev, [provider]: key }))
         // Auto-enable when API key is added
         setEnabledProviders((prev) => ({ ...prev, [provider]: true }))
       } else {
-        // Remove empty key from storage
-        localStorage.removeItem(`apiKey_${provider}`)
+        // Remove empty key
+        await storage.removeApiKey(provider)
         setApiKeys((prev) => {
           const newKeys = { ...prev }
           delete newKeys[provider]
@@ -211,27 +135,31 @@ export const useApiKeys = () => {
   }
 
   const clearAllKeys = async () => {
-    console.log('Reverting to defaults, loading from environment...')
+    if (!storage) {
+      console.error('Storage not initialized')
+      return
+    }
 
-    // Clear all storage
-    SecureStorage.clearAll()
-    setApiKeys({})
-    localStorage.removeItem('enabledProviders')
-    setEnabledProviders({
-      openai: false,
-      anthropic: false,
-      google: false,
-      mistral: false,
-      together: false,
-    })
+    console.log('Clearing all API keys...')
 
-    // In development, force reload from environment after clearing
-    if (process.env.NODE_ENV === 'development') {
-      // Small delay to ensure storage is cleared
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    try {
+      await storage.clearAllSecrets()
 
-      // Force reload - this time loadEnvDefaults should find no existing keys
+      setApiKeys({})
+      localStorage.removeItem('enabledProviders')
+      setEnabledProviders({
+        openai: false,
+        anthropic: false,
+        google: false,
+        mistral: false,
+        together: false,
+      })
+
+      // Reload keys after clearing (will get env vars if in dev mode)
       await loadApiKeys()
+    } catch (error) {
+      console.error('Error clearing API keys:', error)
+      throw error
     }
   }
 
@@ -246,5 +174,7 @@ export const useApiKeys = () => {
     hasApiKey,
     clearAllKeys,
     loadApiKeys,
+    isAuthenticated: Boolean(session?.user),
+    storage,
   }
 }

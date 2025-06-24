@@ -6,10 +6,10 @@
  */
 
 import { IKVStore } from './IKVStore'
-import { LocalKVStore } from './LocalKVStore'
 import { CloudKVStore } from './CloudKVStore'
+import { LocalKVStore } from './LocalKVStore'
 
-export type KVStoreType = 'local' | 'cloud' | 'auto'
+export type KVStoreType = 'cloud' | 'local' | 'auto'
 
 export interface KVEnvironment {
   NODE_ENV: string
@@ -42,11 +42,11 @@ export class KVStoreFactory {
     console.log(`[KVStoreFactory] Creating ${resolvedType} KV store instance`)
 
     switch (resolvedType) {
-      case 'local':
-        return new LocalKVStore()
-
       case 'cloud':
         return await this.createCloudKVStore()
+
+      case 'local':
+        return this.createLocalKVStore()
 
       default:
         throw new Error(`Unknown KV store type: ${resolvedType}`)
@@ -64,8 +64,8 @@ export class KVStoreFactory {
   /**
    * Resolve KV type based on environment and configuration
    */
-  private static resolveKVType(requestedType: KVStoreType): 'local' | 'cloud' {
-    if (requestedType !== 'auto') {
+  private static resolveKVType(requestedType: KVStoreType): KVStoreType {
+    if (requestedType === 'cloud') {
       console.log(
         `[KVStoreFactory] Using explicitly requested type: ${requestedType}`
       )
@@ -81,29 +81,25 @@ export class KVStoreFactory {
     console.log(`  Has KV_REST_API_URL: ${Boolean(env.KV_REST_API_URL)}`)
     console.log(`  Has KV_REST_API_TOKEN: ${Boolean(env.KV_REST_API_TOKEN)}`)
 
-    // Production: Always use cloud if configured, fail if not
-    if (env.NODE_ENV === 'production') {
+    // In development or test, fall back to local storage if no cloud config
+    if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') {
       if (!hasCloudConfig) {
-        throw new Error(
-          'Production environment requires Vercel KV configuration'
+        console.log(
+          `[KVStoreFactory] Using local storage (no cloud config in ${env.NODE_ENV})`
         )
+        return 'local'
       }
-      console.log(`[KVStoreFactory] Production mode -> using cloud KV`)
-      return 'cloud'
     }
 
-    // Development: Use cloud if configured, otherwise local
-    if (hasCloudConfig) {
-      console.log(
-        `[KVStoreFactory] Development mode with cloud config -> using cloud KV`
+    // Production requires cloud configuration
+    if (!hasCloudConfig) {
+      throw new Error(
+        'Vercel KV configuration required (KV_URL, KV_REST_API_URL, KV_REST_API_TOKEN)'
       )
-      return 'cloud'
-    } else {
-      console.log(
-        `[KVStoreFactory] Development mode without cloud config -> using local KV`
-      )
-      return 'local'
     }
+
+    console.log(`[KVStoreFactory] Using cloud KV storage`)
+    return 'cloud'
   }
 
   /**
@@ -128,7 +124,7 @@ export class KVStoreFactory {
   /**
    * Create cloud KV store instance
    */
-  private static async createCloudKVStore(): Promise<CloudKVStore> {
+  static async createCloudKVStore(): Promise<CloudKVStore> {
     try {
       const { kv } = await import('@vercel/kv')
       return new CloudKVStore(kv)
@@ -138,6 +134,14 @@ export class KVStoreFactory {
         'Failed to initialize cloud KV store. Ensure @vercel/kv is installed and configured.'
       )
     }
+  }
+
+  /**
+   * Create local KV store instance
+   */
+  static createLocalKVStore(): LocalKVStore {
+    console.log('[KVStoreFactory] Creating local KV store instance')
+    return new LocalKVStore()
   }
 
   /**

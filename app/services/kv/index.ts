@@ -6,7 +6,6 @@
  */
 
 export type { IKVStore } from './IKVStore'
-export { LocalKVStore } from './LocalKVStore'
 export { CloudKVStore } from './CloudKVStore'
 export {
   KVStoreFactory,

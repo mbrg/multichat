@@ -8,6 +8,8 @@
  * - No client-side exposure of secrets
  */
 
+// CloudStorage provides static methods for server-side encrypted storage
+
 export interface UserSecrets {
   apiKeys?: {
     openai?: string

@@ -8,7 +8,7 @@ import type {
   ResponseWithLogprobs,
 } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
-import { SecureStorage } from '../../../utils/crypto'
+import { ServerKeys } from '../../../utils/serverKeys'
 import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
 
 export class TogetherProvider implements AIProvider {
@@ -98,6 +98,6 @@ export class TogetherProvider implements AIProvider {
   }
 
   private async getApiKey(): Promise<string | null> {
-    return await SecureStorage.decryptAndRetrieve('together-api-key')
+    return await ServerKeys.getApiKey('together')
   }
 }

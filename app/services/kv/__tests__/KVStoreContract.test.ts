@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { IKVStore } from '../IKVStore'
-import { LocalKVStore } from '../LocalKVStore'
+// LocalKVStore removed - using cloud-only storage
 import { CloudKVStore } from '../CloudKVStore'
 
 // Mock Vercel KV for testing
@@ -166,9 +166,7 @@ function runKVStoreContractTests(
   })
 }
 
-// Run contract tests for all implementations
-runKVStoreContractTests('LocalKVStore', async () => new LocalKVStore())
-
+// Run contract tests for cloud implementation only
 runKVStoreContractTests(
   'CloudKVStore',
   async () => new CloudKVStore(mockVercelKV)

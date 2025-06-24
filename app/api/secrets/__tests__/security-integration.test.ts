@@ -26,6 +26,13 @@ describe('KV Secrets Security Integration Tests', () => {
     // Set up encryption key
     process.env.KV_ENCRYPTION_KEY =
       'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
+    // Force test mode to use local KV store for tests
+    vi.stubEnv('NODE_ENV', 'test')
+    // Clear any cloud KV env vars to ensure we use local storage
+    vi.stubEnv('KV_URL', undefined)
+    vi.stubEnv('KV_REST_API_URL', undefined)
+    vi.stubEnv('KV_REST_API_TOKEN', undefined)
+    // KV factory will automatically pick up environment changes
   })
 
   afterEach(() => {

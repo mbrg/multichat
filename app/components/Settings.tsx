@@ -31,6 +31,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     toggleProvider,
     getApiKey,
     clearAllKeys,
+    isAuthenticated,
   } = useApiKeys()
 
   const providers: Provider[] = [
@@ -123,20 +124,44 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           <div className="p-6 text-center text-[#888]">Loading settings...</div>
         )}
 
+        {/* Authentication Warning */}
+        {!isLoading && !isAuthenticated && (
+          <div className="p-6 bg-amber-900/20 border-b border-[#2a2a2a]">
+            <div className="flex items-center gap-2 text-amber-400 text-sm">
+              <span>⚠️</span>
+              <span>
+                Sign in to securely store your API keys in the cloud. Without
+                authentication, only environment variables will be used.
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* API Keys Section */}
         {!isLoading && (
           <div className="p-6 space-y-6">
-            {/* Revert to defaults button */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="flex justify-end pb-4 border-b border-[#2a2a2a]">
+            {/* Storage Status & Actions */}
+            <div className="flex justify-between items-center pb-4 border-b border-[#2a2a2a]">
+              <div className="text-xs text-[#666]">
+                {isAuthenticated ? (
+                  <span className="text-green-400">
+                    🔒 Stored securely in cloud
+                  </span>
+                ) : (
+                  <span className="text-amber-400">
+                    ⚠️ Environment variables only
+                  </span>
+                )}
+              </div>
+              {(process.env.NODE_ENV === 'development' || isAuthenticated) && (
                 <button
                   onClick={clearAllKeys}
                   className="px-4 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors"
                 >
-                  Revert to defaults
+                  {isAuthenticated ? 'Clear all keys' : 'Revert to defaults'}
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
             {providers.map((provider) => (
               <div
@@ -175,7 +200,11 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 <div className="relative">
                   <input
                     type="password"
-                    placeholder={provider.placeholder}
+                    placeholder={
+                      isAuthenticated
+                        ? provider.placeholder
+                        : `${provider.placeholder} (env var only)`
+                    }
                     value={
                       getApiKey(provider.id as keyof typeof enabledProviders) ||
                       ''
@@ -183,8 +212,19 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                     onChange={(e) =>
                       handleApiKeyChange(provider.id, e.target.value)
                     }
-                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-md px-3 py-2 text-[#e0e0e0] text-sm font-mono focus:outline-none focus:border-[#667eea] transition-colors"
+                    disabled={!isAuthenticated}
+                    className={`w-full border rounded-md px-3 py-2 text-sm font-mono focus:outline-none transition-colors ${
+                      isAuthenticated
+                        ? 'bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] focus:border-[#667eea]'
+                        : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#666] cursor-not-allowed'
+                    }`}
                   />
+                  {!isAuthenticated &&
+                    getApiKey(provider.id as keyof typeof enabledProviders) && (
+                      <div className="absolute right-2 top-2 text-xs text-amber-400">
+                        ENV
+                      </div>
+                    )}
                 </div>
               </div>
             ))}

@@ -1,241 +1,233 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useApiKeys } from '../useApiKeys'
-import { SecureStorage } from '../../utils/crypto'
+import { StorageService } from '../../services/storage'
+import { ApiKeyStorage } from '../../types/storage'
+import { useSession } from 'next-auth/react'
 
-// Mock SecureStorage
-vi.mock('../../utils/crypto', () => ({
-  SecureStorage: {
-    encryptAndStore: vi.fn(),
-    decryptAndRetrieve: vi.fn(),
-    clearAll: vi.fn(),
-  },
-}))
+// Mock dependencies
+vi.mock('../../services/storage')
+vi.mock('next-auth/react')
 
-// Mock the environment
-vi.stubEnv('NEXT_PUBLIC_OPENAI', 'sk-env-openai')
-vi.stubEnv('NEXT_PUBLIC_ANTHROPIC', 'sk-env-anthropic')
-vi.stubEnv('NODE_ENV', 'development')
+const storageService = vi.mocked(StorageService)
+const sessionHook = vi.mocked(useSession)
 
-const mockedSecureStorage = vi.mocked(SecureStorage)
+describe('useApiKeys', () => {
+  let storage: ApiKeyStorage
 
-describe('useApiKeys Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Mock localStorage
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: vi.fn(),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-      },
-      writable: true,
-    })
+    // Create a mock storage that implements the interface
+    storage = {
+      storeApiKey: vi.fn(),
+      getApiKey: vi.fn(),
+      getAllApiKeys: vi.fn().mockResolvedValue({}),
+      removeApiKey: vi.fn(),
+      clearAllSecrets: vi.fn(),
+      isAuthenticated: vi.fn().mockResolvedValue(false),
+    }
 
-    // Default mock implementations
-    mockedSecureStorage.decryptAndRetrieve.mockResolvedValue(null)
-    mockedSecureStorage.encryptAndStore.mockResolvedValue(undefined)
-  })
+    storageService.getStorage.mockResolvedValue(storage)
 
-  it('initializes with default values', async () => {
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    // In dev mode with env vars, keys will be loaded from environment
-    expect(result.current.apiKeys).toEqual({
-      openai: 'sk-env-openai',
-      anthropic: 'sk-env-anthropic',
-    })
-    expect(result.current.enabledProviders).toEqual({
-      openai: true,
-      anthropic: true,
-      google: false,
-      mistral: false,
-      together: false,
+    sessionHook.mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: vi.fn(),
     })
   })
 
-  it('loads API keys from secure storage on mount', async () => {
-    mockedSecureStorage.decryptAndRetrieve.mockImplementation((key: string) => {
-      if (key === 'apiKey_openai') return Promise.resolve('sk-test-key')
-      if (key === 'apiKey_anthropic') return Promise.resolve('sk-ant-test')
-      return Promise.resolve(null)
-    })
+  describe('Storage Interface Integration', () => {
+    it('should use storage service to get appropriate storage implementation', async () => {
+      const { result } = renderHook(() => useApiKeys())
 
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    expect(result.current.apiKeys).toEqual({
-      openai: 'sk-test-key',
-      anthropic: 'sk-ant-test',
-    })
-  })
-
-  it('auto-enables providers that have API keys', async () => {
-    mockedSecureStorage.decryptAndRetrieve.mockImplementation((key: string) => {
-      if (key === 'apiKey_openai') return Promise.resolve('sk-test-key')
-      return Promise.resolve(null)
-    })
-
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    expect(result.current.enabledProviders.openai).toBe(true)
-    expect(result.current.enabledProviders.anthropic).toBe(true) // Loaded from env
-  })
-
-  it('saves API key to secure storage', async () => {
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    await act(async () => {
-      await result.current.saveApiKey('openai', 'sk-new-key')
-    })
-
-    expect(mockedSecureStorage.encryptAndStore).toHaveBeenCalledWith(
-      'apiKey_openai',
-      'sk-new-key'
-    )
-    expect(result.current.apiKeys.openai).toBe('sk-new-key')
-    expect(result.current.enabledProviders.openai).toBe(true) // Auto-enabled
-  })
-
-  it('removes API key when empty string is provided', async () => {
-    // Start with an existing key
-    mockedSecureStorage.decryptAndRetrieve.mockImplementation((key: string) => {
-      if (key === 'apiKey_openai') return Promise.resolve('sk-existing-key')
-      return Promise.resolve(null)
-    })
-
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    await act(async () => {
-      await result.current.saveApiKey('openai', '')
-    })
-
-    expect(window.localStorage.removeItem).toHaveBeenCalledWith('apiKey_openai')
-    expect(result.current.apiKeys.openai).toBeUndefined()
-    expect(result.current.enabledProviders.openai).toBe(false) // Auto-disabled
-  })
-
-  it('toggles provider enabled state', async () => {
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    // OpenAI is already enabled from env vars
-    expect(result.current.enabledProviders.openai).toBe(true)
-
-    // Toggle it off
-    act(() => {
-      result.current.toggleProvider('openai')
-    })
-
-    expect(result.current.enabledProviders.openai).toBe(false)
-    expect(window.localStorage.setItem).toHaveBeenCalledWith(
-      'enabledProviders',
-      JSON.stringify({
-        openai: false,
-        anthropic: true, // Still enabled from env
-        google: false,
-        mistral: false,
-        together: false,
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
       })
-    )
-  })
 
-  it('returns correct API key with getApiKey', async () => {
-    mockedSecureStorage.decryptAndRetrieve.mockImplementation((key: string) => {
-      if (key === 'apiKey_openai') return Promise.resolve('sk-test-key')
-      return Promise.resolve(null)
+      expect(storageService.getStorage).toHaveBeenCalled()
+      expect(storage.getAllApiKeys).toHaveBeenCalled()
+      expect(result.current.storage).toBe(storage)
     })
 
-    const { result } = renderHook(() => useApiKeys())
+    it('should load API keys from storage', async () => {
+      storage.getAllApiKeys = vi.fn().mockResolvedValue({
+        openai: 'test-openai-key',
+        anthropic: 'test-anthropic-key',
+      })
 
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
+      const { result } = renderHook(() => useApiKeys())
 
-    expect(result.current.getApiKey('openai')).toBe('sk-test-key')
-    expect(result.current.getApiKey('anthropic')).toBe('sk-env-anthropic') // From env
-  })
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
 
-  it('clears all keys and resets state', async () => {
-    // Start with some keys and settings
-    mockedSecureStorage.decryptAndRetrieve.mockImplementation((key: string) => {
-      if (key === 'apiKey_openai') return Promise.resolve('sk-test-key')
-      return Promise.resolve(null)
-    })
-
-    const { result } = renderHook(() => useApiKeys())
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    // Clear all
-    act(() => {
-      result.current.clearAllKeys()
-    })
-
-    expect(mockedSecureStorage.clearAll).toHaveBeenCalled()
-    expect(window.localStorage.removeItem).toHaveBeenCalledWith(
-      'enabledProviders'
-    )
-    expect(result.current.apiKeys).toEqual({})
-    expect(result.current.enabledProviders).toEqual({
-      openai: false,
-      anthropic: false,
-      google: false,
-      mistral: false,
-      together: false,
+      expect(result.current.apiKeys.openai).toBe('test-openai-key')
+      expect(result.current.apiKeys.anthropic).toBe('test-anthropic-key')
+      expect(result.current.enabledProviders.openai).toBe(true)
+      expect(result.current.enabledProviders.anthropic).toBe(true)
     })
   })
 
-  it('handles errors when saving API keys', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  describe('API Key Management', () => {
+    it('should store API key through storage interface', async () => {
+      const { result } = renderHook(() => useApiKeys())
 
-    const { result } = renderHook(() => useApiKeys())
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
 
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false)
-    })
-
-    // Now set up the mock to fail for the saveApiKey call
-    mockedSecureStorage.encryptAndStore.mockRejectedValue(
-      new Error('Storage error')
-    )
-
-    await expect(async () => {
       await act(async () => {
-        await result.current.saveApiKey('openai', 'sk-test-key')
+        await result.current.saveApiKey('openai', 'new-openai-key')
       })
-    }).rejects.toThrow('Storage error')
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Error saving API key:',
-      expect.any(Error)
-    )
+      expect(storage.storeApiKey).toHaveBeenCalledWith(
+        'openai',
+        'new-openai-key'
+      )
+      expect(result.current.apiKeys.openai).toBe('new-openai-key')
+      expect(result.current.enabledProviders.openai).toBe(true)
+    })
 
-    consoleSpy.mockRestore()
+    it('should remove API key through storage interface', async () => {
+      storage.getAllApiKeys = vi.fn().mockResolvedValue({
+        openai: 'existing-key',
+      })
+
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.saveApiKey('openai', '')
+      })
+
+      expect(storage.removeApiKey).toHaveBeenCalledWith('openai')
+      expect(result.current.apiKeys.openai).toBeUndefined()
+      expect(result.current.enabledProviders.openai).toBe(false)
+    })
+
+    it('should clear all keys through storage interface', async () => {
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.clearAllKeys()
+      })
+
+      expect(storage.clearAllSecrets).toHaveBeenCalled()
+      expect(result.current.apiKeys).toEqual({})
+    })
+  })
+
+  describe('Provider Management', () => {
+    it('should enable/disable providers correctly', async () => {
+      storage.getAllApiKeys = vi.fn().mockResolvedValue({
+        openai: 'test-key',
+      })
+
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(result.current.enabledProviders.openai).toBe(true)
+
+      act(() => {
+        result.current.toggleProvider('openai')
+      })
+
+      expect(result.current.enabledProviders.openai).toBe(false)
+
+      act(() => {
+        result.current.toggleProvider('openai')
+      })
+
+      expect(result.current.enabledProviders.openai).toBe(true)
+    })
+
+    it('should provide utility functions', async () => {
+      storage.getAllApiKeys = vi.fn().mockResolvedValue({
+        openai: 'test-key',
+      })
+
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(result.current.getApiKey('openai')).toBe('test-key')
+      expect(result.current.getApiKey('anthropic')).toBeUndefined()
+      expect(result.current.hasApiKey('openai')).toBe(true)
+      expect(result.current.hasApiKey('anthropic')).toBe(false)
+      expect(result.current.isProviderEnabled('openai')).toBe(true)
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('should handle storage failures gracefully', async () => {
+      storage.getAllApiKeys = vi
+        .fn()
+        .mockRejectedValue(new Error('Storage error'))
+
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      // Should not crash and should have empty keys
+      expect(result.current.apiKeys).toEqual({})
+    })
+
+    it('should handle uninitialized storage', async () => {
+      storageService.getStorage.mockRejectedValue(
+        new Error('Storage init failed')
+      )
+
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      // Should handle saveApiKey gracefully when storage is null
+      await act(async () => {
+        await result.current.saveApiKey('openai', 'test-key')
+      })
+
+      // Should not crash
+      expect(result.current.storage).toBeNull()
+    })
+  })
+
+  describe('Authentication Integration', () => {
+    it('should reflect authentication state', async () => {
+      const mockSession = {
+        user: { id: 'user123', email: 'test@example.com' },
+        expires: '2024-12-31',
+      }
+
+      sessionHook.mockReturnValue({
+        data: mockSession,
+        status: 'authenticated',
+        update: vi.fn(),
+      })
+
+      const { result } = renderHook(() => useApiKeys())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(result.current.isAuthenticated).toBe(true)
+    })
   })
 })

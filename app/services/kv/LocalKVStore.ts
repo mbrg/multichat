@@ -1,59 +1,40 @@
 /**
  * Local KV Store Implementation
  *
- * In-memory key-value store for local development and testing.
- * Data is lost when the process restarts.
+ * In-memory implementation for development and testing.
+ * Data is stored in memory and lost when the process ends.
  */
 
 import { IKVStore } from './IKVStore'
 
 export class LocalKVStore implements IKVStore {
-  private store: Map<string, any> = new Map()
-  private readonly instanceId: string
+  private storage = new Map<string, any>()
+  private instanceId: string
 
   constructor() {
     this.instanceId = Math.random().toString(36).substring(2, 8)
-    console.log(
-      `[LocalKVStore:${this.instanceId}] Initialized in-memory KV store`
-    )
+    console.log(`[LocalKVStore:${this.instanceId}] Initialized local KV store`)
   }
 
   async get<T = any>(key: string): Promise<T | null> {
-    const value = this.store.has(key) ? this.store.get(key) : null
+    const value = this.storage.get(key)
     console.log(
-      `[LocalKVStore:${this.instanceId}] GET ${key} -> ${value !== null ? 'found' : 'null'}`
+      `[LocalKVStore:${this.instanceId}] GET ${key} -> ${value !== undefined ? 'found' : 'null'}`
     )
-    return value
+    return value !== undefined ? value : null
   }
 
-  async set(key: string, value: any): Promise<void> {
-    this.store.set(key, value)
+  async set<T = any>(key: string, value: T): Promise<void> {
+    this.storage.set(key, value)
     console.log(`[LocalKVStore:${this.instanceId}] SET ${key} -> stored`)
   }
 
   async del(key: string): Promise<void> {
-    const existed = this.store.has(key)
-    this.store.delete(key)
-    console.log(
-      `[LocalKVStore:${this.instanceId}] DEL ${key} -> ${existed ? 'deleted' : 'not found'}`
-    )
+    this.storage.delete(key)
+    console.log(`[LocalKVStore:${this.instanceId}] DEL ${key} -> deleted`)
   }
 
   getImplementationName(): string {
     return `LocalKVStore:${this.instanceId}`
-  }
-
-  // Development helpers
-  async getAllKeys(): Promise<string[]> {
-    return Array.from(this.store.keys())
-  }
-
-  async clear(): Promise<void> {
-    this.store.clear()
-    console.log(`[LocalKVStore:${this.instanceId}] CLEAR -> all data cleared`)
-  }
-
-  async size(): Promise<number> {
-    return this.store.size
   }
 }

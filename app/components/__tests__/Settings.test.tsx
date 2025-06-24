@@ -35,6 +35,7 @@ vi.mock('../../hooks/useApiKeys', () => ({
       together: true,
     },
     isLoading: false,
+    isAuthenticated: true,
     saveApiKey: mockSaveApiKey,
     toggleProvider: mockToggleProvider,
     getApiKey: mockGetApiKey,

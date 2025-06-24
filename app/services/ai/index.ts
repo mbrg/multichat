@@ -3,7 +3,7 @@ import { AnthropicProvider } from './providers/anthropic'
 import { GoogleProvider } from './providers/google'
 import { MistralProvider } from './providers/mistral'
 import { TogetherProvider } from './providers/together'
-import { SecureStorage } from '../../utils/crypto'
+import { ServerKeys } from '../../utils/serverKeys'
 import { compareProbabilities } from '../../utils/logprobs'
 import type {
   AIProvider,
@@ -150,29 +150,19 @@ export class AIService {
       throw new Error(`Provider not found: ${providerName}`)
     }
 
-    // Store the API key temporarily for validation
-    const storageKey = `${providerName}-api-key`
-    const originalKey = await SecureStorage.decryptAndRetrieve(storageKey)
-    await SecureStorage.encryptAndStore(storageKey, apiKey)
+    // Note: API key validation now happens through server-side storage
+    // This method is deprecated and should use the CloudStorage system instead
+    console.warn(
+      'AIService.validateApiKey() is deprecated. Use CloudStorage for API key management.'
+    )
 
     try {
-      const isValid = await provider.validateApiKey()
-      if (!isValid && originalKey) {
-        // Restore original key if validation failed
-        await SecureStorage.encryptAndStore(storageKey, originalKey)
-      } else if (!isValid) {
-        // Remove invalid key
-        await SecureStorage.remove(storageKey)
-      }
-      return isValid
+      // For now, just check if we can access the provider's validate method
+      // In practice, validation should happen when storing keys via CloudStorage
+      return await provider.validateApiKey()
     } catch (error) {
-      // Restore original key on error
-      if (originalKey) {
-        await SecureStorage.encryptAndStore(storageKey, originalKey)
-      } else {
-        await SecureStorage.remove(storageKey)
-      }
-      throw error
+      console.error(`API key validation failed for ${providerName}:`, error)
+      return false
     }
   }
 
