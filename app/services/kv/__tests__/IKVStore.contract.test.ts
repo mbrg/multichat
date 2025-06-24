@@ -228,3 +228,27 @@ export function testIKVStoreContract(createStore: () => IKVStore) {
  *
  * testIKVStoreContract(() => new YourKVStoreImplementation())
  */
+
+// Mock implementation for testing the contract
+class MockKVStore implements IKVStore {
+  private store = new Map<string, any>()
+
+  async get<T = any>(key: string): Promise<T | null> {
+    return this.store.get(key) ?? null
+  }
+
+  async set(key: string, value: any): Promise<void> {
+    this.store.set(key, value)
+  }
+
+  async del(key: string): Promise<void> {
+    this.store.delete(key)
+  }
+
+  getImplementationName(): string {
+    return 'MockKVStore'
+  }
+}
+
+// Run the contract tests with the mock implementation
+testIKVStoreContract(() => new MockKVStore())
