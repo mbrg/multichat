@@ -3,12 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '../../lib/auth'
 import { getKVStore } from '../../services/kv'
 import { deriveUserKey, encrypt, decrypt } from '../../utils/crypto'
-
-interface UserSettings {
-  systemPrompt?: string
-  enabledProviders?: string // JSON stringified EnabledProviders
-  [key: string]: any // Allow for future settings
-}
+import { UserSettings } from '../../types/settings'
 
 async function getSettingsData(userId: string): Promise<UserSettings> {
   const kvStore = await getKVStore()

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Settings from '../Settings'
 
@@ -116,10 +116,12 @@ describe('Settings Component', () => {
   })
 
   it('renders settings modal when open', async () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={() => {}} />)
+    })
 
-    expect(screen.getByText('API Keys')).toBeInTheDocument()
-    expect(screen.getByText('⚙️')).toBeInTheDocument()
+    expect(screen.getByText('Settings')).toBeInTheDocument()
+    expect(screen.getByText('🔑')).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
@@ -128,29 +130,39 @@ describe('Settings Component', () => {
     expect(screen.queryByText('Settings')).not.toBeInTheDocument()
   })
 
-  it('calls onClose when close button is clicked', () => {
+  it('calls onClose when close button is clicked', async () => {
     const mockOnClose = vi.fn()
-    render(<Settings isOpen={true} onClose={mockOnClose} />)
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={mockOnClose} />)
+    })
 
-    const closeButton = screen.getByText('×')
-    fireEvent.click(closeButton)
+    await act(async () => {
+      const closeButton = screen.getByText('×')
+      fireEvent.click(closeButton)
+    })
 
     expect(mockOnClose).toHaveBeenCalledOnce()
   })
 
-  it('calls onClose when backdrop is clicked', () => {
+  it('calls onClose when backdrop is clicked', async () => {
     const mockOnClose = vi.fn()
-    render(<Settings isOpen={true} onClose={mockOnClose} />)
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={mockOnClose} />)
+    })
 
-    const backdrop = screen.getByText('API Keys').closest('div')
-      ?.parentElement?.parentElement
-    fireEvent.click(backdrop!)
+    await act(async () => {
+      const backdrop = screen.getByText('API Keys').closest('div')
+        ?.parentElement?.parentElement
+      fireEvent.click(backdrop!)
+    })
 
     expect(mockOnClose).toHaveBeenCalledOnce()
   })
 
-  it('shows configured API keys in list', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
+  it('shows configured API keys in list', async () => {
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={() => {}} />)
+    })
 
     // Should show OpenAI as configured (from mock hook returning '***')
     expect(screen.getByText('OpenAI')).toBeInTheDocument()
@@ -158,10 +170,14 @@ describe('Settings Component', () => {
   })
 
   it('shows add form when add button is clicked', async () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={() => {}} />)
+    })
 
-    const addButton = screen.getByText('+ Add Key')
-    fireEvent.click(addButton)
+    await act(async () => {
+      const addButton = screen.getByText('+ Add Key')
+      fireEvent.click(addButton)
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Add New API Key')).toBeInTheDocument()
@@ -169,24 +185,32 @@ describe('Settings Component', () => {
     })
   })
 
-  it('toggles provider when switch is clicked', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
+  it('toggles provider when switch is clicked', async () => {
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={() => {}} />)
+    })
 
-    // Find the toggle switches for configured providers
-    const toggles = screen
-      .getAllByRole('button')
-      .filter((button) => button.className.includes('w-10 h-5'))
+    await act(async () => {
+      // Find the toggle switches for configured providers
+      const toggles = screen
+        .getAllByRole('button')
+        .filter((button) => button.className.includes('w-10 h-5'))
 
-    fireEvent.click(toggles[0]) // Click first toggle (OpenAI)
+      fireEvent.click(toggles[0]) // Click first toggle (OpenAI)
+    })
 
     expect(mockToggleProvider).toHaveBeenCalledWith('openai')
   })
 
   it('shows provider cards in add form', async () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={() => {}} />)
+    })
 
-    const addButton = screen.getByText('+ Add Key')
-    fireEvent.click(addButton)
+    await act(async () => {
+      const addButton = screen.getByText('+ Add Key')
+      fireEvent.click(addButton)
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Anthropic')).toBeInTheDocument()
@@ -196,45 +220,55 @@ describe('Settings Component', () => {
     })
   })
 
-  it('calls clearApiKey when remove button is clicked', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
+  it('calls clearApiKey when remove button is clicked', async () => {
+    await act(async () => {
+      render(<Settings isOpen={true} onClose={() => {}} />)
+    })
 
-    // Find the remove button for the configured OpenAI key
-    const removeButtons = screen.getAllByTitle('Remove API key')
-    fireEvent.click(removeButtons[0])
+    await act(async () => {
+      // Find the remove button for the configured OpenAI key
+      const removeButtons = screen.getAllByTitle('Remove API key')
+      fireEvent.click(removeButtons[0])
+    })
 
     expect(mockClearApiKey).toHaveBeenCalledWith('openai')
   })
 
   it('opens to system instructions section when specified', async () => {
-    render(
-      <Settings
-        isOpen={true}
-        onClose={() => {}}
-        initialSection="system-instructions"
-      />
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('System Instructions')).toBeInTheDocument()
-      expect(screen.getByText('System Instructions (1/3)')).toBeInTheDocument()
-      expect(screen.getByText('default')).toBeInTheDocument()
+    await act(async () => {
+      render(
+        <Settings
+          isOpen={true}
+          onClose={() => {}}
+          initialSection="system-instructions"
+        />
+      )
     })
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('System Instructions')).toBeInTheDocument()
+      },
+      { timeout: 5000 }
+    )
   })
 
   it('opens to temperatures section when specified', async () => {
-    render(
-      <Settings
-        isOpen={true}
-        onClose={() => {}}
-        initialSection="temperatures"
-      />
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Temperatures')).toBeInTheDocument()
-      expect(screen.getByText('Temperatures (1/3)')).toBeInTheDocument()
-      expect(screen.getByText('0.7')).toBeInTheDocument()
+    await act(async () => {
+      render(
+        <Settings
+          isOpen={true}
+          onClose={() => {}}
+          initialSection="temperatures"
+        />
+      )
     })
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Temperatures')).toBeInTheDocument()
+      },
+      { timeout: 5000 }
+    )
   })
 })

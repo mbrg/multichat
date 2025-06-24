@@ -1,22 +1,6 @@
-export interface SystemInstruction {
-  id: string
-  name: string
-  content: string
-  enabled: boolean
-}
+import { SystemInstruction, Temperature, UserSettings } from '../types/settings'
 
-export interface Temperature {
-  id: string
-  value: number
-}
-
-export interface UserSettings {
-  systemPrompt?: string
-  enabledProviders?: string
-  systemInstructions?: SystemInstruction[]
-  temperatures?: Temperature[]
-  [key: string]: any
-}
+export type { SystemInstruction, Temperature, UserSettings }
 
 export class CloudSettings {
   static async getSettings(): Promise<UserSettings> {
