@@ -16,34 +16,9 @@ const Menu: React.FC<MenuProps> = ({
   className = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const [instructionCount, setInstructionCount] = useState(0)
-  const [temperatureCount, setTemperatureCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()
   const { isPopupOpen, checkAuthAndRun, closePopup } = useAuthPopup()
-  const { hasApiKey } = useApiKeys()
-
-  // Load counts when menu opens
-  useEffect(() => {
-    const loadCounts = async () => {
-      if (session?.user) {
-        try {
-          const [instructions, temps] = await Promise.all([
-            CloudSettings.getSystemInstructions(),
-            CloudSettings.getTemperatures()
-          ])
-          setInstructionCount(instructions.filter(i => i.enabled).length)
-          setTemperatureCount(temps.length)
-        } catch (error) {
-          console.warn('Failed to load counts:', error)
-        }
-      }
-    }
-
-    if (isOpen) {
-      loadCounts()
-    }
-  }, [isOpen, session])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -61,19 +36,6 @@ const Menu: React.FC<MenuProps> = ({
     }
   }, [isOpen])
 
-  // Calculate number of configured API keys
-  const getConfiguredApiKeyCount = () => {
-    const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
-    return providers.filter(provider => hasApiKey(provider as any)).length
-  }
-
-  // Calculate total permutations
-  const calculatePermutations = () => {
-    const apiKeyCount = getConfiguredApiKeyCount()
-    const enabledInstructionCount = Math.max(1, instructionCount) // At least 1 (default)
-    const tempCount = Math.max(1, temperatureCount) // At least 1 (default)
-    return apiKeyCount * enabledInstructionCount * tempCount
-  }
 
   const handleMenuItemClick = (e: React.MouseEvent, section?: 'api-keys' | 'system-instructions' | 'temperatures') => {
     e.preventDefault()
@@ -163,10 +125,7 @@ const Menu: React.FC<MenuProps> = ({
           <div className="py-2">
             {/* Settings Section */}
             <div className="px-4 py-2">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-medium text-[#aaa] uppercase tracking-wider">Settings</p>
-                <p className="text-xs text-[#667eea]">{calculatePermutations()} permutations</p>
-              </div>
+              <p className="text-xs font-medium text-[#aaa] uppercase tracking-wider">Settings</p>
             </div>
 
             {/* API Keys */}
