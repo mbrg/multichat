@@ -28,11 +28,18 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     enabledProviders,
     isLoading,
     saveApiKey,
+    clearApiKey,
     toggleProvider,
     getApiKey,
     clearAllKeys,
     isAuthenticated,
   } = useApiKeys()
+
+  // Local state for UI
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newKeyProvider, setNewKeyProvider] = useState<string>('')
+  const [newKeyValue, setNewKeyValue] = useState<string>('')
+  const [error, setError] = useState<string>('')
 
   const providers: Provider[] = [
     {
@@ -72,23 +79,69 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     },
   ]
 
-  const handleApiKeyChange = async (providerId: string, value: string) => {
+  // Get list of providers that have API keys
+  const getConfiguredProviders = () => {
+    return providers.filter(
+      (provider) =>
+        getApiKey(provider.id as keyof typeof enabledProviders) === '***'
+    )
+  }
+
+  // Get list of available providers (not yet configured)
+  const getAvailableProviders = () => {
+    return providers.filter(
+      (provider) =>
+        getApiKey(provider.id as keyof typeof enabledProviders) !== '***'
+    )
+  }
+
+  // Handle adding a new API key
+  const handleAddApiKey = async () => {
+    setError('')
+
+    if (!newKeyProvider || !newKeyValue.trim()) {
+      setError('Please select a provider and enter an API key')
+      return
+    }
+
+    // Check if provider already has a key
+    if (getApiKey(newKeyProvider as keyof typeof enabledProviders) === '***') {
+      setError(
+        'This provider already has an API key. Remove the existing one first.'
+      )
+      return
+    }
+
     try {
-      await saveApiKey(providerId as keyof typeof enabledProviders, value)
+      await saveApiKey(
+        newKeyProvider as keyof typeof enabledProviders,
+        newKeyValue
+      )
+      setShowAddForm(false)
+      setNewKeyProvider('')
+      setNewKeyValue('')
     } catch (error) {
+      setError('Failed to save API key. Please try again.')
       console.error('Error saving API key:', error)
     }
   }
 
-  const handleToggleProvider = (providerId: string) => {
-    // Don't allow enabling if no API key is provided
-    const hasKey = getApiKey(providerId as keyof typeof enabledProviders)
-    if (
-      !hasKey &&
-      !enabledProviders[providerId as keyof typeof enabledProviders]
-    ) {
-      return // Don't enable without API key
+  // Handle removing an API key
+  const handleRemoveApiKey = async (providerId: string) => {
+    try {
+      await clearApiKey(providerId as keyof typeof enabledProviders)
+    } catch (error) {
+      console.error('Error removing API key:', error)
     }
+  }
+
+  // Handle toggling provider enabled/disabled state
+  const handleToggleProvider = (providerId: string) => {
+    // Only allow toggling if provider has an API key
+    const hasKey =
+      getApiKey(providerId as keyof typeof enabledProviders) === '***'
+    if (!hasKey) return
+
     toggleProvider(providerId as keyof typeof enabledProviders)
   }
 
@@ -108,9 +161,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a]">
-          <h2 className="text-lg font-bold text-[#e0e0e0]">
-            API Configuration
-          </h2>
+          <h2 className="text-lg font-bold text-[#e0e0e0]">API Keys</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center text-[#888] hover:text-[#e0e0e0] hover:bg-[#2a2a2a] rounded-md transition-colors"
@@ -134,7 +185,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        {/* API Keys Section */}
+        {/* Content */}
         {!isLoading && (
           <div className="p-6 space-y-6">
             {/* Storage Status & Actions */}
@@ -156,71 +207,245 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               )}
             </div>
 
-            {providers.map((provider) => (
-              <div
-                key={provider.id}
-                className="pb-5 border-b border-[#2a2a2a] last:border-b-0"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src={provider.icon}
-                      alt={provider.name}
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 rounded flex-shrink-0"
-                    />
-                    <span className="text-sm text-[#aaa]">{provider.name}</span>
-                  </div>
+            {/* Configured API Keys List */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-[#e0e0e0]">
+                  Configured API Keys
+                </h3>
+                {isAuthenticated && !showAddForm && (
                   <button
-                    onClick={() => handleToggleProvider(provider.id)}
-                    disabled={
-                      !getApiKey(
-                        provider.id as keyof typeof enabledProviders
-                      ) && !provider.enabled
-                    }
-                    className={`relative w-11 h-6 rounded-full transition-colors ${
-                      provider.enabled ? 'bg-[#667eea]' : 'bg-[#2a2a2a]'
-                    } ${!getApiKey(provider.id as keyof typeof enabledProviders) && !provider.enabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    onClick={() => setShowAddForm(true)}
+                    className="px-3 py-1.5 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
                   >
+                    + Add Key
+                  </button>
+                )}
+              </div>
+
+              {getConfiguredProviders().length === 0 && !showAddForm ? (
+                <div className="text-center py-8">
+                  <div className="text-[#666] text-sm mb-2">
+                    No API keys configured
+                  </div>
+                  {isAuthenticated ? (
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      className="px-4 py-2 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
+                    >
+                      Add your first API key
+                    </button>
+                  ) : (
+                    <div className="text-xs text-[#666]">
+                      Sign in to add API keys
+                    </div>
+                  )}
+                </div>
+              ) : getConfiguredProviders().length > 0 ? (
+                <div className="space-y-3">
+                  {getConfiguredProviders().map((provider) => (
                     <div
-                      className={`absolute top-0.5 w-5 h-5 bg-[#0a0a0a] rounded-full transition-transform ${
-                        provider.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                      }`}
-                    />
+                      key={provider.id}
+                      className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={provider.icon}
+                          alt={provider.name}
+                          width={20}
+                          height={20}
+                          className="w-5 h-5 rounded flex-shrink-0"
+                        />
+                        <div>
+                          <div className="text-sm text-[#e0e0e0] font-medium">
+                            {provider.name.replace(' API Key', '')}
+                          </div>
+                          <div className="text-xs text-[#666]">
+                            API key configured
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {/* Enable/Disable Toggle */}
+                        <button
+                          onClick={() => handleToggleProvider(provider.id)}
+                          className={`relative w-10 h-5 rounded-full transition-colors ${
+                            provider.enabled ? 'bg-[#667eea]' : 'bg-[#2a2a2a]'
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-4 h-4 bg-[#0a0a0a] rounded-full transition-transform ${
+                              provider.enabled
+                                ? 'translate-x-5'
+                                : 'translate-x-0.5'
+                            }`}
+                          />
+                        </button>
+                        {/* Remove Button */}
+                        <button
+                          onClick={() => handleRemoveApiKey(provider.id)}
+                          className="p-1.5 text-[#888] hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                          title="Remove API key"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Add New API Key Form */}
+            {showAddForm && isAuthenticated && (
+              <div className="border border-[#2a2a2a] rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-[#e0e0e0]">
+                    Add New API Key
+                  </h4>
+                  <button
+                    onClick={() => {
+                      setShowAddForm(false)
+                      setNewKeyProvider('')
+                      setNewKeyValue('')
+                      setError('')
+                    }}
+                    className="text-[#888] hover:text-[#e0e0e0] p-1"
+                  >
+                    ×
                   </button>
                 </div>
-                <div className="relative">
+
+                {error && (
+                  <div className="p-3 bg-red-900/20 border border-red-400/20 rounded-md">
+                    <div className="text-red-400 text-sm">{error}</div>
+                  </div>
+                )}
+
+                {/* Provider Selection */}
+                <div>
+                  <label className="block text-xs text-[#aaa] mb-3">
+                    Select Provider
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {providers.map((provider) => {
+                      const isConfigured =
+                        getApiKey(
+                          provider.id as keyof typeof enabledProviders
+                        ) === '***'
+                      const isSelected = newKeyProvider === provider.id
+                      const isDisabled = isConfigured
+
+                      return (
+                        <button
+                          key={provider.id}
+                          type="button"
+                          onClick={() =>
+                            !isDisabled && setNewKeyProvider(provider.id)
+                          }
+                          disabled={isDisabled}
+                          title={
+                            isDisabled
+                              ? `${provider.name.replace(' API Key', '')} is already configured. Remove the existing key first.`
+                              : `Select ${provider.name.replace(' API Key', '')}`
+                          }
+                          className={`relative p-3 border rounded-lg transition-all duration-200 ${
+                            isSelected
+                              ? 'border-[#667eea] bg-[#667eea]/10'
+                              : isDisabled
+                                ? 'border-[#2a2a2a] bg-[#1a1a1a] opacity-50 cursor-not-allowed'
+                                : 'border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#3a3a3a] hover:bg-[#1a1a1a]'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <Image
+                              src={provider.icon}
+                              alt={provider.name}
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 rounded flex-shrink-0"
+                            />
+                            <span
+                              className={`text-xs font-medium ${
+                                isSelected
+                                  ? 'text-[#667eea]'
+                                  : isDisabled
+                                    ? 'text-[#666]'
+                                    : 'text-[#e0e0e0]'
+                              }`}
+                            >
+                              {provider.name.replace(' API Key', '')}
+                            </span>
+                          </div>
+                          {isConfigured && (
+                            <div
+                              className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full"
+                              title="Already configured"
+                            />
+                          )}
+                          {isSelected && !isDisabled && (
+                            <div className="absolute top-2 right-2 w-2 h-2 bg-[#667eea] rounded-full" />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* API Key Input */}
+                <div>
+                  <label className="block text-xs text-[#aaa] mb-2">
+                    API Key
+                  </label>
                   <input
                     type="password"
+                    value={newKeyValue}
+                    onChange={(e) => setNewKeyValue(e.target.value)}
                     placeholder={
-                      isAuthenticated
-                        ? provider.placeholder
-                        : `${provider.placeholder} (env var only)`
+                      newKeyProvider
+                        ? providers.find((p) => p.id === newKeyProvider)
+                            ?.placeholder
+                        : 'Enter API key...'
                     }
-                    value={
-                      getApiKey(provider.id as keyof typeof enabledProviders) ||
-                      ''
-                    }
-                    onChange={(e) =>
-                      handleApiKeyChange(provider.id, e.target.value)
-                    }
-                    disabled={!isAuthenticated}
-                    className={`w-full border rounded-md px-3 py-2 text-sm font-mono focus:outline-none transition-colors ${
-                      isAuthenticated
-                        ? 'bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] focus:border-[#667eea]'
-                        : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#666] cursor-not-allowed'
-                    }`}
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-[#e0e0e0] rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:border-[#667eea]"
                   />
-                  {!isAuthenticated &&
-                    getApiKey(provider.id as keyof typeof enabledProviders) && (
-                      <div className="absolute right-2 top-2 text-xs text-amber-400">
-                        ENV
-                      </div>
-                    )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddApiKey}
+                    disabled={!newKeyProvider || !newKeyValue.trim()}
+                    className="px-4 py-2 text-sm text-white bg-[#667eea] hover:bg-[#5a6fd8] disabled:bg-[#2a2a2a] disabled:text-[#666] disabled:cursor-not-allowed rounded-md transition-colors"
+                  >
+                    Add Key
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAddForm(false)
+                      setNewKeyProvider('')
+                      setNewKeyValue('')
+                      setError('')
+                    }}
+                    className="px-4 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

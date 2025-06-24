@@ -64,7 +64,7 @@ describe('Settings Component', () => {
   it('renders settings modal when open', () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
-    expect(screen.getByText('API Configuration')).toBeInTheDocument()
+    expect(screen.getByText('API Keys')).toBeInTheDocument()
     expect(screen.getByText('OpenAI API Key')).toBeInTheDocument()
     expect(screen.getByText('Anthropic API Key')).toBeInTheDocument()
   })
@@ -72,7 +72,7 @@ describe('Settings Component', () => {
   it('does not render when closed', () => {
     render(<Settings isOpen={false} onClose={() => {}} />)
 
-    expect(screen.queryByText('API Configuration')).not.toBeInTheDocument()
+    expect(screen.queryByText('API Keys')).not.toBeInTheDocument()
   })
 
   it('calls onClose when close button is clicked', () => {
@@ -89,7 +89,7 @@ describe('Settings Component', () => {
     const mockOnClose = vi.fn()
     render(<Settings isOpen={true} onClose={mockOnClose} />)
 
-    const backdrop = screen.getByText('API Configuration').closest('div')
+    const backdrop = screen.getByText('API Keys').closest('div')
       ?.parentElement?.parentElement
     fireEvent.click(backdrop!)
 

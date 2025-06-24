@@ -120,38 +120,21 @@ export const useApiKeys = () => {
 
     try {
       if (key.trim()) {
-        // Use the new API endpoint
-        const newStatus = await CloudApiKeys.setApiKey(provider, key)
+        // Store API key via CloudApiKeys only
+        await CloudApiKeys.setApiKey(provider, key)
 
-        // Update local state based on new status
+        // Update local state
         setApiKeys((prev) => ({ ...prev, [provider]: '***' }))
 
-        // Auto-enable when API key is added
-        setEnabledProviders((prev) => ({ ...prev, [provider]: true }))
-
-        // Save enabled state
+        // Auto-enable when API key is added (update settings separately)
         const newEnabledProviders = { ...enabledProviders, [provider]: true }
+        setEnabledProviders(newEnabledProviders)
         await CloudSettings.setEnabledProviders(
           JSON.stringify(newEnabledProviders)
         )
       } else {
         // Remove empty key
-        await CloudApiKeys.deleteApiKey(provider)
-
-        setApiKeys((prev) => {
-          const newKeys = { ...prev }
-          delete newKeys[provider]
-          return newKeys
-        })
-
-        // Auto-disable when API key is removed
-        setEnabledProviders((prev) => ({ ...prev, [provider]: false }))
-
-        // Save enabled state
-        const newEnabledProviders = { ...enabledProviders, [provider]: false }
-        await CloudSettings.setEnabledProviders(
-          JSON.stringify(newEnabledProviders)
-        )
+        await clearApiKey(provider)
       }
     } catch (error) {
       console.error('Error saving API key:', error)
@@ -159,18 +142,47 @@ export const useApiKeys = () => {
     }
   }
 
+  const clearApiKey = async (provider: keyof ApiKeys) => {
+    try {
+      // Remove API key via CloudApiKeys only
+      await CloudApiKeys.deleteApiKey(provider)
+
+      // Update local state
+      setApiKeys((prev) => {
+        const newKeys = { ...prev }
+        delete newKeys[provider]
+        return newKeys
+      })
+
+      // Auto-disable when API key is removed (update settings separately)
+      const newEnabledProviders = { ...enabledProviders, [provider]: false }
+      setEnabledProviders(newEnabledProviders)
+      await CloudSettings.setEnabledProviders(
+        JSON.stringify(newEnabledProviders)
+      )
+    } catch (error) {
+      console.error('Error clearing API key:', error)
+      throw error
+    }
+  }
+
   const toggleProvider = async (provider: keyof EnabledProviders) => {
+    // Only update settings, not API keys
     const newEnabledProviders = {
       ...enabledProviders,
       [provider]: !enabledProviders[provider],
     }
     setEnabledProviders(newEnabledProviders)
+
     try {
+      // Only update settings via CloudSettings, not CloudApiKeys
       await CloudSettings.setEnabledProviders(
         JSON.stringify(newEnabledProviders)
       )
     } catch (error) {
-      console.error('Failed to save provider settings to cloud storage:', error)
+      console.error('Failed to save provider settings:', error)
+      // Revert local state on error
+      setEnabledProviders(enabledProviders)
     }
   }
 
@@ -223,6 +235,7 @@ export const useApiKeys = () => {
     enabledProviders,
     isLoading,
     saveApiKey,
+    clearApiKey,
     toggleProvider,
     getApiKey,
     isProviderEnabled,
