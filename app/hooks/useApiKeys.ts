@@ -29,13 +29,13 @@ export const useApiKeys = () => {
     mistral: false,
     together: false,
   })
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
   const hasInitialized = useRef(false)
 
-  // Load API keys and settings on mount
+  // Load API keys and settings on mount - only for authenticated users
   useEffect(() => {
-    if (status !== 'loading' && !hasInitialized.current) {
+    if (status !== 'loading' && !hasInitialized.current && session?.user) {
       hasInitialized.current = true
       loadApiKeys()
     }

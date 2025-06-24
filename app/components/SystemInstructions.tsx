@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { StorageService } from '../services/storage'
 import { ApiKeyStorage } from '../types/storage'
 
@@ -11,15 +12,18 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { data: session, status } = useSession()
   const [systemPrompt, setSystemPrompt] = useState(
     'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
   )
   const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
 
-  // Load settings on mount
+  // Load settings on mount - only for authenticated users
   useEffect(() => {
-    loadSettings()
-  }, [])
+    if (status !== 'loading' && session?.user && isOpen) {
+      loadSettings()
+    }
+  }, [session, status, isOpen])
 
   const loadSettings = async () => {
     try {
