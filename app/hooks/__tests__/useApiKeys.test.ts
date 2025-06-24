@@ -213,15 +213,17 @@ describe('useApiKeys Hook', () => {
 
   it('handles errors when saving API keys', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    mockedSecureStorage.encryptAndStore.mockRejectedValue(
-      new Error('Storage error')
-    )
 
     const { result } = renderHook(() => useApiKeys())
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
+
+    // Now set up the mock to fail for the saveApiKey call
+    mockedSecureStorage.encryptAndStore.mockRejectedValue(
+      new Error('Storage error')
+    )
 
     await expect(async () => {
       await act(async () => {

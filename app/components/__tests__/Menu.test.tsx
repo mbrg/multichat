@@ -15,6 +15,7 @@ vi.mock('../../hooks/useAuthPopup', () => ({
 
 vi.mock('next/image', () => ({
   default: ({ src, alt, width, height, className }: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}

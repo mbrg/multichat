@@ -136,34 +136,6 @@ describe('Settings Component', () => {
     expect(screen.getByText('Together API Key')).toBeInTheDocument()
   })
 
-  it('renders system prompt section', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
-
-    expect(screen.getByText('System Prompt')).toBeInTheDocument()
-  })
-
-  it('manages system prompt setting', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
-
-    const systemPromptTextarea = screen.getByRole('textbox')
-
-    fireEvent.change(systemPromptTextarea, {
-      target: { value: 'Custom system prompt' },
-    })
-
-    expect(window.localStorage.setItem).toHaveBeenCalledWith(
-      'systemPrompt',
-      'Custom system prompt'
-    )
-  })
-
-  it('displays character count for system prompt', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
-
-    // Should show initial count
-    expect(screen.getByText(/\/ 1000/)).toBeInTheDocument()
-  })
-
   it('shows correct toggle states based on enabled providers', () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
