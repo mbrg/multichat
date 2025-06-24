@@ -20,6 +20,7 @@ export interface KVEnvironment {
 
 export class KVStoreFactory {
   private static instance: IKVStore | null = null
+  private static initPromise: Promise<IKVStore> | null = null
 
   /**
    * Get KV store instance (singleton pattern)
@@ -29,7 +30,13 @@ export class KVStoreFactory {
       return this.instance
     }
 
-    this.instance = await this.createInstance(type)
+    if (this.initPromise) {
+      return await this.initPromise
+    }
+
+    this.initPromise = this.createInstance(type)
+    this.instance = await this.initPromise
+    this.initPromise = null
     return this.instance
   }
 
@@ -39,13 +46,13 @@ export class KVStoreFactory {
   static async createInstance(type: KVStoreType = 'auto'): Promise<IKVStore> {
     const resolvedType = this.resolveKVType(type)
 
-    console.log(`[KVStoreFactory] Creating ${resolvedType} KV store instance`)
-
     switch (resolvedType) {
       case 'cloud':
+        console.log(`[KVStoreFactory] Creating cloud KV store instance`)
         return await this.createCloudKVStore()
 
       case 'local':
+        console.log(`[KVStoreFactory] Creating local KV store instance`)
         return this.createLocalKVStore()
 
       default:
@@ -59,6 +66,7 @@ export class KVStoreFactory {
   static reset(): void {
     console.log('[KVStoreFactory] Resetting singleton instance')
     this.instance = null
+    this.initPromise = null
   }
 
   /**
@@ -140,7 +148,6 @@ export class KVStoreFactory {
    * Create local KV store instance
    */
   static createLocalKVStore(): LocalKVStore {
-    console.log('[KVStoreFactory] Creating local KV store instance')
     return new LocalKVStore()
   }
 
