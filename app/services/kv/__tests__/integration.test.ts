@@ -21,14 +21,15 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
   afterEach(() => {
     // Restore original environment
-    process.env = originalEnv
+    Object.keys(process.env).forEach((key) => delete process.env[key])
+    Object.assign(process.env, originalEnv)
     KVStoreFactory.reset()
   })
 
   describe('Development Environment', () => {
     it('should use LocalKV when no cloud config is present', async () => {
       // Arrange: Development without cloud config
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       delete process.env.KV_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
@@ -51,7 +52,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
     it('should attempt CloudKV when cloud config is present', async () => {
       // Arrange: Development with cloud config
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       process.env.KV_URL = 'redis://test:6379'
       process.env.KV_REST_API_URL = 'https://test-api.vercel.com'
       process.env.KV_REST_API_TOKEN = 'test-token'
@@ -81,7 +82,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
   describe('Production Environment', () => {
     it('should require cloud configuration in production', async () => {
       // Arrange: Production without cloud config
-      process.env.NODE_ENV = 'production'
+      Object.assign(process.env, { NODE_ENV: 'production' })
       delete process.env.KV_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
@@ -94,7 +95,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
     it('should use CloudKV when properly configured in production', async () => {
       // Arrange: Production with cloud config
-      process.env.NODE_ENV = 'production'
+      Object.assign(process.env, { NODE_ENV: 'production' })
       process.env.KV_URL = 'redis://prod:6379'
       process.env.KV_REST_API_URL = 'https://prod-api.vercel.com'
       process.env.KV_REST_API_TOKEN = 'prod-token'
@@ -124,7 +125,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
   describe('Explicit Type Selection', () => {
     it('should respect explicit local selection regardless of config', async () => {
       // Arrange: Even with cloud config, force local
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       process.env.KV_URL = 'redis://test:6379'
       process.env.KV_REST_API_URL = 'https://test-api.vercel.com'
       process.env.KV_REST_API_TOKEN = 'test-token'
@@ -138,7 +139,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
     it('should respect explicit cloud selection', async () => {
       // Arrange
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
 
       // Mock @vercel/kv
       vi.doMock('@vercel/kv', () => ({
@@ -165,7 +166,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
   describe('Factory Behavior', () => {
     it('should return same instance for singleton calls', async () => {
       // Arrange
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       delete process.env.KV_URL
 
       // Act
@@ -178,7 +179,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
     it('should return different instances after reset', async () => {
       // Arrange
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       delete process.env.KV_URL
 
       // Act
@@ -192,7 +193,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
     it('should provide implementation type information', async () => {
       // Arrange
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       delete process.env.KV_URL
 
       // Act
@@ -209,7 +210,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
   describe('Contract Compliance Across Environments', () => {
     it('should handle all data types consistently in local mode', async () => {
       // Arrange
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       delete process.env.KV_URL
 
       const store = await KVStoreFactory.createInstance('auto')
@@ -237,7 +238,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
     it('should handle concurrent operations in local mode', async () => {
       // Arrange
-      process.env.NODE_ENV = 'development'
+      Object.assign(process.env, { NODE_ENV: 'development' })
       delete process.env.KV_URL
 
       const store = await KVStoreFactory.createInstance('auto')
