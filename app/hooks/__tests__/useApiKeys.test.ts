@@ -26,6 +26,9 @@ describe('useApiKeys', () => {
       removeApiKey: vi.fn(),
       clearAllSecrets: vi.fn(),
       isAuthenticated: vi.fn().mockResolvedValue(false),
+      storeSecret: vi.fn(),
+      getSecret: vi.fn(),
+      removeSecret: vi.fn(),
     }
 
     storageService.getStorage.mockResolvedValue(storage)

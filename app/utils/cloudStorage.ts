@@ -215,6 +215,23 @@ export class CloudStorage {
   }
 
   /**
+   * Stores a generic secret in the cloud
+   */
+  public static async storeSecret(key: string, value: string): Promise<void> {
+    const secrets = await this.getSecrets()
+    secrets[key] = value
+    await this.storeSecrets(secrets)
+  }
+
+  /**
+   * Retrieves a generic secret from the cloud
+   */
+  public static async getSecret(key: string): Promise<string | null> {
+    const secrets = await this.getSecrets()
+    return secrets[key] || null
+  }
+
+  /**
    * Gets a summary of stored secrets (without exposing the actual values)
    */
   public static async getSecretsSummary(): Promise<{

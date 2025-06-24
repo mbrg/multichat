@@ -63,6 +63,18 @@ class EnvironmentStorage implements ApiKeyStorage {
   async isAuthenticated(): Promise<boolean> {
     return false
   }
+
+  async storeSecret(_key: string, _value: string): Promise<void> {
+    console.warn('Cannot store secrets in environment storage')
+  }
+
+  async getSecret(_key: string): Promise<string | null> {
+    return null
+  }
+
+  async removeSecret(_key: string): Promise<void> {
+    console.warn('Cannot remove secrets from environment storage')
+  }
 }
 
 /**
@@ -92,6 +104,18 @@ class CloudStorageAdapter implements ApiKeyStorage {
 
   async isAuthenticated(): Promise<boolean> {
     return CloudStorage.isAuthenticated()
+  }
+
+  async storeSecret(key: string, value: string): Promise<void> {
+    return CloudStorage.storeSecret(key, value)
+  }
+
+  async getSecret(key: string): Promise<string | null> {
+    return CloudStorage.getSecret(key)
+  }
+
+  async removeSecret(key: string): Promise<void> {
+    return CloudStorage.removeSecret(key)
   }
 }
 

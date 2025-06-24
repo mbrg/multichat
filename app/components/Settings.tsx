@@ -130,8 +130,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center gap-2 text-amber-400 text-sm">
               <span>⚠️</span>
               <span>
-                Sign in to securely store your API keys in the cloud. Without
-                authentication, only environment variables will be used.
+                Sign in to securely store your API keys.
               </span>
             </div>
           </div>

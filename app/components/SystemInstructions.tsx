@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { StorageService } from '../services/storage'
+import { ApiKeyStorage } from '../types/storage'
 
 interface SystemInstructionsProps {
   isOpen: boolean
@@ -12,30 +14,54 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
   const [systemPrompt, setSystemPrompt] = useState(
     'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
   )
+  const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
 
   // Load settings on mount
   useEffect(() => {
     loadSettings()
   }, [])
 
-  const loadSettings = () => {
-    // Load system prompt from localStorage
-    const savedPrompt = localStorage.getItem('systemPrompt')
-    if (savedPrompt) {
-      setSystemPrompt(savedPrompt)
+  const loadSettings = async () => {
+    try {
+      // Get storage instance
+      const storageInstance = await StorageService.getStorage()
+      setStorage(storageInstance)
+
+      // Load system prompt from cloud storage
+      const savedPrompt = await storageInstance.getSecret('systemPrompt')
+      if (savedPrompt) {
+        setSystemPrompt(savedPrompt)
+      }
+    } catch (error) {
+      console.warn('Failed to load system prompt from cloud storage:', error)
     }
   }
 
-  const handleSystemPromptChange = (value: string) => {
+  const handleSystemPromptChange = async (value: string) => {
     setSystemPrompt(value)
-    localStorage.setItem('systemPrompt', value)
+    if (storage) {
+      try {
+        await storage.storeSecret('systemPrompt', value)
+      } catch (error) {
+        console.error('Failed to save system prompt to cloud storage:', error)
+      }
+    }
   }
 
-  const handleRevertToDefaults = () => {
+  const handleRevertToDefaults = async () => {
     const defaultPrompt =
       'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
     setSystemPrompt(defaultPrompt)
-    localStorage.setItem('systemPrompt', defaultPrompt)
+    if (storage) {
+      try {
+        await storage.storeSecret('systemPrompt', defaultPrompt)
+      } catch (error) {
+        console.error(
+          'Failed to save default system prompt to cloud storage:',
+          error
+        )
+      }
+    }
   }
 
   const handleBackdropClick = (e: React.MouseEvent) => {

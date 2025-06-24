@@ -36,4 +36,19 @@ export interface ApiKeyStorage {
    * Check if the user is authenticated for this storage method
    */
   isAuthenticated(): Promise<boolean>
+
+  /**
+   * Store a generic secret
+   */
+  storeSecret(key: string, value: string): Promise<void>
+
+  /**
+   * Retrieve a generic secret
+   */
+  getSecret(key: string): Promise<string | null>
+
+  /**
+   * Remove a generic secret
+   */
+  removeSecret(key: string): Promise<void>
 }

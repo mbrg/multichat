@@ -61,9 +61,18 @@ export const useApiKeys = () => {
 
       setApiKeys(keys)
 
-      // Auto-enable providers that have API keys, load manual settings from localStorage
-      const savedProviders = localStorage.getItem('enabledProviders')
-      const parsed = savedProviders ? JSON.parse(savedProviders) : {}
+      // Auto-enable providers that have API keys, load manual settings from cloud storage
+      let parsed: Partial<EnabledProviders> = {}
+      try {
+        const savedProviders =
+          await storageInstance.getSecret('enabledProviders')
+        parsed = savedProviders ? JSON.parse(savedProviders) : {}
+      } catch (error) {
+        console.warn(
+          'Failed to load provider settings from cloud storage:',
+          error
+        )
+      }
 
       // Auto-enable providers that have keys, unless explicitly disabled
       const newEnabledProviders: EnabledProviders = {
@@ -110,16 +119,25 @@ export const useApiKeys = () => {
     }
   }
 
-  const toggleProvider = (provider: keyof EnabledProviders) => {
+  const toggleProvider = async (provider: keyof EnabledProviders) => {
     const newEnabledProviders = {
       ...enabledProviders,
       [provider]: !enabledProviders[provider],
     }
     setEnabledProviders(newEnabledProviders)
-    localStorage.setItem(
-      'enabledProviders',
-      JSON.stringify(newEnabledProviders)
-    )
+    if (storage) {
+      try {
+        await storage.storeSecret(
+          'enabledProviders',
+          JSON.stringify(newEnabledProviders)
+        )
+      } catch (error) {
+        console.error(
+          'Failed to save provider settings to cloud storage:',
+          error
+        )
+      }
+    }
   }
 
   const getApiKey = (provider: keyof ApiKeys): string | undefined => {
@@ -146,7 +164,14 @@ export const useApiKeys = () => {
       await storage.clearAllSecrets()
 
       setApiKeys({})
-      localStorage.removeItem('enabledProviders')
+      try {
+        await storage.removeSecret('enabledProviders')
+      } catch (error) {
+        console.warn(
+          'Failed to remove provider settings from cloud storage:',
+          error
+        )
+      }
       setEnabledProviders({
         openai: false,
         anthropic: false,
