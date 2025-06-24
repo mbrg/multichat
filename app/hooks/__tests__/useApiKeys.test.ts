@@ -34,8 +34,11 @@ describe('useApiKeys', () => {
     storageService.getStorage.mockResolvedValue(storage)
 
     sessionHook.mockReturnValue({
-      data: null,
-      status: 'unauthenticated',
+      data: {
+        user: { id: 'test-user', email: 'test@example.com' },
+        expires: '2024-12-31T23:59:59.999Z',
+      },
+      status: 'authenticated',
       update: vi.fn(),
     })
   })

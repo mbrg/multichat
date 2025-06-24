@@ -140,13 +140,9 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             {/* Storage Status & Actions */}
             <div className="flex justify-between items-center pb-4 border-b border-[#2a2a2a]">
               <div className="text-xs text-[#666]">
-                {isAuthenticated ? (
+                {isAuthenticated && (
                   <span className="text-green-400">
                     🔒 Stored securely in cloud
-                  </span>
-                ) : (
-                  <span className="text-amber-400">
-                    ⚠️ Environment variables only
                   </span>
                 )}
               </div>

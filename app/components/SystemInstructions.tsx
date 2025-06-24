@@ -17,6 +17,7 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
     'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
   )
   const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
+  const isAuthenticated = !!session?.user
 
   // Load settings on mount - only for authenticated users
   useEffect(() => {
@@ -43,7 +44,7 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
 
   const handleSystemPromptChange = async (value: string) => {
     setSystemPrompt(value)
-    if (storage) {
+    if (storage && isAuthenticated) {
       try {
         await storage.storeSecret('systemPrompt', value)
       } catch (error) {
@@ -56,7 +57,7 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
     const defaultPrompt =
       'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
     setSystemPrompt(defaultPrompt)
-    if (storage) {
+    if (storage && isAuthenticated) {
       try {
         await storage.storeSecret('systemPrompt', defaultPrompt)
       } catch (error) {
@@ -95,13 +96,28 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
           </button>
         </div>
 
+        {/* Authentication Warning */}
+        {!isAuthenticated && (
+          <div className="p-6 bg-amber-900/20 border-b border-[#2a2a2a]">
+            <div className="flex items-center gap-2 text-amber-400 text-sm">
+              <span>⚠️</span>
+              <span>Sign in to save your custom system instructions.</span>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Revert to defaults button */}
           <div className="flex justify-end pb-4 border-b border-[#2a2a2a]">
             <button
               onClick={handleRevertToDefaults}
-              className="px-4 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors"
+              disabled={!isAuthenticated}
+              className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                isAuthenticated
+                  ? 'text-[#aaa] hover:text-[#e0e0e0] bg-[#2a2a2a] hover:bg-[#3a3a3a]'
+                  : 'text-[#666] bg-[#1a1a1a] cursor-not-allowed'
+              }`}
             >
               Revert to defaults
             </button>
@@ -126,9 +142,18 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
               <textarea
                 value={systemPrompt}
                 onChange={(e) => handleSystemPromptChange(e.target.value)}
-                placeholder="You are a helpful AI assistant..."
+                placeholder={
+                  isAuthenticated
+                    ? 'You are a helpful AI assistant...'
+                    : 'You are a helpful AI assistant... (changes not saved)'
+                }
                 maxLength={1000}
-                className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-md px-3 py-2 text-[#e0e0e0] text-sm resize-y min-h-[120px] max-h-[300px] focus:outline-none focus:border-[#667eea] transition-colors"
+                disabled={!isAuthenticated}
+                className={`w-full border rounded-md px-3 py-2 text-sm resize-y min-h-[120px] max-h-[300px] focus:outline-none transition-colors ${
+                  isAuthenticated
+                    ? 'bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] focus:border-[#667eea]'
+                    : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#666] cursor-not-allowed'
+                }`}
               />
             </div>
           </div>
