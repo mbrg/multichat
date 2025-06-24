@@ -5,7 +5,10 @@ interface SystemInstructionsProps {
   onClose: () => void
 }
 
-const SystemInstructions: React.FC<SystemInstructionsProps> = ({ isOpen, onClose }) => {
+const SystemInstructions: React.FC<SystemInstructionsProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [systemPrompt, setSystemPrompt] = useState(
     'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
   )
@@ -29,7 +32,8 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({ isOpen, onClose
   }
 
   const handleRevertToDefaults = () => {
-    const defaultPrompt = 'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
+    const defaultPrompt =
+      'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
     setSystemPrompt(defaultPrompt)
     localStorage.setItem('systemPrompt', defaultPrompt)
   }
@@ -79,7 +83,8 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({ isOpen, onClose
               Customize AI Behavior
             </h3>
             <p className="text-sm text-[#888] mb-4">
-              Define how the AI should behave and respond to your messages. This will be applied to all conversations.
+              Define how the AI should behave and respond to your messages. This
+              will be applied to all conversations.
             </p>
 
             <div>

@@ -271,7 +271,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           </div>
         )}
       </form>
-      
+
       <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>
   )

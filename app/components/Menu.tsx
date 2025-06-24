@@ -10,7 +10,11 @@ interface MenuProps {
   className?: string
 }
 
-const Menu: React.FC<MenuProps> = ({ onOpenSettings, onOpenSystemInstructions, className = '' }) => {
+const Menu: React.FC<MenuProps> = ({
+  onOpenSettings,
+  onOpenSystemInstructions,
+  className = '',
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { data: session, status } = useSession()
@@ -155,7 +159,10 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, onOpenSystemInstructions, c
             {/* Auth Actions */}
             {status === 'loading' ? (
               <div className="px-4 py-2.5 flex items-center justify-center">
-                <div data-testid="loading-spinner" className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"></div>
+                <div
+                  data-testid="loading-spinner"
+                  className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"
+                ></div>
               </div>
             ) : session ? (
               <button
@@ -201,7 +208,7 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, onOpenSystemInstructions, c
           </div>
         </div>
       )}
-      
+
       {/* Auth Popup */}
       <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>

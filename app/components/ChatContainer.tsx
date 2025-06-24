@@ -46,7 +46,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         <div className="text-lg font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
           Infinite Chat
         </div>
-        <Menu 
+        <Menu
           onOpenSettings={() => setShowSettings(true)}
           onOpenSystemInstructions={() => setShowSystemInstructions(true)}
         />
@@ -87,10 +87,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
       {/* Settings Modal */}
       <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
-      
+
       {/* System Instructions Modal */}
-      <SystemInstructions isOpen={showSystemInstructions} onClose={() => setShowSystemInstructions(false)} />
-      
+      <SystemInstructions
+        isOpen={showSystemInstructions}
+        onClose={() => setShowSystemInstructions(false)}
+      />
+
       {/* Auth Popup */}
       <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>

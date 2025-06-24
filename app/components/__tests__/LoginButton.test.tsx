@@ -23,7 +23,7 @@ describe('LoginButton', () => {
       })
 
       render(<LoginButton />)
-      
+
       expect(screen.getByText('Loading...')).toBeInTheDocument()
       expect(screen.getByText('Loading...')).toBeInTheDocument()
       // Check for the spinner element by class
@@ -48,10 +48,12 @@ describe('LoginButton', () => {
       })
 
       render(<LoginButton />)
-      
+
       expect(screen.getByText('John Doe')).toBeInTheDocument()
       expect(screen.getByRole('img', { name: 'John Doe' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /sign out/i })
+      ).toBeInTheDocument()
     })
 
     it('displays email when name is not available', () => {
@@ -68,7 +70,7 @@ describe('LoginButton', () => {
       })
 
       render(<LoginButton />)
-      
+
       expect(screen.getByText('john@example.com')).toBeInTheDocument()
     })
 
@@ -86,25 +88,26 @@ describe('LoginButton', () => {
       })
 
       render(<LoginButton />)
-      
+
       const signOutButton = screen.getByRole('button', { name: /sign out/i })
       fireEvent.click(signOutButton)
-      
+
       expect(signOut).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('unauthenticated state', () => {
-    it('displays GitHub and Google sign-in buttons when not authenticated', () => {
+    it('displays GitHub sign-in button when not authenticated', () => {
       ;(useSession as any).mockReturnValue({
         data: null,
         status: 'unauthenticated',
       })
 
       render(<LoginButton />)
-      
-      expect(screen.getByRole('button', { name: /sign in with github/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument()
+
+      expect(
+        screen.getByRole('button', { name: /sign in with github/i })
+      ).toBeInTheDocument()
     })
 
     it('calls signIn with github provider when GitHub button is clicked', () => {
@@ -114,25 +117,13 @@ describe('LoginButton', () => {
       })
 
       render(<LoginButton />)
-      
-      const githubButton = screen.getByRole('button', { name: /sign in with github/i })
-      fireEvent.click(githubButton)
-      
-      expect(signIn).toHaveBeenCalledWith('github')
-    })
 
-    it('calls signIn with google provider when Google button is clicked', () => {
-      ;(useSession as any).mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
+      const githubButton = screen.getByRole('button', {
+        name: /sign in with github/i,
       })
+      fireEvent.click(githubButton)
 
-      render(<LoginButton />)
-      
-      const googleButton = screen.getByRole('button', { name: /sign in with google/i })
-      fireEvent.click(googleButton)
-      
-      expect(signIn).toHaveBeenCalledWith('google')
+      expect(signIn).toHaveBeenCalledWith('github')
     })
   })
 })

@@ -23,6 +23,6 @@ export function useAuthPopup() {
     isPopupOpen,
     checkAuthAndRun,
     closePopup,
-    isAuthenticated: !!session
+    isAuthenticated: !!session,
   }
 }

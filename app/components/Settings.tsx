@@ -71,8 +71,6 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     },
   ]
 
-
-
   const handleApiKeyChange = async (providerId: string, value: string) => {
     try {
       await saveApiKey(providerId as keyof typeof enabledProviders, value)
@@ -92,7 +90,6 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     }
     toggleProvider(providerId as keyof typeof enabledProviders)
   }
-
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -191,11 +188,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
             ))}
-
           </div>
         )}
       </div>
-      
+
       <AuthPopup isOpen={isPopupOpen} onClose={closePopup} />
     </div>
   )

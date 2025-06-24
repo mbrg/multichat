@@ -13,6 +13,7 @@
       "Bash(npm run ci:*)",
       "Bash(ls:*)",
       "Bash(rg:*)",
+      "Bash(npm run format:*)",
       "Bash(npm run format:*)"
     ],
     "deny": []

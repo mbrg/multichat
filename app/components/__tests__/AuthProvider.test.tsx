@@ -5,7 +5,9 @@ import AuthProvider from '../AuthProvider'
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
-  SessionProvider: vi.fn(({ children }) => <div data-testid="session-provider">{children}</div>),
+  SessionProvider: vi.fn(({ children }) => (
+    <div data-testid="session-provider">{children}</div>
+  )),
 }))
 
 describe('AuthProvider', () => {
