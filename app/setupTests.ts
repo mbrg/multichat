@@ -41,6 +41,9 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
   writable: true,
 })
 
+// Set up test environment variables
+process.env.KV_ENCRYPTION_KEY = 'test-encryption-key-for-testing'
+
 // Clear mocks between tests
 import { beforeEach } from 'vitest'
 beforeEach(() => {

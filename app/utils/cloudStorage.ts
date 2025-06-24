@@ -1,14 +1,14 @@
 /**
- * CloudStorage - Server-side encrypted storage for user secrets
+ * CloudStorage - Legacy wrapper for backward compatibility
  *
- * This utility provides secure cloud storage for API keys and system instructions using:
- * - Vercel KV for persistence
- * - Server-side encryption with user-specific keys
- * - NextAuth.js session-based authentication
- * - No client-side exposure of secrets
+ * This class maintains the original API while delegating to the new split endpoints.
+ * New code should use CloudApiKeys and CloudSettings directly.
+ *
+ * @deprecated Use CloudApiKeys and CloudSettings instead
  */
 
-// CloudStorage provides static methods for server-side encrypted storage
+import { CloudApiKeys, ApiKeyStatus } from './cloudApiKeys'
+import { CloudSettings, UserSettings } from './cloudSettings'
 
 export interface UserSecrets {
   apiKeys?: {
@@ -23,44 +23,60 @@ export interface UserSecrets {
 }
 
 export class CloudStorage {
-  private static readonly API_BASE = '/api/secrets'
-
   /**
-   * Stores user secrets in the cloud
+   * Stores user secrets in the cloud (legacy method)
+   * This method is maintained for backward compatibility
    */
   public static async storeSecrets(secrets: UserSecrets): Promise<void> {
-    const response = await fetch(this.API_BASE, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ secrets }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to store secrets')
+    // Handle API keys separately (but we can't store them from client anymore)
+    // This is a breaking change but necessary for security
+    if (secrets.apiKeys) {
+      console.warn(
+        'CloudStorage.storeSecrets: Direct API key storage is deprecated. Use individual setApiKey calls.'
+      )
     }
+
+    // Store other settings
+    const settings: UserSettings = { ...secrets }
+    delete settings.apiKeys // Remove API keys from settings
+
+    // Handle systemInstructions -> systemPrompt mapping
+    if (settings.systemInstructions !== undefined) {
+      settings.systemPrompt = settings.systemInstructions
+      delete settings.systemInstructions
+    }
+
+    await CloudSettings.updateSettings(settings)
   }
 
   /**
-   * Retrieves user secrets from the cloud
+   * Retrieves user secrets from the cloud (legacy method)
+   * Note: This will NOT return actual API keys, only their status
    */
   public static async getSecrets(): Promise<UserSecrets> {
-    const response = await fetch(this.API_BASE, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const [apiKeyStatus, settings] = await Promise.all([
+      CloudApiKeys.getApiKeyStatus(),
+      CloudSettings.getSettings(),
+    ])
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to retrieve secrets')
+    // Map settings back to legacy format
+    const secrets: UserSecrets = { ...settings }
+
+    // Map systemPrompt back to systemInstructions for backward compatibility
+    if (settings.systemPrompt !== undefined) {
+      secrets.systemInstructions = settings.systemPrompt
     }
 
-    const data = await response.json()
-    return data.secrets || {}
+    // API keys are returned as empty strings if set (for security)
+    secrets.apiKeys = {
+      openai: apiKeyStatus.openai ? '***' : undefined,
+      anthropic: apiKeyStatus.anthropic ? '***' : undefined,
+      google: apiKeyStatus.google ? '***' : undefined,
+      mistral: apiKeyStatus.mistral ? '***' : undefined,
+      together: apiKeyStatus.together ? '***' : undefined,
+    }
+
+    return secrets
   }
 
   /**
@@ -70,22 +86,17 @@ export class CloudStorage {
     provider: string,
     apiKey: string
   ): Promise<void> {
-    const secrets = await this.getSecrets()
-
-    if (!secrets.apiKeys) {
-      secrets.apiKeys = {}
-    }
-
-    secrets.apiKeys[provider] = apiKey
-    await this.storeSecrets(secrets)
+    await CloudApiKeys.setApiKey(provider, apiKey)
   }
 
   /**
    * Retrieves a specific API key from the cloud
+   * Note: This will return '***' if the key exists (for security)
    */
   public static async getApiKey(provider: string): Promise<string | null> {
-    const secrets = await this.getSecrets()
-    return secrets.apiKeys?.[provider] || null
+    const status = await CloudApiKeys.getApiKeyStatus()
+    const providerKey = provider as keyof ApiKeyStatus
+    return status[providerKey] ? '***' : null
   }
 
   /**
@@ -94,54 +105,49 @@ export class CloudStorage {
   public static async storeSystemInstructions(
     instructions: string
   ): Promise<void> {
-    const secrets = await this.getSecrets()
-    secrets.systemInstructions = instructions
-    await this.storeSecrets(secrets)
+    await CloudSettings.setSystemPrompt(instructions)
   }
 
   /**
    * Retrieves system instructions from the cloud
    */
   public static async getSystemInstructions(): Promise<string | null> {
-    const secrets = await this.getSecrets()
-    return secrets.systemInstructions || null
+    const prompt = await CloudSettings.getSystemPrompt()
+    return prompt || null
   }
 
   /**
    * Removes a specific API key from the cloud
    */
   public static async removeApiKey(provider: string): Promise<void> {
-    const secrets = await this.getSecrets()
-
-    if (secrets.apiKeys && secrets.apiKeys[provider]) {
-      delete secrets.apiKeys[provider]
-      await this.storeSecrets(secrets)
-    }
+    await CloudApiKeys.deleteApiKey(provider)
   }
 
   /**
    * Removes system instructions from the cloud
    */
   public static async removeSystemInstructions(): Promise<void> {
-    const secrets = await this.getSecrets()
-    delete secrets.systemInstructions
-    await this.storeSecrets(secrets)
+    await CloudSettings.deleteSetting('systemPrompt')
   }
 
   /**
    * Removes a specific secret by key
    */
   public static async removeSecret(key: string): Promise<void> {
-    const response = await fetch(
-      `${this.API_BASE}?key=${encodeURIComponent(key)}`,
-      {
-        method: 'DELETE',
-      }
-    )
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to remove secret')
+    // Check if it's an API key provider
+    const apiKeyProviders = [
+      'openai',
+      'anthropic',
+      'google',
+      'mistral',
+      'together',
+    ]
+    if (apiKeyProviders.includes(key)) {
+      await CloudApiKeys.deleteApiKey(key)
+    } else {
+      // Handle special mappings
+      const settingKey = key === 'systemInstructions' ? 'systemPrompt' : key
+      await CloudSettings.deleteSetting(settingKey)
     }
   }
 
@@ -149,14 +155,10 @@ export class CloudStorage {
    * Clears all user secrets from the cloud
    */
   public static async clearAllSecrets(): Promise<void> {
-    const response = await fetch(this.API_BASE, {
-      method: 'DELETE',
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to clear secrets')
-    }
+    await Promise.all([
+      CloudApiKeys.deleteAllApiKeys(),
+      CloudSettings.deleteAllSettings(),
+    ])
   }
 
   /**
@@ -164,10 +166,9 @@ export class CloudStorage {
    */
   public static async isAuthenticated(): Promise<boolean> {
     try {
-      const response = await fetch(this.API_BASE, {
-        method: 'GET',
-      })
-      return response.ok
+      // Try to get API key status as a simple auth check
+      await CloudApiKeys.getApiKeyStatus()
+      return true
     } catch {
       return false
     }
@@ -175,35 +176,47 @@ export class CloudStorage {
 
   /**
    * Gets all API keys as a simple object
+   * Note: Returns masked values for security
    */
   public static async getAllApiKeys(): Promise<Record<string, string>> {
-    const secrets = await this.getSecrets()
-    return secrets.apiKeys || {}
+    const status = await CloudApiKeys.getApiKeyStatus()
+    const maskedKeys: Record<string, string> = {}
+
+    Object.entries(status).forEach(([provider, isSet]) => {
+      if (isSet) {
+        maskedKeys[provider] = '***'
+      }
+    })
+
+    return maskedKeys
   }
 
   /**
    * Checks if a specific API key exists
    */
   public static async hasApiKey(provider: string): Promise<boolean> {
-    const apiKey = await this.getApiKey(provider)
-    return apiKey !== null && apiKey.length > 0
+    const status = await CloudApiKeys.getApiKeyStatus()
+    const providerKey = provider as keyof ApiKeyStatus
+    return status[providerKey] || false
   }
 
   /**
    * Stores a generic secret in the cloud
    */
   public static async storeSecret(key: string, value: string): Promise<void> {
-    const secrets = await this.getSecrets()
-    secrets[key] = value
-    await this.storeSecrets(secrets)
+    // Handle special mappings
+    const settingKey = key === 'systemInstructions' ? 'systemPrompt' : key
+    await CloudSettings.updateSettings({ [settingKey]: value })
   }
 
   /**
    * Retrieves a generic secret from the cloud
    */
   public static async getSecret(key: string): Promise<string | null> {
-    const secrets = await this.getSecrets()
-    return secrets[key] || null
+    // Handle special mappings
+    const settingKey = key === 'systemInstructions' ? 'systemPrompt' : key
+    const settings = await CloudSettings.getSettings()
+    return settings[settingKey] || null
   }
 
   /**
@@ -214,14 +227,19 @@ export class CloudStorage {
     apiKeyProviders: string[]
     hasSystemInstructions: boolean
   }> {
-    const secrets = await this.getSecrets()
+    const [apiKeyStatus, settings] = await Promise.all([
+      CloudApiKeys.getApiKeyStatus(),
+      CloudSettings.getSettings(),
+    ])
+
+    const apiKeyProviders = Object.entries(apiKeyStatus)
+      .filter(([_, isSet]) => isSet)
+      .map(([provider]) => provider)
 
     return {
-      hasApiKeys: Boolean(
-        secrets.apiKeys && Object.keys(secrets.apiKeys).length > 0
-      ),
-      apiKeyProviders: Object.keys(secrets.apiKeys || {}),
-      hasSystemInstructions: Boolean(secrets.systemInstructions),
+      hasApiKeys: apiKeyProviders.length > 0,
+      apiKeyProviders,
+      hasSystemInstructions: Boolean(settings.systemPrompt),
     }
   }
 }

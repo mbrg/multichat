@@ -4,10 +4,14 @@ import { useApiKeys } from '../useApiKeys'
 import { StorageService } from '../../services/storage'
 import { ApiKeyStorage } from '../../types/storage'
 import { useSession } from 'next-auth/react'
+import { CloudApiKeys } from '../../utils/cloudApiKeys'
+import { CloudSettings } from '../../utils/cloudSettings'
 
 // Mock dependencies
 vi.mock('../../services/storage')
 vi.mock('next-auth/react')
+vi.mock('../../utils/cloudApiKeys')
+vi.mock('../../utils/cloudSettings')
 
 const storageService = vi.mocked(StorageService)
 const sessionHook = vi.mocked(useSession)
@@ -17,6 +21,29 @@ describe('useApiKeys', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+
+    // Mock CloudApiKeys
+    vi.mocked(CloudApiKeys.getApiKeyStatus).mockResolvedValue({
+      openai: false,
+      anthropic: false,
+      google: false,
+      mistral: false,
+      together: false,
+    })
+    vi.mocked(CloudApiKeys.setApiKey).mockResolvedValue({
+      openai: true,
+      anthropic: false,
+      google: false,
+      mistral: false,
+      together: false,
+    })
+    vi.mocked(CloudApiKeys.deleteApiKey).mockResolvedValue()
+    vi.mocked(CloudApiKeys.deleteAllApiKeys).mockResolvedValue()
+
+    // Mock CloudSettings
+    vi.mocked(CloudSettings.getEnabledProviders).mockResolvedValue(undefined)
+    vi.mocked(CloudSettings.setEnabledProviders).mockResolvedValue()
+    vi.mocked(CloudSettings.deleteAllSettings).mockResolvedValue()
 
     // Create a mock storage that implements the interface
     storage = {
@@ -57,9 +84,13 @@ describe('useApiKeys', () => {
     })
 
     it('should load API keys from storage', async () => {
-      storage.getAllApiKeys = vi.fn().mockResolvedValue({
-        openai: 'test-openai-key',
-        anthropic: 'test-anthropic-key',
+      // Mock API key status indicating keys are set
+      vi.mocked(CloudApiKeys.getApiKeyStatus).mockResolvedValue({
+        openai: true,
+        anthropic: true,
+        google: false,
+        mistral: false,
+        together: false,
       })
 
       const { result } = renderHook(() => useApiKeys())
@@ -68,8 +99,8 @@ describe('useApiKeys', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      expect(result.current.apiKeys.openai).toBe('test-openai-key')
-      expect(result.current.apiKeys.anthropic).toBe('test-anthropic-key')
+      expect(result.current.apiKeys.openai).toBe('***')
+      expect(result.current.apiKeys.anthropic).toBe('***')
       expect(result.current.enabledProviders.openai).toBe(true)
       expect(result.current.enabledProviders.anthropic).toBe(true)
     })
@@ -87,19 +118,15 @@ describe('useApiKeys', () => {
         await result.current.saveApiKey('openai', 'new-openai-key')
       })
 
-      expect(storage.storeApiKey).toHaveBeenCalledWith(
+      expect(CloudApiKeys.setApiKey).toHaveBeenCalledWith(
         'openai',
         'new-openai-key'
       )
-      expect(result.current.apiKeys.openai).toBe('new-openai-key')
+      expect(result.current.apiKeys.openai).toBe('***')
       expect(result.current.enabledProviders.openai).toBe(true)
     })
 
     it('should remove API key through storage interface', async () => {
-      storage.getAllApiKeys = vi.fn().mockResolvedValue({
-        openai: 'existing-key',
-      })
-
       const { result } = renderHook(() => useApiKeys())
 
       await waitFor(() => {
@@ -110,7 +137,7 @@ describe('useApiKeys', () => {
         await result.current.saveApiKey('openai', '')
       })
 
-      expect(storage.removeApiKey).toHaveBeenCalledWith('openai')
+      expect(CloudApiKeys.deleteApiKey).toHaveBeenCalledWith('openai')
       expect(result.current.apiKeys.openai).toBeUndefined()
       expect(result.current.enabledProviders.openai).toBe(false)
     })
@@ -126,15 +153,21 @@ describe('useApiKeys', () => {
         await result.current.clearAllKeys()
       })
 
-      expect(storage.clearAllSecrets).toHaveBeenCalled()
+      expect(CloudApiKeys.deleteAllApiKeys).toHaveBeenCalled()
+      expect(CloudSettings.deleteAllSettings).toHaveBeenCalled()
       expect(result.current.apiKeys).toEqual({})
     })
   })
 
   describe('Provider Management', () => {
     it('should enable/disable providers correctly', async () => {
-      storage.getAllApiKeys = vi.fn().mockResolvedValue({
-        openai: 'test-key',
+      // Mock API key status indicating openai key is set
+      vi.mocked(CloudApiKeys.getApiKeyStatus).mockResolvedValue({
+        openai: true,
+        anthropic: false,
+        google: false,
+        mistral: false,
+        together: false,
       })
 
       const { result } = renderHook(() => useApiKeys())
@@ -159,8 +192,13 @@ describe('useApiKeys', () => {
     })
 
     it('should provide utility functions', async () => {
-      storage.getAllApiKeys = vi.fn().mockResolvedValue({
-        openai: 'test-key',
+      // Mock API key status indicating openai key is set
+      vi.mocked(CloudApiKeys.getApiKeyStatus).mockResolvedValue({
+        openai: true,
+        anthropic: false,
+        google: false,
+        mistral: false,
+        together: false,
       })
 
       const { result } = renderHook(() => useApiKeys())
@@ -169,7 +207,7 @@ describe('useApiKeys', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      expect(result.current.getApiKey('openai')).toBe('test-key')
+      expect(result.current.getApiKey('openai')).toBe('***')
       expect(result.current.getApiKey('anthropic')).toBeUndefined()
       expect(result.current.hasApiKey('openai')).toBe(true)
       expect(result.current.hasApiKey('anthropic')).toBe(false)

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { StorageService } from '../services/storage'
-import { ApiKeyStorage } from '../types/storage'
+import { CloudSettings } from '../utils/cloudSettings'
 
 interface SystemInstructionsProps {
   isOpen: boolean
@@ -16,7 +15,6 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
   const [systemPrompt, setSystemPrompt] = useState(
     'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
   )
-  const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
   const isAuthenticated = !!session?.user
 
   // Load settings on mount - only for authenticated users
@@ -28,12 +26,8 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
 
   const loadSettings = async () => {
     try {
-      // Get storage instance
-      const storageInstance = await StorageService.getStorage()
-      setStorage(storageInstance)
-
-      // Load system prompt from cloud storage
-      const savedPrompt = await storageInstance.getSecret('systemPrompt')
+      // Load system prompt from cloud storage using the new settings endpoint
+      const savedPrompt = await CloudSettings.getSystemPrompt()
       if (savedPrompt) {
         setSystemPrompt(savedPrompt)
       }
@@ -44,9 +38,9 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
 
   const handleSystemPromptChange = async (value: string) => {
     setSystemPrompt(value)
-    if (storage && isAuthenticated) {
+    if (isAuthenticated) {
       try {
-        await storage.storeSecret('systemPrompt', value)
+        await CloudSettings.setSystemPrompt(value)
       } catch (error) {
         console.error('Failed to save system prompt to cloud storage:', error)
       }
@@ -57,9 +51,9 @@ const SystemInstructions: React.FC<SystemInstructionsProps> = ({
     const defaultPrompt =
       'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.'
     setSystemPrompt(defaultPrompt)
-    if (storage && isAuthenticated) {
+    if (isAuthenticated) {
       try {
-        await storage.storeSecret('systemPrompt', defaultPrompt)
+        await CloudSettings.setSystemPrompt(defaultPrompt)
       } catch (error) {
         console.error(
           'Failed to save default system prompt to cloud storage:',

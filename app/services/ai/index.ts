@@ -151,9 +151,9 @@ export class AIService {
     }
 
     // Note: API key validation now happens through server-side storage
-    // This method is deprecated and should use the CloudStorage system instead
+    // This method is deprecated and should use the CloudApiKeys/CloudSettings APIs instead
     console.warn(
-      'AIService.validateApiKey() is deprecated. Use CloudStorage for API key management.'
+      'AIService.validateApiKey() is deprecated. Use CloudApiKeys for API key management.'
     )
 
     try {

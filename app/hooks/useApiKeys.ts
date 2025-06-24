@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { StorageService } from '../services/storage'
 import { ApiKeyStorage } from '../types/storage'
 import { useSession } from 'next-auth/react'
+import { CloudApiKeys } from '../utils/cloudApiKeys'
+import { CloudSettings } from '../utils/cloudSettings'
 
 export interface ApiKeys {
   openai?: string
@@ -60,11 +62,25 @@ export const useApiKeys = () => {
 
       setApiKeys(keys)
 
-      // Auto-enable providers that have API keys, load manual settings from cloud storage
+      // Get API key status from the new endpoint
+      let apiKeyStatus = {
+        openai: false,
+        anthropic: false,
+        google: false,
+        mistral: false,
+        together: false,
+      }
+
+      try {
+        apiKeyStatus = await CloudApiKeys.getApiKeyStatus()
+      } catch (error) {
+        console.warn('Failed to load API key status:', error)
+      }
+
+      // Load enabled providers from settings
       let parsed: Partial<EnabledProviders> = {}
       try {
-        const savedProviders =
-          await storageInstance.getSecret('enabledProviders')
+        const savedProviders = await CloudSettings.getEnabledProviders()
         parsed = savedProviders ? JSON.parse(savedProviders) : {}
       } catch (error) {
         console.warn(
@@ -75,12 +91,19 @@ export const useApiKeys = () => {
 
       // Auto-enable providers that have keys, unless explicitly disabled
       const newEnabledProviders: EnabledProviders = {
-        openai: Boolean(keys.openai) && parsed.openai !== false,
-        anthropic: Boolean(keys.anthropic) && parsed.anthropic !== false,
-        google: Boolean(keys.google) && parsed.google !== false,
-        mistral: Boolean(keys.mistral) && parsed.mistral !== false,
-        together: Boolean(keys.together) && parsed.together !== false,
+        openai: apiKeyStatus.openai && parsed.openai !== false,
+        anthropic: apiKeyStatus.anthropic && parsed.anthropic !== false,
+        google: apiKeyStatus.google && parsed.google !== false,
+        mistral: apiKeyStatus.mistral && parsed.mistral !== false,
+        together: apiKeyStatus.together && parsed.together !== false,
       }
+
+      // Update keys object to show masked values for set API keys
+      if (apiKeyStatus.openai) keys.openai = '***'
+      if (apiKeyStatus.anthropic) keys.anthropic = '***'
+      if (apiKeyStatus.google) keys.google = '***'
+      if (apiKeyStatus.mistral) keys.mistral = '***'
+      if (apiKeyStatus.together) keys.together = '***'
 
       setEnabledProviders(newEnabledProviders)
     } catch (error) {
@@ -97,20 +120,38 @@ export const useApiKeys = () => {
 
     try {
       if (key.trim()) {
-        await storage.storeApiKey(provider, key)
-        setApiKeys((prev) => ({ ...prev, [provider]: key }))
+        // Use the new API endpoint
+        const newStatus = await CloudApiKeys.setApiKey(provider, key)
+
+        // Update local state based on new status
+        setApiKeys((prev) => ({ ...prev, [provider]: '***' }))
+
         // Auto-enable when API key is added
         setEnabledProviders((prev) => ({ ...prev, [provider]: true }))
+
+        // Save enabled state
+        const newEnabledProviders = { ...enabledProviders, [provider]: true }
+        await CloudSettings.setEnabledProviders(
+          JSON.stringify(newEnabledProviders)
+        )
       } else {
         // Remove empty key
-        await storage.removeApiKey(provider)
+        await CloudApiKeys.deleteApiKey(provider)
+
         setApiKeys((prev) => {
           const newKeys = { ...prev }
           delete newKeys[provider]
           return newKeys
         })
+
         // Auto-disable when API key is removed
         setEnabledProviders((prev) => ({ ...prev, [provider]: false }))
+
+        // Save enabled state
+        const newEnabledProviders = { ...enabledProviders, [provider]: false }
+        await CloudSettings.setEnabledProviders(
+          JSON.stringify(newEnabledProviders)
+        )
       }
     } catch (error) {
       console.error('Error saving API key:', error)
@@ -124,18 +165,12 @@ export const useApiKeys = () => {
       [provider]: !enabledProviders[provider],
     }
     setEnabledProviders(newEnabledProviders)
-    if (storage) {
-      try {
-        await storage.storeSecret(
-          'enabledProviders',
-          JSON.stringify(newEnabledProviders)
-        )
-      } catch (error) {
-        console.error(
-          'Failed to save provider settings to cloud storage:',
-          error
-        )
-      }
+    try {
+      await CloudSettings.setEnabledProviders(
+        JSON.stringify(newEnabledProviders)
+      )
+    } catch (error) {
+      console.error('Failed to save provider settings to cloud storage:', error)
     }
   }
 
@@ -160,17 +195,13 @@ export const useApiKeys = () => {
     console.log('Clearing all API keys...')
 
     try {
-      await storage.clearAllSecrets()
+      // Clear both API keys and settings
+      await Promise.all([
+        CloudApiKeys.deleteAllApiKeys(),
+        CloudSettings.deleteAllSettings(),
+      ])
 
       setApiKeys({})
-      try {
-        await storage.removeSecret('enabledProviders')
-      } catch (error) {
-        console.warn(
-          'Failed to remove provider settings from cloud storage:',
-          error
-        )
-      }
       setEnabledProviders({
         openai: false,
         anthropic: false,

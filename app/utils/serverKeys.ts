@@ -8,31 +8,20 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../lib/auth'
 import { getKVStore } from '../services/kv'
-import { createHash, createDecipheriv } from 'crypto'
+import { deriveUserKey, decrypt } from './crypto'
 
-// Derive a user-specific encryption key from user ID and dedicated encryption secret
-function deriveUserKey(userId: string): Buffer {
-  const encryptionSecret = process.env.KV_ENCRYPTION_KEY
-  if (!encryptionSecret) {
-    throw new Error('KV_ENCRYPTION_KEY environment variable is required')
-  }
-
-  return createHash('sha256')
-    .update(userId + encryptionSecret)
-    .digest()
+interface ApiKeyData {
+  [key: string]: string
 }
 
-// Decrypt data with user-specific key
-function decryptData(encryptedData: string, userId: string): string {
-  const key = deriveUserKey(userId)
-  const [ivHex, encrypted] = encryptedData.split(':')
-  const iv = Buffer.from(ivHex, 'hex')
-  const decipher = createDecipheriv('aes-256-cbc', key, iv)
+async function getApiKeysData(userId: string): Promise<ApiKeyData> {
+  const kvStore = await getKVStore()
+  const encryptedData = await kvStore.get<string>(`apikeys:${userId}`)
+  if (!encryptedData) return {}
 
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8')
-  decrypted += decipher.final('utf8')
-
-  return decrypted
+  const userKey = await deriveUserKey(userId)
+  const decryptedData = await decrypt(encryptedData, userKey)
+  return JSON.parse(decryptedData)
 }
 
 export class ServerKeys {
@@ -43,21 +32,10 @@ export class ServerKeys {
     try {
       const session = await getServerSession(authOptions)
       if (session?.user?.id) {
-        const userKey = `secrets:${session.user.id}`
-        const kvStore = await getKVStore()
-        const encryptedSecrets = await kvStore.get<string>(userKey)
-
-        if (encryptedSecrets) {
-          const decryptedSecrets = decryptData(
-            encryptedSecrets,
-            session.user.id
-          )
-          const secrets = JSON.parse(decryptedSecrets)
-
-          const apiKey = secrets.apiKeys?.[provider]
-          if (apiKey) {
-            return apiKey
-          }
+        const apiKeysData = await getApiKeysData(session.user.id)
+        const apiKey = apiKeysData[provider]
+        if (apiKey) {
+          return apiKey
         }
       }
     } catch (error) {
@@ -82,16 +60,26 @@ export class ServerKeys {
    * Get all available API keys
    */
   static async getAllApiKeys(): Promise<Record<string, string>> {
-    const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
-    const keys: Record<string, string> = {}
-
-    for (const provider of providers) {
-      const key = await this.getApiKey(provider)
-      if (key) {
-        keys[provider] = key
+    try {
+      const session = await getServerSession(authOptions)
+      if (session?.user?.id) {
+        const apiKeysData = await getApiKeysData(session.user.id)
+        // Filter out any empty/null values
+        const validKeys: Record<string, string> = {}
+        Object.entries(apiKeysData).forEach(([provider, key]) => {
+          if (key && key.trim()) {
+            validKeys[provider] = key
+          }
+        })
+        return validKeys
       }
+    } catch (error) {
+      console.warn(
+        '[ServerKeys] Failed to load API keys from cloud storage:',
+        error
+      )
     }
 
-    return keys
+    return {}
   }
 }
