@@ -18,6 +18,7 @@ vi.mock('next-auth/react', async () => {
 
 // Mock the useApiKeys hook
 const mockSaveApiKey = vi.fn()
+const mockClearApiKey = vi.fn()
 const mockToggleProvider = vi.fn()
 const mockGetApiKey = vi.fn()
 
@@ -37,6 +38,7 @@ vi.mock('../../hooks/useApiKeys', () => ({
     isLoading: false,
     isAuthenticated: true,
     saveApiKey: mockSaveApiKey,
+    clearApiKey: mockClearApiKey,
     toggleProvider: mockToggleProvider,
     getApiKey: mockGetApiKey,
   }),
@@ -56,8 +58,8 @@ describe('Settings Component', () => {
     })
 
     mockGetApiKey.mockImplementation((provider: string) => {
-      if (provider === 'openai') return 'sk-test-key'
-      return ''
+      if (provider === 'openai') return '***' // Shows as configured
+      return undefined // Not configured
     })
   })
 
@@ -65,8 +67,7 @@ describe('Settings Component', () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
     expect(screen.getByText('API Keys')).toBeInTheDocument()
-    expect(screen.getByText('OpenAI API Key')).toBeInTheDocument()
-    expect(screen.getByText('Anthropic API Key')).toBeInTheDocument()
+    expect(screen.getByText('Configured API Keys')).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
@@ -96,76 +97,60 @@ describe('Settings Component', () => {
     expect(mockOnClose).toHaveBeenCalledOnce()
   })
 
-  it('displays API key values from hook', () => {
+  it('shows configured API keys in list', () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
-    const openaiInput = screen.getByPlaceholderText('sk-...')
-    expect(openaiInput).toHaveValue('sk-test-key')
+    // Should show OpenAI as configured (from mock hook returning '***')
+    expect(screen.getByText('OpenAI')).toBeInTheDocument()
+    expect(screen.getByText('API key configured')).toBeInTheDocument()
   })
 
-  it('calls saveApiKey when API key input changes', async () => {
+  it('shows add form when add button is clicked', async () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
-    const anthropicInput = screen.getByPlaceholderText('sk-ant-...')
-    fireEvent.change(anthropicInput, { target: { value: 'sk-ant-new-key' } })
+    const addButton = screen.getByText('+ Add Key')
+    fireEvent.click(addButton)
 
     await waitFor(() => {
-      expect(mockSaveApiKey).toHaveBeenCalledWith('anthropic', 'sk-ant-new-key')
+      expect(screen.getByText('Add New API Key')).toBeInTheDocument()
+      expect(screen.getByText('Select Provider')).toBeInTheDocument()
     })
   })
 
   it('toggles provider when switch is clicked', () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
-    // Find the toggle switches - there should be 5 (one for each provider)
+    // Find the toggle switches for configured providers
     const toggles = screen
       .getAllByRole('button')
-      .filter((button) => button.className.includes('w-11 h-6'))
+      .filter((button) => button.className.includes('w-10 h-5'))
 
     fireEvent.click(toggles[0]) // Click first toggle (OpenAI)
 
     expect(mockToggleProvider).toHaveBeenCalledWith('openai')
   })
 
-  it('renders all provider sections', () => {
+  it('shows provider cards in add form', async () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
-    expect(screen.getByText('OpenAI API Key')).toBeInTheDocument()
-    expect(screen.getByText('Anthropic API Key')).toBeInTheDocument()
-    expect(screen.getByText('Google API Key')).toBeInTheDocument()
-    expect(screen.getByText('Mistral API Key')).toBeInTheDocument()
-    expect(screen.getByText('Together API Key')).toBeInTheDocument()
+    const addButton = screen.getByText('+ Add Key')
+    fireEvent.click(addButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Anthropic')).toBeInTheDocument()
+      expect(screen.getByText('Google')).toBeInTheDocument()
+      expect(screen.getByText('Mistral')).toBeInTheDocument()
+      expect(screen.getByText('Together')).toBeInTheDocument()
+    })
   })
 
-  it('shows correct toggle states based on enabled providers', () => {
+  it('calls clearApiKey when remove button is clicked', () => {
     render(<Settings isOpen={true} onClose={() => {}} />)
 
-    // OpenAI should be enabled (has bg-[#667eea])
-    const toggles = screen
-      .getAllByRole('button')
-      .filter((button) => button.className.includes('w-11 h-6'))
+    // Find the remove button for the configured OpenAI key
+    const removeButtons = screen.getAllByTitle('Remove API key')
+    fireEvent.click(removeButtons[0])
 
-    // First toggle should be enabled (OpenAI)
-    expect(toggles[0]).toHaveClass('bg-[#667eea]')
-
-    // Second toggle should be disabled (Anthropic)
-    expect(toggles[1]).toHaveClass('bg-[#2a2a2a]')
-  })
-
-  it('renders provider icons', () => {
-    render(<Settings isOpen={true} onClose={() => {}} />)
-
-    const images = screen.getAllByRole('img')
-    expect(images.length).toBeGreaterThanOrEqual(5) // At least 5 provider icons
-  })
-
-  it('prevents backdrop clicks on content', () => {
-    const mockOnClose = vi.fn()
-    render(<Settings isOpen={true} onClose={mockOnClose} />)
-
-    const content = screen.getByText('API Configuration').closest('div')
-    fireEvent.click(content!)
-
-    expect(mockOnClose).not.toHaveBeenCalled()
+    expect(mockClearApiKey).toHaveBeenCalledWith('openai')
   })
 })
