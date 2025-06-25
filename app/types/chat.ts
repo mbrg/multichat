@@ -18,6 +18,7 @@ export interface Message {
   attachments?: Attachment[]
   possibilities?: Message[] // Alternative responses for assistant messages
   isPossibility?: boolean // True if this is a possibility that can be selected
+  systemInstruction?: string // Name of the system instruction used
 }
 
 export interface ChatContainerProps {

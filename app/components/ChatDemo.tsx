@@ -47,6 +47,21 @@ const ChatDemo: React.FC = () => {
     return missingKeys.length === 0
   }, [settingsLoading, settings, enabledProviders, hasApiKey])
 
+  // Check if there are active possibilities being generated
+  const hasActivePossibilities = useCallback(() => {
+    if (messages.length === 0) return false
+    
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage.role !== 'assistant') return false
+    
+    // Check if the last assistant message has possibilities that haven't been selected
+    return (
+      lastMessage.possibilities && 
+      lastMessage.possibilities.length > 0 && 
+      !lastMessage.content
+    )
+  }, [messages])
+
   // Update messages when possibilities stream in
   useEffect(() => {
     if (!currentAssistantMessage || possibilities.length === 0) return
@@ -212,7 +227,7 @@ const ChatDemo: React.FC = () => {
       onSelectPossibility={handleSelectPossibility}
       onContinuePossibility={handleContinuePossibility}
       isLoading={isGenerating}
-      disabled={!isSystemReady()}
+      disabled={!isSystemReady() || hasActivePossibilities()}
       className="h-screen"
     />
   )

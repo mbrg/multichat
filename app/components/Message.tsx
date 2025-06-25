@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import Image from 'next/image'
 import type { MessageProps } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
-import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
+import { getProviderLogo, getProviderFromModel } from '../utils/providerLogos'
 
 interface ExtendedMessageProps extends MessageProps {
   onContinuePossibility?: (possibility: any) => void
@@ -15,11 +15,6 @@ const Message: React.FC<ExtendedMessageProps> = ({
   className = '',
 }) => {
   const isUser = message.role === 'user'
-  const [visiblePossibilities, setVisiblePossibilities] = useState(3)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [expandedPossibility, setExpandedPossibility] = useState<string | null>(
-    null
-  )
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Check if possibilities are still streaming in
@@ -36,26 +31,6 @@ const Message: React.FC<ExtendedMessageProps> = ({
           !p.content.trim().endsWith('?'))
     )
 
-  // Simulate loading more possibilities
-  const loadMorePossibilities = async () => {
-    if (isLoadingMore || !message.possibilities) return
-
-    setIsLoadingMore(true)
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setVisiblePossibilities((prev) =>
-      Math.min(prev + 3, message.possibilities!.length + 10)
-    )
-    setIsLoadingMore(false)
-  }
-
-  // Infinite scroll handler
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-    if (scrollHeight - scrollTop <= clientHeight * 1.5) {
-      loadMorePossibilities()
-    }
-  }
 
   return (
     <div className={`flex gap-3 ${className}`}>
@@ -72,7 +47,10 @@ const Message: React.FC<ExtendedMessageProps> = ({
             'U'
           ) : (
             <Image
-              src={openaiLogo}
+              src={getProviderLogo(
+                getProviderFromModel(message.model || 'openai'),
+                'dark'
+              )}
               alt="AI"
               width={24}
               height={24}
@@ -145,30 +123,23 @@ const Message: React.FC<ExtendedMessageProps> = ({
                 )}
                 <div
                   ref={scrollRef}
-                  onScroll={handleScroll}
                   className="max-h-96 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-[#3a3a4a] scrollbar-track-[#1a1a1a]"
                 >
                   {message.possibilities
-                    .slice(0, visiblePossibilities)
                     .map((possibility) => (
                       <div
                         key={possibility.id}
-                        className={`px-3 py-2 bg-[#1a1a1a] hover:bg-[#1a1a2a] rounded-lg transition-all border border-[#2a2a2a] hover:border-[#667eea] -webkit-tap-highlight-color-transparent ${
+                        onClick={() => {
+                          if (possibility.content) {
+                            onSelectPossibility?.(possibility)
+                          }
+                        }}
+                        className={`px-3 py-2 bg-[#1a1a1a] hover:bg-[#1a1a2a] rounded-lg transition-all border border-[#2a2a2a] hover:border-[#667eea] -webkit-tap-highlight-color-transparent cursor-pointer ${
                           possibility.content === '' ? 'animate-pulse' : ''
-                        } ${expandedPossibility === possibility.id ? 'border-[#667eea]' : ''}`}
+                        }`}
                       >
-                        <div
-                          onClick={() => onSelectPossibility?.(possibility)}
-                          className="cursor-pointer hover:bg-[#1a1a2a]"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div
-                              className={`flex-1 text-sm text-[#e0e0e0] word-wrap break-word overflow-wrap break-word ${
-                                expandedPossibility === possibility.id
-                                  ? ''
-                                  : 'line-clamp-2'
-                              }`}
-                            >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 text-sm text-[#e0e0e0] word-wrap break-word overflow-wrap break-word line-clamp-2">
                               {possibility.content || (
                                 <span className="text-[#666] italic">
                                   Generating response...
@@ -179,74 +150,59 @@ const Message: React.FC<ExtendedMessageProps> = ({
                                   <span className="inline-block w-1 h-4 bg-[#667eea] ml-1 animate-pulse" />
                                 )}
                             </div>
-                            <div className="flex items-center gap-2 ml-3 text-xs text-[#888]">
-                              {possibility.model && (
-                                <span className="font-medium">
-                                  {possibility.model}
+                            <div className="flex items-center gap-2 ml-3 text-xs text-[#888] min-w-0">
+                              <div className="flex items-center gap-1 shrink-0 w-[16px]">
+                                <Image
+                                  src={getProviderLogo(
+                                    getProviderFromModel(possibility.model || 'openai'),
+                                    'dark'
+                                  )}
+                                  alt="Provider"
+                                  width={16}
+                                  height={16}
+                                  className="object-contain"
+                                />
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span className="font-medium truncate">
+                                  {(() => {
+                                    const model = possibility.model || 'unknown'
+                                    // Simplify Claude model names
+                                    if (model.includes('claude')) {
+                                      return model
+                                        .replace(/claude-/i, 'c-')
+                                        .replace(/-\d{8}$/, '') // Remove date suffix like -20241022
+                                        .replace(/-latest$/, '')
+                                    }
+                                    return model
+                                  })()}
                                 </span>
-                              )}
-                              {possibility.temperature !== undefined && (
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
                                 <span
-                                  className="text-[#ffa726] font-medium"
+                                  className="text-[#ffa726] font-medium min-w-[44px]"
                                   title="Temperature"
                                 >
-                                  T:{possibility.temperature?.toFixed(1)}
+                                  T:{possibility.temperature?.toFixed(1) || 'unk'}
                                 </span>
-                              )}
-                              {possibility.probability !== undefined &&
-                                possibility.probability !== null && (
-                                  <span
-                                    className="text-[#667eea] font-medium"
-                                    title="Probability Score"
-                                  >
-                                    P:
-                                    {Math.round(possibility.probability * 100)}%
-                                  </span>
-                                )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (expandedPossibility === possibility.id) {
-                                    setExpandedPossibility(null)
-                                  } else {
-                                    setExpandedPossibility(possibility.id)
-                                  }
-                                }}
-                                className="ml-2 p-1 hover:bg-[#2a2a3a] rounded text-[#888] hover:text-[#e0e0e0] transition-colors"
-                                title="Expand options"
-                              >
-                                {expandedPossibility === possibility.id
-                                  ? '▼'
-                                  : '▶'}
-                              </button>
+                                <span
+                                  className="text-[#667eea] font-medium min-w-[44px]"
+                                  title="Probability Score"
+                                >
+                                  {possibility.probability !== undefined &&
+                                  possibility.probability !== null
+                                    ? `P:${Math.round(possibility.probability * 100)}%`
+                                    : 'P:unk'}
+                                </span>
+                                <span
+                                  className="text-[#a78bfa] font-medium min-w-[60px] truncate"
+                                  title="System Instruction"
+                                >
+                                  {possibility.systemInstruction || 'default'}
+                                </span>
+                              </div>
                             </div>
-                          </div>
                         </div>
-
-                        {/* Action buttons when expanded */}
-                        {expandedPossibility === possibility.id &&
-                          possibility.content && (
-                            <div className="mt-3 pt-3 border-t border-[#2a2a2a] flex gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onSelectPossibility?.(possibility)
-                                }}
-                                className="flex-1 px-3 py-1.5 bg-[#667eea] hover:bg-[#5a6fd8] text-white text-xs font-medium rounded transition-colors"
-                              >
-                                Use This Response
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onContinuePossibility?.(possibility)
-                                }}
-                                className="flex-1 px-3 py-1.5 bg-[#2a2a3a] hover:bg-[#3a3a4a] text-[#e0e0e0] text-xs font-medium rounded border border-[#3a3a4a] transition-colors"
-                              >
-                                Continue Writing
-                              </button>
-                            </div>
-                          )}
                       </div>
                     ))}
                   {isStreamingPossibilities && (
@@ -268,11 +224,6 @@ const Message: React.FC<ExtendedMessageProps> = ({
                         </div>
                         <span>Generating more possibilities...</span>
                       </div>
-                    </div>
-                  )}
-                  {isLoadingMore && (
-                    <div className="px-3 py-2 text-center text-xs text-[#888]">
-                      Loading more possibilities...
                     </div>
                   )}
                 </div>

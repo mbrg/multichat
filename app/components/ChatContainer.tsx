@@ -63,16 +63,28 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       </div>
 
       {/* API Keys Required Message */}
-      {disabled && !isLoading && (
+      {disabled && !isLoading && !session?.user && (
         <div className="px-4 py-2 bg-amber-900/20 border-b border-[#2a2a2a]">
           <div className="max-w-[800px] mx-auto">
             <div className="flex items-center gap-2 text-amber-400 text-sm">
               <span>⚠️</span>
-              <span>
-                {!session?.user
-                  ? 'Sign in to save and manage your API keys securely.'
-                  : 'Configure API keys in the settings menu to start chatting with AI models.'}
-              </span>
+              <span>Sign in to save and manage your API keys securely.</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Show API keys warning only when no API keys are configured and not when possibilities are active */}
+      {disabled && !isLoading && session?.user && 
+       !(messages.length > 0 && 
+         messages[messages.length - 1]?.role === 'assistant' && 
+         messages[messages.length - 1]?.possibilities &&
+         messages[messages.length - 1].possibilities!.length > 0 && 
+         !messages[messages.length - 1]?.content) && (
+        <div className="px-4 py-2 bg-amber-900/20 border-b border-[#2a2a2a]">
+          <div className="max-w-[800px] mx-auto">
+            <div className="flex items-center gap-2 text-amber-400 text-sm">
+              <span>⚠️</span>
+              <span>Configure API keys in the settings menu to start chatting with AI models.</span>
             </div>
           </div>
         </div>
@@ -108,7 +120,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
                 : disabled
                   ? !session?.user
                     ? 'Sign in to start chatting...'
-                    : 'Configure API keys in settings...'
+                    : messages.length > 0 && 
+                      messages[messages.length - 1]?.role === 'assistant' && 
+                      messages[messages.length - 1]?.possibilities &&
+                      messages[messages.length - 1].possibilities!.length > 0 && 
+                      !messages[messages.length - 1]?.content
+                      ? 'Select a possibility to continue...'
+                      : 'Configure API keys in settings...'
                   : 'Type message...'
             }
             className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"

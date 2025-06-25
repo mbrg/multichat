@@ -352,6 +352,7 @@ export function useAIChat(options: UseAIChatOptions = {}) {
         model: p.model,
         probability: p.probability,
         temperature: p.temperature,
+        systemInstruction: p.systemInstruction,
         timestamp: p.timestamp,
         isPossibility: true,
       }))
