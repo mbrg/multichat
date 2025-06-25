@@ -4,15 +4,37 @@ import type { MessageProps } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
 import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
 
-const Message: React.FC<MessageProps> = ({
+interface ExtendedMessageProps extends MessageProps {
+  onContinuePossibility?: (possibility: any) => void
+}
+
+const Message: React.FC<ExtendedMessageProps> = ({
   message,
   onSelectPossibility,
+  onContinuePossibility,
   className = '',
 }) => {
   const isUser = message.role === 'user'
   const [visiblePossibilities, setVisiblePossibilities] = useState(3)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [expandedPossibility, setExpandedPossibility] = useState<string | null>(
+    null
+  )
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Check if possibilities are still streaming in
+  const hasActivePossibilities =
+    !isUser && message.possibilities && message.possibilities.length > 0
+  const isStreamingPossibilities =
+    hasActivePossibilities &&
+    message.possibilities!.some(
+      (p) =>
+        p.content === '' ||
+        (p.content &&
+          !p.content.trim().endsWith('.') &&
+          !p.content.trim().endsWith('!') &&
+          !p.content.trim().endsWith('?'))
+    )
 
   // Simulate loading more possibilities
   const loadMorePossibilities = async () => {
@@ -131,39 +153,113 @@ const Message: React.FC<MessageProps> = ({
                     .map((possibility) => (
                       <div
                         key={possibility.id}
-                        onClick={() => onSelectPossibility?.(possibility)}
-                        className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#1a1a2a] rounded-lg cursor-pointer transition-all border border-[#2a2a2a] hover:border-[#667eea] -webkit-tap-highlight-color-transparent"
+                        className={`px-3 py-2 bg-[#1a1a1a] hover:bg-[#1a1a2a] rounded-lg transition-all border border-[#2a2a2a] hover:border-[#667eea] -webkit-tap-highlight-color-transparent ${
+                          possibility.content === '' ? 'animate-pulse' : ''
+                        } ${expandedPossibility === possibility.id ? 'border-[#667eea]' : ''}`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 text-sm text-[#e0e0e0] line-clamp-2 word-wrap break-word overflow-wrap break-word">
-                            {possibility.content}
-                          </div>
-                          <div className="flex items-center gap-2 ml-3 text-xs text-[#888]">
-                            {possibility.model && (
-                              <span className="font-medium">
-                                {possibility.model}
-                              </span>
-                            )}
-                            {possibility.temperature !== undefined && (
-                              <span
-                                className="text-[#ffa726] font-medium"
-                                title="Temperature"
-                              >
-                                T:{possibility.temperature?.toFixed(1)}
-                              </span>
-                            )}
-                            {possibility.probability && (
-                              <span
-                                className="text-[#667eea] font-medium"
-                                title="Probability Score"
-                              >
-                                P:{Math.round(possibility.probability * 100)}%
-                              </span>
-                            )}
+                        <div
+                          onClick={() => {
+                            if (expandedPossibility === possibility.id) {
+                              setExpandedPossibility(null)
+                            } else {
+                              setExpandedPossibility(possibility.id)
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div
+                              className={`flex-1 text-sm text-[#e0e0e0] word-wrap break-word overflow-wrap break-word ${
+                                expandedPossibility === possibility.id
+                                  ? ''
+                                  : 'line-clamp-2'
+                              }`}
+                            >
+                              {possibility.content || (
+                                <span className="text-[#666] italic">
+                                  Generating response...
+                                </span>
+                              )}
+                              {possibility.content &&
+                                possibility.content.length > 0 && (
+                                  <span className="inline-block w-1 h-4 bg-[#667eea] ml-1 animate-pulse" />
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 ml-3 text-xs text-[#888]">
+                              {possibility.model && (
+                                <span className="font-medium">
+                                  {possibility.model}
+                                </span>
+                              )}
+                              {possibility.temperature !== undefined && (
+                                <span
+                                  className="text-[#ffa726] font-medium"
+                                  title="Temperature"
+                                >
+                                  T:{possibility.temperature?.toFixed(1)}
+                                </span>
+                              )}
+                              {possibility.probability !== undefined &&
+                                possibility.probability !== null && (
+                                  <span
+                                    className="text-[#667eea] font-medium"
+                                    title="Probability Score"
+                                  >
+                                    P:
+                                    {Math.round(possibility.probability * 100)}%
+                                  </span>
+                                )}
+                            </div>
                           </div>
                         </div>
+
+                        {/* Action buttons when expanded */}
+                        {expandedPossibility === possibility.id &&
+                          possibility.content && (
+                            <div className="mt-3 pt-3 border-t border-[#2a2a2a] flex gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onSelectPossibility?.(possibility)
+                                }}
+                                className="flex-1 px-3 py-1.5 bg-[#667eea] hover:bg-[#5a6fd8] text-white text-xs font-medium rounded transition-colors"
+                              >
+                                Use This Response
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onContinuePossibility?.(possibility)
+                                }}
+                                className="flex-1 px-3 py-1.5 bg-[#2a2a3a] hover:bg-[#3a3a4a] text-[#e0e0e0] text-xs font-medium rounded border border-[#3a3a4a] transition-colors"
+                              >
+                                Continue Writing
+                              </button>
+                            </div>
+                          )}
                       </div>
                     ))}
+                  {isStreamingPossibilities && (
+                    <div className="px-3 py-2 text-center text-xs text-[#888] animate-pulse">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="flex gap-1">
+                          <div
+                            className="w-2 h-2 bg-[#667eea] rounded-full animate-bounce"
+                            style={{ animationDelay: '0ms' }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-[#667eea] rounded-full animate-bounce"
+                            style={{ animationDelay: '150ms' }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-[#667eea] rounded-full animate-bounce"
+                            style={{ animationDelay: '300ms' }}
+                          />
+                        </div>
+                        <span>Generating more possibilities...</span>
+                      </div>
+                    </div>
+                  )}
                   {isLoadingMore && (
                     <div className="px-3 py-2 text-center text-xs text-[#888]">
                       Loading more possibilities...

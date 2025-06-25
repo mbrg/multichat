@@ -12,6 +12,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
   onSendMessage,
   onSelectPossibility,
+  onContinuePossibility,
   isLoading = false,
   className = '',
 }) => {
@@ -40,6 +41,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   }
 
+  const handleContinuePossibility = (possibility: MessageType) => {
+    onContinuePossibility?.(possibility)
+  }
+
   return (
     <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
       {/* Header */}
@@ -66,6 +71,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
               key={message.id}
               message={message}
               onSelectPossibility={handleSelectPossibility}
+              onContinuePossibility={handleContinuePossibility}
               className="max-w-[800px] w-full self-center animate-fadeIn"
             />
           ))

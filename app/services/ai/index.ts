@@ -18,6 +18,11 @@ import {
   getDefaultTemperatureRange,
 } from './config'
 
+export interface StreamingOptions extends GenerationOptions {
+  onToken?: (token: string) => void
+  stream?: boolean
+}
+
 export class AIService {
   private providers: Map<string, AIProvider> = new Map()
 
@@ -44,7 +49,7 @@ export class AIService {
   async generateSingleResponse(
     messages: Message[],
     modelId: string,
-    options: GenerationOptions = {}
+    options: StreamingOptions = {}
   ): Promise<ResponseOption> {
     const model = getModelById(modelId)
     if (!model) {

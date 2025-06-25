@@ -1,71 +1,49 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
+import { useAIChat } from '../hooks/useAIChat'
+import { useSettings } from '../hooks/useSettings'
 
 const ChatDemo: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [currentAssistantMessage, setCurrentAssistantMessage] =
+    useState<Message | null>(null)
+  const { settings, loading: settingsLoading } = useSettings()
 
-  // Simulate AI response generation with possibilities
-  const generateAIResponse = useCallback(
-    async (userContent: string): Promise<Message> => {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Generate many possibilities for infinite scroll demo
-      const models = [
-        'gpt-4',
-        'claude-3',
-        'gemini',
-        'gpt-3.5',
-        'mistral',
-        'llama-2',
-        'palm',
-        'cohere',
-      ]
-      const responseTypes = [
-        'Response to',
-        'Alternative response to',
-        'Different take on',
-        'Creative answer to',
-        'Thoughtful reply to',
-        'Detailed response to',
-        'Brief answer to',
-        'Comprehensive take on',
-        'Insightful response to',
-        'Analytical answer to',
-      ]
-
-      const possibilities: Message[] = []
-      for (let i = 0; i < 50; i++) {
-        const model = models[i % models.length]
-        const responseType = responseTypes[i % responseTypes.length]
-        possibilities.push({
-          id: `possibility-${Date.now()}-${i}`,
-          role: 'assistant',
-          content: `${responseType}: "${userContent}" (Variation ${i + 1})`,
-          model,
-          probability: Math.max(0.3, 0.9 - i * 0.01),
-          temperature: 0.1 + (i % 10) * 0.1, // Vary temperature from 0.1 to 1.0
-          timestamp: new Date(),
-          isPossibility: true,
-        })
-      }
-
-      // Return a message that shows only possibilities without pre-selecting
-      return {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: '', // Empty content - we only show possibilities
-        timestamp: new Date(),
-        possibilities,
-      }
+  const {
+    generatePossibilities,
+    continuePossibility,
+    possibilities,
+    isGenerating,
+    error,
+    reset,
+  } = useAIChat({
+    onError: (error) => {
+      console.error('AI Chat error:', error)
     },
-    []
-  )
+  })
+
+  // Update assistant message with new possibilities as they stream in
+  useEffect(() => {
+    if (currentAssistantMessage && possibilities.length > 0) {
+      setCurrentAssistantMessage((prev) => {
+        if (!prev) return null
+        return {
+          ...prev,
+          possibilities,
+        }
+      })
+    }
+  }, [possibilities, currentAssistantMessage])
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: Attachment[]) => {
+      // Wait for settings to load
+      if (settingsLoading || !settings) {
+        console.error('Settings not loaded')
+        return
+      }
+
       // Add user message immediately
       const userMessage: Message = {
         id: `user-${Date.now()}`,
@@ -76,19 +54,30 @@ const ChatDemo: React.FC = () => {
       }
 
       setMessages((prev) => [...prev, userMessage])
-      setIsLoading(true)
+
+      // Create initial assistant message placeholder
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: '', // Empty content - we only show possibilities
+        timestamp: new Date(),
+        possibilities: [],
+      }
+
+      setCurrentAssistantMessage(assistantMessage)
+      setMessages((prev) => [...prev, assistantMessage])
+
+      // Reset previous possibilities
+      reset()
 
       try {
         // Generate AI response with possibilities
-        const aiResponse = await generateAIResponse(content)
-        setMessages((prev) => [...prev, aiResponse])
+        await generatePossibilities([...messages, userMessage], settings)
       } catch (error) {
         console.error('Error generating response:', error)
-      } finally {
-        setIsLoading(false)
       }
     },
-    [generateAIResponse]
+    [messages, settings, settingsLoading, generatePossibilities, reset]
   )
 
   const handleSelectPossibility = useCallback(
@@ -121,12 +110,57 @@ const ChatDemo: React.FC = () => {
     []
   )
 
+  const handleContinuePossibility = useCallback(
+    async (selectedPossibility: Message) => {
+      if (settingsLoading || !settings) {
+        console.error('Settings not loaded')
+        return
+      }
+
+      try {
+        // First, select the possibility as the current response
+        handleSelectPossibility(selectedPossibility, selectedPossibility)
+
+        // Then continue generating from that point
+        await continuePossibility(
+          [...messages, selectedPossibility],
+          selectedPossibility.id,
+          settings
+        )
+      } catch (error) {
+        console.error('Error continuing possibility:', error)
+      }
+    },
+    [
+      messages,
+      settings,
+      settingsLoading,
+      continuePossibility,
+      handleSelectPossibility,
+    ]
+  )
+
+  // Update messages when assistant message changes
+  useEffect(() => {
+    if (currentAssistantMessage) {
+      setMessages((prev) => {
+        const index = prev.findIndex((m) => m.id === currentAssistantMessage.id)
+        if (index === -1) return prev
+
+        const newMessages = [...prev]
+        newMessages[index] = currentAssistantMessage
+        return newMessages
+      })
+    }
+  }, [currentAssistantMessage])
+
   return (
     <ChatContainer
       messages={messages}
       onSendMessage={handleSendMessage}
       onSelectPossibility={handleSelectPossibility}
-      isLoading={isLoading}
+      onContinuePossibility={handleContinuePossibility}
+      isLoading={isGenerating}
       className="h-screen"
     />
   )
