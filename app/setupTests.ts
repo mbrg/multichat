@@ -17,7 +17,6 @@ vi.mock('next-auth', () => ({
   getServerSession: vi.fn(),
 }))
 
-
 // Mock ServerKeys for tests
 vi.mock('./utils/serverKeys', () => ({
   ServerKeys: {
