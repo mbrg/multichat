@@ -13,7 +13,6 @@ vi.mock('../../utils/cloudSettings')
 const sessionHook = vi.mocked(useSession)
 
 describe('useApiKeys', () => {
-
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -39,7 +38,6 @@ describe('useApiKeys', () => {
     vi.mocked(CloudSettings.getEnabledProviders).mockResolvedValue(undefined)
     vi.mocked(CloudSettings.setEnabledProviders).mockResolvedValue()
     vi.mocked(CloudSettings.deleteAllSettings).mockResolvedValue()
-
 
     sessionHook.mockReturnValue({
       data: {

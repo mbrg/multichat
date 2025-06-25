@@ -3,7 +3,11 @@ import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { CloudSettings } from '../utils/cloudSettings'
 import { SystemInstruction } from '../types/settings'
-import { SYSTEM_INSTRUCTION_LIMITS, ERROR_MESSAGES, VALIDATION_PATTERNS } from '../constants/defaults'
+import {
+  SYSTEM_INSTRUCTION_LIMITS,
+  ERROR_MESSAGES,
+  VALIDATION_PATTERNS,
+} from '../constants/defaults'
 
 const SYSTEM_INSTRUCTION_MAX_CHARS = SYSTEM_INSTRUCTION_LIMITS.MAX_CONTENT_CHARS
 

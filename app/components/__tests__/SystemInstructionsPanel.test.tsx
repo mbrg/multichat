@@ -93,9 +93,13 @@ describe('SystemInstructionsPanel', () => {
         expect(screen.getByText('creative')).toBeInTheDocument()
       })
 
-      expect(screen.getByText('You are a helpful assistant.')).toBeInTheDocument()
       expect(
-        screen.getByText('You are a creative assistant that thinks outside the box.')
+        screen.getByText('You are a helpful assistant.')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'You are a creative assistant that thinks outside the box.'
+        )
       ).toBeInTheDocument()
     })
 
@@ -118,7 +122,9 @@ describe('SystemInstructionsPanel', () => {
       })
 
       // Find toggle buttons
-      const toggleButtons = document.querySelectorAll('.relative.w-10.h-5.rounded-full')
+      const toggleButtons = document.querySelectorAll(
+        '.relative.w-10.h-5.rounded-full'
+      )
       expect(toggleButtons.length).toBe(2)
 
       // Click first toggle
@@ -185,9 +191,11 @@ describe('SystemInstructionsPanel', () => {
 
       const nameInput = screen.getByLabelText(/Name:/)
       const contentInput = screen.getByLabelText(/Content:/)
-      
+
       fireEvent.change(nameInput, { target: { value: 'test_instruction' } })
-      fireEvent.change(contentInput, { target: { value: 'This is a test instruction.' } })
+      fireEvent.change(contentInput, {
+        target: { value: 'This is a test instruction.' },
+      })
 
       const saveButton = screen.getByText('Save')
       fireEvent.click(saveButton)
@@ -211,7 +219,9 @@ describe('SystemInstructionsPanel', () => {
 
       expect(screen.getByText('Edit System Instruction')).toBeInTheDocument()
       expect(screen.getByDisplayValue('helpful')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('You are a helpful assistant.')).toBeInTheDocument()
+      expect(
+        screen.getByDisplayValue('You are a helpful assistant.')
+      ).toBeInTheDocument()
     })
   })
 
@@ -232,7 +242,9 @@ describe('SystemInstructionsPanel', () => {
 
   describe('Error Handling', () => {
     it('should handle CloudSettings load errors', async () => {
-      mockCloudSettings.getSystemInstructions.mockRejectedValue(new Error('Network error'))
+      mockCloudSettings.getSystemInstructions.mockRejectedValue(
+        new Error('Network error')
+      )
 
       render(<SystemInstructionsPanel />)
 
@@ -243,7 +255,9 @@ describe('SystemInstructionsPanel', () => {
     })
 
     it('should handle save errors', async () => {
-      mockCloudSettings.setSystemInstructions.mockRejectedValue(new Error('Save failed'))
+      mockCloudSettings.setSystemInstructions.mockRejectedValue(
+        new Error('Save failed')
+      )
 
       render(<SystemInstructionsPanel />)
 
@@ -253,7 +267,7 @@ describe('SystemInstructionsPanel', () => {
 
       const nameInput = screen.getByLabelText(/Name:/)
       const contentInput = screen.getByLabelText(/Content:/)
-      
+
       fireEvent.change(nameInput, { target: { value: 'test' } })
       fireEvent.change(contentInput, { target: { value: 'Test content' } })
 

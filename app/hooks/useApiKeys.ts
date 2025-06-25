@@ -46,7 +46,6 @@ export const useApiKeys = () => {
       const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
       const keys: ApiKeys = {}
 
-
       setApiKeys(keys)
 
       // Get API key status from the new endpoint

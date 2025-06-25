@@ -1,6 +1,6 @@
 /**
  * Default Values and Constants
- * 
+ *
  * Centralized definition of default values used across the application
  * to eliminate duplication and ensure consistency.
  */
@@ -13,7 +13,8 @@ import { SystemInstruction } from '../types/settings'
 export const DEFAULT_SYSTEM_INSTRUCTION: SystemInstruction = {
   id: 'default',
   name: 'default',
-  content: 'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.',
+  content:
+    'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.',
   enabled: true,
 }
 
@@ -92,7 +93,8 @@ export const ERROR_MESSAGES = {
   INVALID_API_KEY: 'Invalid API key format.',
   CONTENT_TOO_LONG: `Content must be ${SYSTEM_INSTRUCTION_LIMITS.MAX_CONTENT_CHARS} characters or less`,
   NAME_TOO_LONG: `Name must be ${SYSTEM_INSTRUCTION_LIMITS.MAX_NAME_CHARS} characters or less`,
-  NAME_INVALID_FORMAT: 'Name can only contain lowercase letters, numbers, hyphens, and underscores',
+  NAME_INVALID_FORMAT:
+    'Name can only contain lowercase letters, numbers, hyphens, and underscores',
   NAME_REQUIRED: 'Name is required',
   CONTENT_REQUIRED: 'Content is required',
   NAME_MUST_BE_LOWERCASE: 'Name must be lowercase',

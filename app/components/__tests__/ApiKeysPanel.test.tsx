@@ -11,8 +11,8 @@ vi.mock('next-auth/react')
 vi.mock('../../hooks/useApiKeys')
 vi.mock('../../hooks/useAuthPopup')
 vi.mock('../AuthPopup', () => ({
-  default: ({ isOpen }: { isOpen: boolean }) => 
-    isOpen ? <div data-testid="auth-popup" role="dialog" /> : null
+  default: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="auth-popup" role="dialog" /> : null,
 }))
 
 const mockSession = vi.mocked(useSession)
@@ -66,7 +66,9 @@ describe('ApiKeysPanel', () => {
 
       expect(screen.getByText('Configured API Keys')).toBeInTheDocument()
       expect(screen.getByText('No API keys configured')).toBeInTheDocument()
-      expect(screen.getByText('🔒 API keys stored securely in cloud')).toBeInTheDocument()
+      expect(
+        screen.getByText('🔒 API keys stored securely in cloud')
+      ).toBeInTheDocument()
     })
 
     it('should show loading skeleton when loading', () => {
@@ -76,7 +78,7 @@ describe('ApiKeysPanel', () => {
       })
 
       render(<ApiKeysPanel />)
-      
+
       // Check for loading skeleton elements (pulse animation divs)
       const skeletonElements = document.querySelectorAll('.animate-pulse')
       expect(skeletonElements.length).toBeGreaterThan(0)
@@ -102,7 +104,7 @@ describe('ApiKeysPanel', () => {
   describe('API Key Management', () => {
     it('should show add key button for authenticated users', () => {
       render(<ApiKeysPanel />)
-      
+
       expect(screen.getByText('Add your first API key')).toBeInTheDocument()
     })
 
@@ -113,8 +115,10 @@ describe('ApiKeysPanel', () => {
       })
 
       render(<ApiKeysPanel />)
-      
-      expect(screen.queryByText('Add your first API key')).not.toBeInTheDocument()
+
+      expect(
+        screen.queryByText('Add your first API key')
+      ).not.toBeInTheDocument()
     })
 
     it('should display configured API keys', () => {
@@ -199,9 +203,11 @@ describe('ApiKeysPanel', () => {
       render(<ApiKeysPanel />)
 
       // Find and click toggle switch
-      const toggleButton = document.querySelector('.relative.w-10.h-5.rounded-full')
+      const toggleButton = document.querySelector(
+        '.relative.w-10.h-5.rounded-full'
+      )
       expect(toggleButton).toBeInTheDocument()
-      
+
       fireEvent.click(toggleButton!)
 
       expect(mockApiKeysHook.toggleProvider).toHaveBeenCalledWith('openai')
@@ -216,7 +222,7 @@ describe('ApiKeysPanel', () => {
       })
 
       render(<ApiKeysPanel />)
-      
+
       // Should render AuthPopup component
       expect(screen.getByTestId('auth-popup')).toBeInTheDocument()
     })
@@ -232,7 +238,9 @@ describe('ApiKeysPanel', () => {
       render(<ApiKeysPanel />)
 
       // No add button should be present for unauthenticated users
-      expect(screen.queryByText('Add your first API key')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('Add your first API key')
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -254,7 +262,7 @@ describe('ApiKeysPanel', () => {
         if (provider === 'openai') return '***'
         return undefined
       })
-      
+
       mockUseApiKeys.mockReturnValue(mockHook)
 
       render(<ApiKeysPanel />)
@@ -346,7 +354,9 @@ describe('ApiKeysPanel', () => {
     it('should show secure storage indicator', () => {
       render(<ApiKeysPanel />)
 
-      expect(screen.getByText('🔒 API keys stored securely in cloud')).toBeInTheDocument()
+      expect(
+        screen.getByText('🔒 API keys stored securely in cloud')
+      ).toBeInTheDocument()
     })
   })
 })

@@ -1,6 +1,6 @@
 /**
  * AI Provider Constants
- * 
+ *
  * Centralized definition of all AI providers to eliminate duplication
  * across the codebase and ensure consistency.
  */
@@ -13,7 +13,7 @@ export const AI_PROVIDERS = {
   TOGETHER: 'together',
 } as const
 
-export type AIProviderType = typeof AI_PROVIDERS[keyof typeof AI_PROVIDERS]
+export type AIProviderType = (typeof AI_PROVIDERS)[keyof typeof AI_PROVIDERS]
 
 /**
  * Array of all provider IDs for iteration and validation
