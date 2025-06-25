@@ -146,6 +146,7 @@ const ApiKeysPanel: React.FC = () => {
           providers={providers}
           configuredProviders={getConfiguredProviders()}
           isAuthenticated={isAuthenticated}
+          showAddForm={showAddForm}
           onShowAddForm={() => setShowAddForm(true)}
           onToggleProvider={handleToggleProvider}
           onRemoveApiKey={handleRemoveApiKey}

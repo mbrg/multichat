@@ -14,6 +14,7 @@ interface ProvidersListProps {
   providers: Provider[]
   configuredProviders: Provider[]
   isAuthenticated: boolean
+  showAddForm: boolean
   onShowAddForm: () => void
   onToggleProvider: (providerId: string) => void
   onRemoveApiKey: (providerId: string) => void
@@ -26,11 +27,12 @@ interface ProvidersListProps {
 export const ProvidersList: React.FC<ProvidersListProps> = ({
   configuredProviders,
   isAuthenticated,
+  showAddForm,
   onShowAddForm,
   onToggleProvider,
   onRemoveApiKey,
 }) => {
-  if (configuredProviders.length === 0) {
+  if (configuredProviders.length === 0 && !showAddForm) {
     return (
       <div className="text-center py-8">
         <div className="text-[#666] text-sm mb-2">No API keys configured</div>
@@ -46,6 +48,10 @@ export const ProvidersList: React.FC<ProvidersListProps> = ({
         )}
       </div>
     )
+  }
+
+  if (configuredProviders.length === 0 && showAddForm) {
+    return null // Don't render anything when form is open and no providers configured
   }
 
   return (
