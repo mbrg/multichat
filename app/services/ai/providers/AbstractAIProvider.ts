@@ -1,4 +1,4 @@
-import { generateText } from 'ai'
+import { generateText, type GenerateTextResult } from 'ai'
 import type {
   AIProvider,
   Message,
@@ -123,7 +123,9 @@ export abstract class AbstractAIProvider implements AIProvider {
   /**
    * Common response mapping logic
    */
-  private mapResponse(result: any): ResponseWithLogprobs {
+  private mapResponse(
+    result: GenerateTextResult<any, any>
+  ): ResponseWithLogprobs {
     const probability = calculateProbabilityFromLogprobs(result.logprobs)
 
     return {

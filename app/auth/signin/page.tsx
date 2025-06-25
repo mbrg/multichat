@@ -1,11 +1,19 @@
 'use client'
 
-import { getProviders, signIn, getSession } from 'next-auth/react'
+import {
+  getProviders,
+  signIn,
+  getSession,
+  type ClientSafeProvider,
+} from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function SignIn() {
-  const [providers, setProviders] = useState<any>(null)
+  const [providers, setProviders] = useState<Record<
+    string,
+    ClientSafeProvider
+  > | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -43,7 +51,7 @@ export default function SignIn() {
         </div>
 
         <div className="space-y-4">
-          {Object.values(providers).map((provider: any) => {
+          {Object.values(providers).map((provider: ClientSafeProvider) => {
             const isGitHub = provider.id === 'github'
 
             return (

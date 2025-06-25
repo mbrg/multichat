@@ -66,7 +66,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
         // If @vercel/kv is not available, that's expected in test environment
-        expect(error.message).toContain('Failed to initialize cloud KV store')
+        expect((error as Error).message).toContain(
+          'Failed to initialize cloud KV store'
+        )
       }
     })
   })
@@ -109,7 +111,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
         // Expected if @vercel/kv is not available
-        expect(error.message).toContain('Failed to initialize cloud KV store')
+        expect((error as Error).message).toContain(
+          'Failed to initialize cloud KV store'
+        )
       }
     })
   })
@@ -139,7 +143,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
         // Expected if @vercel/kv is not available
-        expect(error.message).toContain('Failed to initialize cloud KV store')
+        expect((error as Error).message).toContain(
+          'Failed to initialize cloud KV store'
+        )
       }
     })
 
@@ -164,7 +170,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
         // Expected if @vercel/kv is not available
-        expect(error.message).toContain('Failed to initialize cloud KV store')
+        expect((error as Error).message).toContain(
+          'Failed to initialize cloud KV store'
+        )
       }
     })
   })
