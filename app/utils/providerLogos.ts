@@ -28,7 +28,10 @@ export const providerLogos = {
   },
 } as const
 
-export function getProviderLogo(provider: string, theme: 'light' | 'dark' = 'dark') {
+export function getProviderLogo(
+  provider: string,
+  theme: 'light' | 'dark' = 'dark'
+) {
   const logos = providerLogos[provider as keyof typeof providerLogos]
   if (!logos) {
     // Default to OpenAI if provider not found
@@ -47,7 +50,11 @@ export function getProviderFromModel(model: string): string {
     return 'google'
   } else if (model.includes('mistral')) {
     return 'mistral'
-  } else if (model.includes('meta') || model.includes('llama') || model.includes('together')) {
+  } else if (
+    model.includes('meta') ||
+    model.includes('llama') ||
+    model.includes('together')
+  ) {
     return 'together'
   }
   return 'openai' // default

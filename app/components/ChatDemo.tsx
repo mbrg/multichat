@@ -50,14 +50,14 @@ const ChatDemo: React.FC = () => {
   // Check if there are active possibilities being generated
   const hasActivePossibilities = useCallback(() => {
     if (messages.length === 0) return false
-    
+
     const lastMessage = messages[messages.length - 1]
     if (lastMessage.role !== 'assistant') return false
-    
+
     // Check if the last assistant message has possibilities that haven't been selected
     return (
-      lastMessage.possibilities && 
-      lastMessage.possibilities.length > 0 && 
+      lastMessage.possibilities &&
+      lastMessage.possibilities.length > 0 &&
       !lastMessage.content
     )
   }, [messages])

@@ -48,7 +48,7 @@ export class PossibilityExecutor {
     // Start all executions with concurrency control
     for (let i = 0; i < permutations.length; i++) {
       const permutation = permutations[i]
-      
+
       // Wait if we've hit the concurrency limit
       while (executing.size >= this.maxConcurrency) {
         await Promise.race(executing)
@@ -57,9 +57,9 @@ export class PossibilityExecutor {
       const execution = (async () => {
         // Add staggered delay for better visual streaming effect
         if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, i * 100))
+          await new Promise((resolve) => setTimeout(resolve, i * 100))
         }
-        
+
         const generator = await this.executePermutation(
           permutation,
           messages,

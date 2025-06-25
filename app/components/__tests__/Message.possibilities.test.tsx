@@ -83,7 +83,7 @@ describe('Message - Possibilities', () => {
       />
     )
 
-    expect(screen.getByText('claude-3')).toBeInTheDocument()
+    expect(screen.getByText('c-3')).toBeInTheDocument()
     expect(screen.getByText('P:75%')).toBeInTheDocument()
   })
 
@@ -128,7 +128,14 @@ describe('Message - Possibilities', () => {
     possibilities.forEach((p) => {
       expect(screen.getByText(p.content)).toBeInTheDocument()
       if (p.model) {
-        expect(screen.getByText(p.model)).toBeInTheDocument()
+        // Transform model name the same way the component does
+        const displayModel = p.model.includes('claude')
+          ? p.model
+              .replace(/claude-/i, 'c-')
+              .replace(/-\d{8}$/, '')
+              .replace(/-latest$/, '')
+          : p.model
+        expect(screen.getByText(displayModel)).toBeInTheDocument()
       }
       if (p.probability) {
         expect(

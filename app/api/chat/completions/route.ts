@@ -192,7 +192,17 @@ async function handleNonStreamingRequest(data: ChatCompletionRequest) {
         case 'possibility_complete':
           const completedPossibility = possibilityMap.get(event.data.id)
           if (completedPossibility) {
-            possibilities.push(completedPossibility)
+            // Filter out empty possibilities
+            if (
+              !completedPossibility.content ||
+              completedPossibility.content.trim() === ''
+            ) {
+              console.warn(
+                `Filtering empty possibility: ${completedPossibility.id} from ${completedPossibility.provider}/${completedPossibility.model}`
+              )
+            } else {
+              possibilities.push(completedPossibility)
+            }
           }
           break
       }
