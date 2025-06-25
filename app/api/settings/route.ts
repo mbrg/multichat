@@ -81,7 +81,7 @@ export async function DELETE(request: NextRequest) {
       // Delete specific setting
       const updatedSettings = await SettingsService.deleteKey(
         session.user.id,
-        key
+        key as keyof UserSettings
       )
       return NextResponse.json({ success: true, settings: updatedSettings })
     } else {

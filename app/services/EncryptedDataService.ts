@@ -19,7 +19,9 @@ export class EncryptedDataService<T = Record<string, any>> {
    */
   async getData(userId: string): Promise<T> {
     const kvStore = await getKVStore()
-    const encryptedData = await kvStore.get<string>(`${this.keyPrefix}:${userId}`)
+    const encryptedData = await kvStore.get<string>(
+      `${this.keyPrefix}:${userId}`
+    )
     if (!encryptedData) return this.defaultValue
 
     const userKey = await deriveUserKey(userId)
@@ -60,7 +62,9 @@ export class EncryptedDataService<T = Record<string, any>> {
    */
   async hasData(userId: string): Promise<boolean> {
     const kvStore = await getKVStore()
-    const encryptedData = await kvStore.get<string>(`${this.keyPrefix}:${userId}`)
+    const encryptedData = await kvStore.get<string>(
+      `${this.keyPrefix}:${userId}`
+    )
     return !!encryptedData
   }
 
@@ -76,18 +80,19 @@ export class EncryptedDataService<T = Record<string, any>> {
   }
 }
 
+import { UserSettings } from '../types/settings'
+
 // Pre-configured service instances for common data types
 export interface ApiKeyData {
   [key: string]: string
 }
 
-export interface UserSettings {
-  systemPrompt?: string
-  systemInstructions?: any[]
-  temperatures?: any[]
-  enabledProviders?: string
-}
-
 // Export pre-configured instances
-export const ApiKeysService = new EncryptedDataService<ApiKeyData>('apikeys', {})
-export const SettingsService = new EncryptedDataService<UserSettings>('settings', {})
+export const ApiKeysService = new EncryptedDataService<ApiKeyData>(
+  'apikeys',
+  {}
+)
+export const SettingsService = new EncryptedDataService<UserSettings>(
+  'settings',
+  {}
+)

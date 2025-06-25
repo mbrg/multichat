@@ -1,8 +1,9 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react'
-import type { MessageInputProps, Attachment } from '../types/chat'
+import React, { useState, useRef, useCallback } from 'react'
+import type { MessageInputProps } from '../types/chat'
 import AttachmentPreview from './AttachmentPreview'
 import AuthPopup from './AuthPopup'
 import { useAuthPopup } from '../hooks/useAuthPopup'
+import { useFileUpload } from '../hooks/useFileUpload'
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
@@ -11,30 +12,34 @@ const MessageInput: React.FC<MessageInputProps> = ({
   className = '',
 }) => {
   const [message, setMessage] = useState('')
-  const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [isDragOver, setIsDragOver] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { isPopupOpen, checkAuthAndRun, closePopup } = useAuthPopup()
 
-  const SUPPORTED_FILE_TYPES = useMemo(
-    () => [
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/gif',
-      'audio/mp3',
-      'audio/wav',
-      'audio/webm',
-      'application/pdf',
-      'text/plain',
-      'application/msword',
-    ],
-    []
-  )
+  const {
+    attachments,
+    isDragOver,
+    handleFileSelect,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    removeAttachment,
+    clearAttachments,
+  } = useFileUpload()
 
-  const MAX_FILE_SIZE = useMemo(() => 10 * 1024 * 1024, []) // 10MB for images
-  const MAX_AUDIO_SIZE = useMemo(() => 25 * 1024 * 1024, []) // 25MB for audio
+  // Supported file types for the file input
+  const SUPPORTED_FILE_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'audio/mp3',
+    'audio/wav',
+    'audio/webm',
+    'application/pdf',
+    'text/plain',
+    'application/msword',
+  ]
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -46,14 +51,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
             attachments.length > 0 ? attachments : undefined
           )
           setMessage('')
-          setAttachments([])
+          clearAttachments()
           if (textareaRef.current) {
             textareaRef.current.style.height = 'auto'
           }
         })
       }
     },
-    [message, attachments, onSendMessage, checkAuthAndRun]
+    [message, attachments, onSendMessage, checkAuthAndRun, clearAttachments]
   )
 
   const handleKeyDown = useCallback(
@@ -77,81 +82,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
     },
     []
   )
-
-  const processFile = useCallback(
-    async (file: File): Promise<Attachment | null> => {
-      if (!SUPPORTED_FILE_TYPES.includes(file.type)) {
-        alert(`Unsupported file type: ${file.type}`)
-        return null
-      }
-
-      const maxSize = file.type.startsWith('audio/')
-        ? MAX_AUDIO_SIZE
-        : MAX_FILE_SIZE
-      if (file.size > maxSize) {
-        alert(`File too large. Maximum size is ${maxSize / (1024 * 1024)}MB`)
-        return null
-      }
-
-      return new Promise((resolve) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const data = e.target?.result as string
-          const attachment: Attachment = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            data: data.split(',')[1], // Remove data:mime;base64, prefix
-            preview: file.type.startsWith('image/') ? data : undefined,
-          }
-          resolve(attachment)
-        }
-        reader.readAsDataURL(file)
-      })
-    },
-    [SUPPORTED_FILE_TYPES, MAX_AUDIO_SIZE, MAX_FILE_SIZE]
-  )
-
-  const handleFileSelect = useCallback(
-    async (files: FileList | null) => {
-      if (!files) return
-
-      const newAttachments: Attachment[] = []
-      for (let i = 0; i < files.length; i++) {
-        const attachment = await processFile(files[i])
-        if (attachment) {
-          newAttachments.push(attachment)
-        }
-      }
-
-      setAttachments((prev) => [...prev, ...newAttachments])
-    },
-    [processFile]
-  )
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }, [])
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      setIsDragOver(false)
-      handleFileSelect(e.dataTransfer.files)
-    },
-    [handleFileSelect]
-  )
-
-  const removeAttachment = useCallback((attachmentId: string) => {
-    setAttachments((prev) => prev.filter((att) => att.id !== attachmentId))
-  }, [])
 
   return (
     <div className={`${className}`}>

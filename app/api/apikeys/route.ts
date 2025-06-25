@@ -5,7 +5,10 @@ import {
   AI_PROVIDER_LIST,
   type AIProviderType,
 } from '../../constants/providers'
-import { ApiKeysService, type ApiKeyData } from '../../services/EncryptedDataService'
+import {
+  ApiKeysService,
+  type ApiKeyData,
+} from '../../services/EncryptedDataService'
 
 const VALID_API_KEY_PROVIDERS = AI_PROVIDER_LIST
 type ApiKeyProvider = AIProviderType

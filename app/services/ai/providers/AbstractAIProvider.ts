@@ -20,10 +20,7 @@ export abstract class AbstractAIProvider implements AIProvider {
   /**
    * Abstract method to get the provider-specific model instance
    */
-  protected abstract createModel(
-    modelId: string,
-    apiKey: string
-  ): Promise<any>
+  protected abstract createModel(modelId: string, apiKey: string): Promise<any>
 
   /**
    * Abstract method to get provider-specific generation options
