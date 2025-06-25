@@ -119,9 +119,7 @@ describe('ChatContainer', () => {
       )
     })
 
-    expect(
-      screen.getByPlaceholderText('Start typing to see possibilities...')
-    ).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
   })
 
   it('passes onSendMessage to MessageInput', () => {

@@ -1,1 +1,0 @@
-- console errors on images that dont work with CSP just remove these images we will add them to assets later
