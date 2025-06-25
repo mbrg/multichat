@@ -1,7 +1,12 @@
 'use client'
 import React from 'react'
+import { Session } from 'next-auth'
 
 interface MenuItemsProps {
+  session: Session | null
+  status: 'loading' | 'authenticated' | 'unauthenticated'
+  onSignIn: (e: React.MouseEvent) => void
+  onSignOut: (e: React.MouseEvent) => void
   onSettingsClick: (
     e: React.MouseEvent,
     section?: 'api-keys' | 'system-instructions' | 'temperatures'
@@ -12,7 +17,13 @@ interface MenuItemsProps {
  * Menu items for settings and navigation
  * Provides structured menu options
  */
-export const MenuItems: React.FC<MenuItemsProps> = ({ onSettingsClick }) => {
+export const MenuItems: React.FC<MenuItemsProps> = ({ 
+  session, 
+  status, 
+  onSignIn, 
+  onSignOut, 
+  onSettingsClick 
+}) => {
   const menuItems = [
     {
       section: 'api-keys' as const,
@@ -97,6 +108,61 @@ export const MenuItems: React.FC<MenuItemsProps> = ({ onSettingsClick }) => {
             </div>
           </button>
         ))}
+      </div>
+
+      {/* Divider */}
+      <div className="my-2 border-t border-[#2a2a2a]"></div>
+
+      {/* Auth Actions */}
+      <div className="px-2 pb-2">
+        {status === 'loading' ? (
+          <div className="px-4 py-2.5 flex items-center justify-center">
+            <div
+              data-testid="loading-spinner"
+              className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"
+            ></div>
+          </div>
+        ) : session ? (
+          <button
+            onClick={onSignOut}
+            className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-[#2a2a2a] transition-colors"
+          >
+            <svg
+              className="w-5 h-5 text-red-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            <span className="text-sm text-red-400">Sign out</span>
+          </button>
+        ) : (
+          <button
+            onClick={onSignIn}
+            className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-[#2a2a2a] transition-colors"
+          >
+            <svg
+              className="w-5 h-5 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            <span className="text-sm text-blue-400">Sign In</span>
+          </button>
+        )}
       </div>
     </div>
   )

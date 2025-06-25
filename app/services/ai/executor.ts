@@ -18,6 +18,7 @@ export class PossibilityExecutor {
 
   /**
    * Execute all permutations in parallel with concurrency control
+   * Streams events in real-time as they occur from parallel executions
    */
   async *executePossibilities(
     messages: ChatMessage[],
@@ -26,35 +27,85 @@ export class PossibilityExecutor {
   ): AsyncGenerator<StreamEvent> {
     const eventQueue: StreamEvent[] = []
     const executing = new Set<Promise<void>>()
+    let eventsProcessed = 0
+    let completedExecutions = 0
 
-    // Start all executions
+    // Create a promise that resolves when new events are available
+    let eventResolver: (() => void) | null = null
+    const eventPromise = () =>
+      new Promise<void>((resolve) => {
+        eventResolver = resolve
+      })
+
+    // Helper to signal new events
+    const signalNewEvent = () => {
+      if (eventResolver) {
+        eventResolver()
+        eventResolver = null
+      }
+    }
+
+    // Start all executions with concurrency control
     for (const permutation of permutations) {
-      if (executing.size >= this.maxConcurrency) {
-        // Wait for some to complete
+      // Wait if we've hit the concurrency limit
+      while (executing.size >= this.maxConcurrency) {
         await Promise.race(executing)
       }
 
-      const execution = this.executePermutation(permutation, messages, options)
-        .then(async (generator) => {
-          // Collect events from this permutation
+      const execution = (async () => {
+        const generator = await this.executePermutation(
+          permutation,
+          messages,
+          options
+        )
+
+        try {
           for await (const event of generator) {
             eventQueue.push(event)
+            signalNewEvent()
           }
-        })
-        .finally(() => {
-          executing.delete(execution)
-        })
+        } catch (error) {
+          // Push error event to queue
+          eventQueue.push({
+            type: 'error',
+            data: {
+              id: permutation.id,
+              message: error instanceof Error ? error.message : 'Unknown error',
+            },
+          })
+          signalNewEvent()
+        } finally {
+          completedExecutions++
+          signalNewEvent()
+        }
+      })()
+
+      execution.finally(() => {
+        executing.delete(execution)
+      })
 
       executing.add(execution)
     }
 
-    // Wait for all executions to complete
-    await Promise.all(executing)
+    // Stream events as they become available
+    while (
+      completedExecutions < permutations.length ||
+      eventsProcessed < eventQueue.length
+    ) {
+      // Yield any new events that have arrived
+      while (eventsProcessed < eventQueue.length) {
+        yield eventQueue[eventsProcessed]
+        eventsProcessed++
+      }
 
-    // Yield all collected events
-    for (const event of eventQueue) {
-      yield event
+      // Wait for more events if executions are still running
+      if (completedExecutions < permutations.length) {
+        await eventPromise()
+      }
     }
+
+    // Ensure all executions are complete
+    await Promise.all(executing)
   }
 
   /**

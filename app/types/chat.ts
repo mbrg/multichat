@@ -29,6 +29,7 @@ export interface ChatContainerProps {
   ) => void
   onContinuePossibility?: (selectedPossibility: Message) => void
   isLoading?: boolean
+  disabled?: boolean
   className?: string
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import type { UserSettings } from '@/types/settings'
 
 interface UseSettingsResult {
@@ -11,11 +12,20 @@ interface UseSettingsResult {
 }
 
 export function useSettings(): UseSettingsResult {
+  const { data: session, status } = useSession()
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
   const fetchSettings = useCallback(async () => {
+    // Don't fetch if user is not authenticated
+    if (!session?.user?.id) {
+      setLoading(false)
+      setSettings(null)
+      setError(null)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -35,9 +45,14 @@ export function useSettings(): UseSettingsResult {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [session?.user?.id])
 
   const updateSettings = useCallback(async (updates: Partial<UserSettings>) => {
+    // Don't update if user is not authenticated
+    if (!session?.user?.id) {
+      throw new Error('Authentication required to update settings')
+    }
+
     try {
       setError(null)
 
@@ -61,9 +76,14 @@ export function useSettings(): UseSettingsResult {
       console.error('Failed to update settings:', error)
       throw error
     }
-  }, [])
+  }, [session?.user?.id])
 
   const deleteSettings = useCallback(async (key?: keyof UserSettings) => {
+    // Don't delete if user is not authenticated
+    if (!session?.user?.id) {
+      throw new Error('Authentication required to delete settings')
+    }
+
     try {
       setError(null)
 
@@ -89,16 +109,19 @@ export function useSettings(): UseSettingsResult {
       console.error('Failed to delete settings:', error)
       throw error
     }
-  }, [])
+  }, [session?.user?.id])
 
   const refresh = useCallback(async () => {
     await fetchSettings()
   }, [fetchSettings])
 
-  // Fetch settings on mount
+  // Fetch settings when session is available and user is authenticated
   useEffect(() => {
-    fetchSettings()
-  }, [fetchSettings])
+    // Only fetch when we have session data (not loading) and user is authenticated
+    if (status !== 'loading') {
+      fetchSettings()
+    }
+  }, [fetchSettings, status])
 
   return {
     settings,

@@ -3,12 +3,14 @@ import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useAIChat } from '../hooks/useAIChat'
 import { useSettings } from '../hooks/useSettings'
+import { useApiKeys } from '../hooks/useApiKeys'
 
 const ChatDemo: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const { settings, loading: settingsLoading } = useSettings()
+  const { hasApiKey, isProviderEnabled, enabledProviders } = useApiKeys()
 
   const {
     generatePossibilities,
@@ -22,6 +24,23 @@ const ChatDemo: React.FC = () => {
       console.error('AI Chat error:', error)
     },
   })
+
+  // Check if system is ready for messaging
+  const isSystemReady = useCallback(() => {
+    if (settingsLoading || !settings) return false
+    
+    const enabledProviderKeys = Object.keys(enabledProviders).filter(
+      key => enabledProviders[key as keyof typeof enabledProviders]
+    ) as (keyof typeof enabledProviders)[]
+
+    if (enabledProviderKeys.length === 0) return false
+
+    const missingKeys = enabledProviderKeys.filter(provider => 
+      !hasApiKey(provider)
+    )
+
+    return missingKeys.length === 0
+  }, [settingsLoading, settings, enabledProviders, hasApiKey])
 
   // Update assistant message with new possibilities as they stream in
   useEffect(() => {
@@ -41,6 +60,26 @@ const ChatDemo: React.FC = () => {
       // Wait for settings to load
       if (settingsLoading || !settings) {
         console.error('Settings not loaded')
+        return
+      }
+
+      // Validate API keys before allowing message submission
+      const enabledProviderKeys = Object.keys(enabledProviders).filter(
+        key => enabledProviders[key as keyof typeof enabledProviders]
+      ) as (keyof typeof enabledProviders)[]
+
+      // Check if any providers are enabled and have API keys
+      if (enabledProviderKeys.length === 0) {
+        console.log('No providers enabled')
+        return
+      }
+
+      const missingKeys = enabledProviderKeys.filter(provider => 
+        !hasApiKey(provider)
+      )
+
+      if (missingKeys.length > 0) {
+        console.log('Missing API keys for providers:', missingKeys)
         return
       }
 
@@ -77,7 +116,7 @@ const ChatDemo: React.FC = () => {
         console.error('Error generating response:', error)
       }
     },
-    [messages, settings, settingsLoading, generatePossibilities, reset]
+    [messages, settings, settingsLoading, generatePossibilities, reset, enabledProviders, hasApiKey]
   )
 
   const handleSelectPossibility = useCallback(
@@ -161,6 +200,7 @@ const ChatDemo: React.FC = () => {
       onSelectPossibility={handleSelectPossibility}
       onContinuePossibility={handleContinuePossibility}
       isLoading={isGenerating}
+      disabled={!isSystemReady()}
       className="h-screen"
     />
   )

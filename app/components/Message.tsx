@@ -158,14 +158,8 @@ const Message: React.FC<ExtendedMessageProps> = ({
                         } ${expandedPossibility === possibility.id ? 'border-[#667eea]' : ''}`}
                       >
                         <div
-                          onClick={() => {
-                            if (expandedPossibility === possibility.id) {
-                              setExpandedPossibility(null)
-                            } else {
-                              setExpandedPossibility(possibility.id)
-                            }
-                          }}
-                          className="cursor-pointer"
+                          onClick={() => onSelectPossibility?.(possibility)}
+                          className="cursor-pointer hover:bg-[#1a1a2a]"
                         >
                           <div className="flex items-center justify-between">
                             <div
@@ -209,6 +203,20 @@ const Message: React.FC<ExtendedMessageProps> = ({
                                     {Math.round(possibility.probability * 100)}%
                                   </span>
                                 )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (expandedPossibility === possibility.id) {
+                                    setExpandedPossibility(null)
+                                  } else {
+                                    setExpandedPossibility(possibility.id)
+                                  }
+                                }}
+                                className="ml-2 p-1 hover:bg-[#2a2a3a] rounded text-[#888] hover:text-[#e0e0e0] transition-colors"
+                                title="Expand options"
+                              >
+                                {expandedPossibility === possibility.id ? '▼' : '▶'}
+                              </button>
                             </div>
                           </div>
                         </div>

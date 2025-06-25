@@ -14,6 +14,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onSelectPossibility,
   onContinuePossibility,
   isLoading = false,
+  disabled = false,
   className = '',
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -22,6 +23,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     'api-keys' | 'system-instructions' | 'temperatures' | undefined
   >()
   const { isPopupOpen, closePopup } = useAuthPopup()
+  const { data: session } = useSession()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -60,6 +62,23 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         />
       </div>
 
+      {/* API Keys Required Message */}
+      {disabled && !isLoading && (
+        <div className="px-4 py-2 bg-amber-900/20 border-b border-[#2a2a2a]">
+          <div className="max-w-[800px] mx-auto">
+            <div className="flex items-center gap-2 text-amber-400 text-sm">
+              <span>⚠️</span>
+              <span>
+                {!session?.user 
+                  ? "Sign in to save and manage your API keys securely." 
+                  : "Configure API keys in the settings menu to start chatting with AI models."
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 flex flex-col gap-4 -webkit-overflow-scrolling-touch">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-[#888]">
@@ -83,9 +102,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         <div className="max-w-[800px] mx-auto">
           <MessageInput
             onSendMessage={onSendMessage}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
             placeholder={
-              isLoading ? 'Generating response...' : 'Type message...'
+              isLoading 
+                ? 'Generating response...' 
+                : disabled 
+                  ? (!session?.user ? 'Sign in to start chatting...' : 'Configure API keys in settings...') 
+                  : 'Type message...'
             }
             className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"
           />

@@ -34,7 +34,13 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
         onSignIn={onSignIn}
         onSignOut={onSignOut}
       />
-      <MenuItems onSettingsClick={onSettingsClick} />
+      <MenuItems 
+        session={session}
+        status={status}
+        onSignIn={onSignIn}
+        onSignOut={onSignOut}
+        onSettingsClick={onSettingsClick} 
+      />
     </div>
   )
 }

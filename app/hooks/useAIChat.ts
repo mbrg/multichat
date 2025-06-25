@@ -281,8 +281,43 @@ export function useAIChat(options: UseAIChatOptions = {}) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
 
-        // Handle streaming response similar to generatePossibilities
-        // but update the specific possibility content
+        // Set up SSE streaming for continuation
+        const reader = response.body?.getReader()
+        if (!reader) {
+          throw new Error('No response body')
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.trim() === '') continue
+            if (!line.startsWith('data: ')) continue
+
+            const data = line.slice(6)
+            if (data === '[DONE]') continue
+
+            try {
+              const event: StreamEvent = JSON.parse(data)
+              // Handle continuation events - they should update the specific possibility
+              if (event.type === 'token' && event.data.id === possibilityId) {
+                // Update the continued possibility content
+                // This would be handled by a separate callback or state management
+                console.log('Continuation token:', event.data.token)
+              }
+            } catch (e) {
+              console.error('Failed to parse continuation SSE event:', e)
+            }
+          }
+        }
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
         setError(error)
