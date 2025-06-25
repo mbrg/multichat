@@ -107,7 +107,7 @@ describe('Menu', () => {
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
-    expect(screen.getByText('Sign in')).toBeInTheDocument()
+    expect(screen.getByText('Sign in with GitHub')).toBeInTheDocument()
     expect(screen.queryByText('Sign out')).not.toBeInTheDocument()
   })
 
@@ -132,7 +132,7 @@ describe('Menu', () => {
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
     expect(screen.getByAltText('Test User')).toBeInTheDocument()
     expect(screen.getByText('Sign out')).toBeInTheDocument()
-    expect(screen.queryByText('Sign in')).not.toBeInTheDocument()
+    expect(screen.queryByText('Sign in with GitHub')).not.toBeInTheDocument()
   })
 
   it('handles API Keys click when authenticated', async () => {
@@ -192,13 +192,13 @@ describe('Menu', () => {
     render(<Menu onOpenSettings={mockOnOpenSettings} />)
 
     fireEvent.click(screen.getByLabelText('Menu'))
-    fireEvent.click(screen.getByText('Sign in'))
+    fireEvent.click(screen.getByText('Sign in with GitHub'))
 
     expect(mockCheckAuthAndRun).toHaveBeenCalledTimes(1)
 
     // Menu should close after clicking
     await waitFor(() => {
-      expect(screen.queryByText('Sign in')).not.toBeInTheDocument()
+      expect(screen.queryByText('Sign in with GitHub')).not.toBeInTheDocument()
     })
   })
 
@@ -234,10 +234,10 @@ describe('Menu', () => {
 
     fireEvent.click(screen.getByLabelText('Menu'))
 
-    // Should show loading spinner
-    const spinner = screen.getByTestId('loading-spinner')
-    expect(spinner).toBeInTheDocument()
-    expect(spinner).toHaveClass('animate-spin')
+    // Should show loading skeleton
+    const loadingSkeleton = document.querySelector('.animate-pulse')
+    expect(loadingSkeleton).toBeInTheDocument()
+    expect(loadingSkeleton).toHaveClass('animate-pulse')
   })
 
   it('closes menu when clicking outside', () => {
