@@ -35,6 +35,9 @@ describe('ApiKeysPanel', () => {
     clearApiKey: vi.fn(),
     toggleProvider: vi.fn(),
     getApiKey: vi.fn(),
+    isProviderEnabled: vi.fn(),
+    hasApiKey: vi.fn(),
+    loadApiKeys: vi.fn(),
     clearAllKeys: vi.fn(),
   }
 
@@ -42,6 +45,7 @@ describe('ApiKeysPanel', () => {
     isPopupOpen: false,
     checkAuthAndRun: vi.fn(),
     closePopup: vi.fn(),
+    isAuthenticated: true,
   }
 
   beforeEach(() => {
@@ -132,6 +136,9 @@ describe('ApiKeysPanel', () => {
           mistral: false,
           together: false,
         },
+        isProviderEnabled: vi.fn(),
+        hasApiKey: vi.fn(),
+        loadApiKeys: vi.fn(),
       }
       // Mock getApiKey to return masked keys for configured providers
       mockHook.getApiKey.mockImplementation((provider) => {
@@ -160,6 +167,9 @@ describe('ApiKeysPanel', () => {
           mistral: false,
           together: false,
         },
+        isProviderEnabled: vi.fn(),
+        hasApiKey: vi.fn(),
+        loadApiKeys: vi.fn(),
       }
       // Mock getApiKey to return masked key for openai
       mockHook.getApiKey.mockImplementation((provider) => {
@@ -191,6 +201,9 @@ describe('ApiKeysPanel', () => {
           mistral: false,
           together: false,
         },
+        isProviderEnabled: vi.fn(),
+        hasApiKey: vi.fn(),
+        loadApiKeys: vi.fn(),
       }
       // Mock getApiKey to return masked key for openai
       mockHook.getApiKey.mockImplementation((provider) => {
@@ -256,6 +269,9 @@ describe('ApiKeysPanel', () => {
           mistral: false,
           together: false,
         },
+        isProviderEnabled: vi.fn(),
+        hasApiKey: vi.fn(),
+        loadApiKeys: vi.fn(),
       }
       mockHook.clearApiKey.mockRejectedValue(new Error('Network error'))
       mockHook.getApiKey.mockImplementation((provider) => {
@@ -287,6 +303,9 @@ describe('ApiKeysPanel', () => {
           mistral: false,
           together: false,
         },
+        isProviderEnabled: vi.fn(),
+        hasApiKey: vi.fn(),
+        loadApiKeys: vi.fn(),
       }
       mockHook.getApiKey.mockReturnValue(undefined)
       mockUseApiKeys.mockReturnValue(mockHook)
@@ -336,6 +355,9 @@ describe('ApiKeysPanel', () => {
           mistral: false,
           together: false,
         },
+        isProviderEnabled: vi.fn(),
+        hasApiKey: vi.fn(),
+        loadApiKeys: vi.fn(),
       }
       mockHook.getApiKey.mockImplementation((provider) => {
         if (provider === 'openai') return '***'

@@ -1,103 +1,39 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
-import { generateText } from 'ai'
-import type {
-  AIProvider,
-  Message,
-  ModelInfo,
-  GenerationOptions,
-  ResponseWithLogprobs,
-} from '../../../types/ai'
+import type { ModelInfo, GenerationOptions } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
-import { ServerKeys } from '../../../utils/serverKeys'
-import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
+import { AbstractAIProvider } from './AbstractAIProvider'
 
-export class TogetherProvider implements AIProvider {
-  name = 'Together AI'
-  models = getModelsByProvider('together')
+export class TogetherProvider extends AbstractAIProvider {
+  readonly name = 'Together AI'
+  readonly models = getModelsByProvider('together')
 
-  async generateResponse(
-    messages: Message[],
-    model: ModelInfo,
-    options: GenerationOptions
-  ): Promise<ResponseWithLogprobs> {
-    const apiKey = await this.getApiKey()
-    if (!apiKey) {
-      throw new Error('Together AI API key not configured')
-    }
+  protected async createModel(modelId: string, apiKey: string): Promise<any> {
+    const together = createOpenAICompatible({
+      apiKey,
+      baseURL: 'https://api.together.xyz/v1',
+      name: 'together',
+    })
+    return together(modelId)
+  }
 
-    try {
-      const together = createOpenAICompatible({
-        apiKey,
-        baseURL: 'https://api.together.xyz/v1',
-        name: 'together',
-      })
-
-      const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
-
-      const result = await generateText({
-        model: together(model.id),
-        messages: formattedMessages,
-        temperature: options.temperature ?? 0.7,
-        maxTokens: options.maxTokens ?? model.maxTokens,
-        topP: options.topP,
-        frequencyPenalty: options.frequencyPenalty,
-        presencePenalty: options.presencePenalty,
-        // Note: Together logprobs would be requested via provider options if supported
-      })
-
-      // Calculate real probability from logprobs if available
-      const probability = calculateProbabilityFromLogprobs(result.logprobs)
-
-      return {
-        content: result.text,
-        logprobs: result.logprobs,
-        probability,
-        finishReason: result.finishReason || 'stop',
-        usage: result.usage
-          ? {
-              promptTokens: result.usage.promptTokens,
-              completionTokens: result.usage.completionTokens,
-              totalTokens: result.usage.totalTokens,
-            }
-          : undefined,
-      }
-    } catch (error) {
-      console.error('Together AI API error:', error)
-      throw new Error(
-        `Together AI API error: ${error instanceof Error ? error.message : 'Unknown error'}`
-      )
+  protected getProviderOptions(
+    options: GenerationOptions,
+    model: ModelInfo
+  ): Record<string, any> {
+    return {
+      temperature: options.temperature ?? 0.7,
+      maxTokens: options.maxTokens ?? model.maxTokens,
+      topP: options.topP,
+      frequencyPenalty: options.frequencyPenalty,
+      presencePenalty: options.presencePenalty,
     }
   }
 
-  async validateApiKey(): Promise<boolean> {
-    try {
-      const apiKey = await this.getApiKey()
-      if (!apiKey) {
-        return false
-      }
-
-      const together = createOpenAICompatible({
-        apiKey,
-        baseURL: 'https://api.together.xyz/v1',
-        name: 'together',
-      })
-
-      const result = await generateText({
-        model: together('meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo'),
-        messages: [{ role: 'user', content: 'Hi' }],
-        maxTokens: 5,
-      })
-      return !!result.text
-    } catch (error) {
-      console.error('Together AI API key validation failed:', error)
-      return false
-    }
+  protected getValidationModelId(): string {
+    return 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo'
   }
 
-  private async getApiKey(): Promise<string | null> {
-    return await ServerKeys.getApiKey('together')
+  protected getProviderKey(): string {
+    return 'together'
   }
 }

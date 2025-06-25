@@ -1,29 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../lib/auth'
-import { getKVStore } from '../../services/kv'
-import { deriveUserKey, encrypt, decrypt } from '../../utils/crypto'
 import { UserSettings } from '../../types/settings'
-
-async function getSettingsData(userId: string): Promise<UserSettings> {
-  const kvStore = await getKVStore()
-  const encryptedData = await kvStore.get<string>(`settings:${userId}`)
-  if (!encryptedData) return {}
-
-  const userKey = await deriveUserKey(userId)
-  const decryptedData = await decrypt(encryptedData, userKey)
-  return JSON.parse(decryptedData)
-}
-
-async function saveSettingsData(
-  userId: string,
-  data: UserSettings
-): Promise<void> {
-  const kvStore = await getKVStore()
-  const userKey = await deriveUserKey(userId)
-  const encryptedData = await encrypt(JSON.stringify(data), userKey)
-  await kvStore.set(`settings:${userId}`, encryptedData)
-}
+import { SettingsService } from '../../services/EncryptedDataService'
 
 // GET /api/settings - Get all user settings
 export async function GET(request: NextRequest) {
@@ -33,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const settings = await getSettingsData(session.user.id)
+    const settings = await SettingsService.getData(session.user.id)
     return NextResponse.json(settings)
   } catch (error) {
     console.error('Failed to get settings:', error)
@@ -62,21 +41,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get current settings
-    const currentSettings = await getSettingsData(session.user.id)
-
-    // Merge updates with current settings
-    const updatedSettings = { ...currentSettings, ...updates }
+    // Get current settings and merge updates
+    const currentSettings = await SettingsService.getData(session.user.id)
+    const mergedSettings = { ...currentSettings, ...updates }
 
     // Remove any keys with null or undefined values
-    Object.keys(updatedSettings).forEach((key) => {
-      if (updatedSettings[key] === null || updatedSettings[key] === undefined) {
-        delete updatedSettings[key]
+    Object.keys(mergedSettings).forEach((key) => {
+      if (mergedSettings[key] === null || mergedSettings[key] === undefined) {
+        delete mergedSettings[key]
       }
     })
 
     // Save updated settings
-    await saveSettingsData(session.user.id, updatedSettings)
+    await SettingsService.saveData(session.user.id, mergedSettings)
+    const updatedSettings = mergedSettings
 
     return NextResponse.json(updatedSettings)
   } catch (error) {
@@ -101,14 +79,14 @@ export async function DELETE(request: NextRequest) {
 
     if (key) {
       // Delete specific setting
-      const currentSettings = await getSettingsData(session.user.id)
-      delete currentSettings[key]
-      await saveSettingsData(session.user.id, currentSettings)
-      return NextResponse.json({ success: true, settings: currentSettings })
+      const updatedSettings = await SettingsService.deleteKey(
+        session.user.id,
+        key
+      )
+      return NextResponse.json({ success: true, settings: updatedSettings })
     } else {
       // Delete all settings
-      const kvStore = await getKVStore()
-      await kvStore.del(`settings:${session.user.id}`)
+      await SettingsService.deleteData(session.user.id)
       return NextResponse.json({ success: true })
     }
   } catch (error) {

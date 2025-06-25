@@ -1,87 +1,30 @@
 import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
-import type {
-  AIProvider,
-  Message,
-  ModelInfo,
-  GenerationOptions,
-  ResponseWithLogprobs,
-} from '../../../types/ai'
+import type { ModelInfo, GenerationOptions } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
-import { ServerKeys } from '../../../utils/serverKeys'
-import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
+import { AbstractAIProvider } from './AbstractAIProvider'
 
-export class OpenAIProvider implements AIProvider {
-  name = 'OpenAI'
-  models = getModelsByProvider('openai')
+export class OpenAIProvider extends AbstractAIProvider {
+  readonly name = 'OpenAI'
+  readonly models = getModelsByProvider('openai')
 
-  async generateResponse(
-    messages: Message[],
-    model: ModelInfo,
-    options: GenerationOptions
-  ): Promise<ResponseWithLogprobs> {
-    const apiKey = await this.getApiKey()
-    if (!apiKey) {
-      throw new Error('OpenAI API key not configured')
-    }
+  protected async createModel(modelId: string, apiKey: string): Promise<any> {
+    return openai(modelId)
+  }
 
-    try {
-      const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
-
-      const result = await generateText({
-        model: openai(model.id),
-        messages: formattedMessages,
-        temperature: options.temperature ?? 0.7,
-        maxTokens: options.maxTokens ?? model.maxTokens,
-        topP: options.topP,
-        frequencyPenalty: options.frequencyPenalty,
-        presencePenalty: options.presencePenalty,
-        // stop: options.stop // Not supported by all models
-        // Note: logprobs would be requested via provider options if supported by the model
-      })
-
-      // Calculate real probability from logprobs if available
-      const probability = calculateProbabilityFromLogprobs(result.logprobs)
-
-      return {
-        content: result.text,
-        logprobs: result.logprobs,
-        probability,
-        finishReason: result.finishReason || 'stop',
-        usage: result.usage
-          ? {
-              promptTokens: result.usage.promptTokens,
-              completionTokens: result.usage.completionTokens,
-              totalTokens: result.usage.totalTokens,
-            }
-          : undefined,
-      }
-    } catch (error) {
-      console.error('OpenAI API error:', error)
-      throw new Error(
-        `OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`
-      )
+  protected getProviderOptions(
+    options: GenerationOptions,
+    model: ModelInfo
+  ): Record<string, any> {
+    return {
+      temperature: options.temperature ?? 0.7,
+      maxTokens: options.maxTokens ?? model.maxTokens,
+      topP: options.topP,
+      frequencyPenalty: options.frequencyPenalty,
+      presencePenalty: options.presencePenalty,
     }
   }
 
-  async validateApiKey(): Promise<boolean> {
-    try {
-      const result = await generateText({
-        model: openai('gpt-4o-mini'),
-        messages: [{ role: 'user', content: 'Hi' }],
-        maxTokens: 5,
-      })
-      return !!result.text
-    } catch (error) {
-      console.error('OpenAI API key validation failed:', error)
-      return false
-    }
-  }
-
-  private async getApiKey(): Promise<string | null> {
-    return await ServerKeys.getApiKey('openai')
+  protected getValidationModelId(): string {
+    return 'gpt-4o-mini'
   }
 }

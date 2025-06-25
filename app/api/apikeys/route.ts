@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../lib/auth'
-import { getKVStore } from '../../services/kv'
-import { deriveUserKey, encrypt, decrypt } from '../../utils/crypto'
 import {
   AI_PROVIDER_LIST,
   type AIProviderType,
 } from '../../constants/providers'
+import { ApiKeysService, type ApiKeyData } from '../../services/EncryptedDataService'
 
 const VALID_API_KEY_PROVIDERS = AI_PROVIDER_LIST
 type ApiKeyProvider = AIProviderType
-
-interface ApiKeyData {
-  [key: string]: string
-}
 
 interface ApiKeyStatus {
   openai: boolean
@@ -21,26 +16,6 @@ interface ApiKeyStatus {
   google: boolean
   mistral: boolean
   together: boolean
-}
-
-async function getApiKeysData(userId: string): Promise<ApiKeyData> {
-  const kvStore = await getKVStore()
-  const encryptedData = await kvStore.get<string>(`apikeys:${userId}`)
-  if (!encryptedData) return {}
-
-  const userKey = await deriveUserKey(userId)
-  const decryptedData = await decrypt(encryptedData, userKey)
-  return JSON.parse(decryptedData)
-}
-
-async function saveApiKeysData(
-  userId: string,
-  data: ApiKeyData
-): Promise<void> {
-  const kvStore = await getKVStore()
-  const userKey = await deriveUserKey(userId)
-  const encryptedData = await encrypt(JSON.stringify(data), userKey)
-  await kvStore.set(`apikeys:${userId}`, encryptedData)
 }
 
 // GET /api/apikeys - Returns which API keys are set (not the actual keys)
@@ -51,7 +26,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const apiKeysData = await getApiKeysData(session.user.id)
+    const apiKeysData = await ApiKeysService.getData(session.user.id)
 
     // Return only the status of which keys are set
     const status: ApiKeyStatus = {
@@ -104,10 +79,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get current data
-    const apiKeysData = await getApiKeysData(session.user.id)
+    // Get current data and update
+    const apiKeysData = await ApiKeysService.getData(session.user.id)
 
-    // Update the specific API key
     if (apiKey.trim() === '') {
       // Remove the API key if empty string is provided
       delete apiKeysData[provider]
@@ -116,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save updated data
-    await saveApiKeysData(session.user.id, apiKeysData)
+    await ApiKeysService.saveData(session.user.id, apiKeysData)
 
     // Return the updated status
     const status: ApiKeyStatus = {
@@ -159,13 +133,10 @@ export async function DELETE(request: NextRequest) {
         )
       }
 
-      const apiKeysData = await getApiKeysData(session.user.id)
-      delete apiKeysData[provider]
-      await saveApiKeysData(session.user.id, apiKeysData)
+      await ApiKeysService.deleteKey(session.user.id, provider)
     } else {
       // Delete all API keys
-      const kvStore = await getKVStore()
-      await kvStore.del(`apikeys:${session.user.id}`)
+      await ApiKeysService.deleteData(session.user.id)
     }
 
     return NextResponse.json({ success: true })

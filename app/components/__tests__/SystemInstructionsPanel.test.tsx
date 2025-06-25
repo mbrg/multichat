@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useSession } from 'next-auth/react'
 import SystemInstructionsPanel from '../SystemInstructionsPanel'
@@ -127,8 +127,10 @@ describe('SystemInstructionsPanel', () => {
       )
       expect(toggleButtons.length).toBe(2)
 
-      // Click first toggle
-      fireEvent.click(toggleButtons[0])
+      // Click first toggle wrapped in act
+      await act(async () => {
+        fireEvent.click(toggleButtons[0])
+      })
 
       expect(mockCloudSettings.setSystemInstructions).toHaveBeenCalled()
     })
@@ -234,7 +236,10 @@ describe('SystemInstructionsPanel', () => {
       })
 
       const deleteButtons = screen.getAllByTitle('Delete instruction')
-      fireEvent.click(deleteButtons[0])
+
+      await act(async () => {
+        fireEvent.click(deleteButtons[0])
+      })
 
       expect(mockCloudSettings.setSystemInstructions).toHaveBeenCalled()
     })

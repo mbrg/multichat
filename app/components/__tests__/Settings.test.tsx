@@ -2,6 +2,17 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Settings from '../Settings'
 
+// Mock child components to avoid their async operations
+vi.mock('../SystemInstructionsPanel', () => ({
+  default: () => (
+    <div data-testid="system-instructions-panel">System Instructions Panel</div>
+  ),
+}))
+
+vi.mock('../TemperaturesPanel', () => ({
+  default: () => <div data-testid="temperatures-panel">Temperatures Panel</div>,
+}))
+
 // Mock CloudSettings
 const mockSystemInstructions = [
   {
@@ -120,7 +131,7 @@ describe('Settings Component', () => {
       render(<Settings isOpen={true} onClose={() => {}} />)
     })
 
-    expect(screen.getByText('Settings')).toBeInTheDocument()
+    expect(screen.getByText('API Keys')).toBeInTheDocument()
     expect(screen.getByText('🔑')).toBeInTheDocument()
   })
 
@@ -245,12 +256,9 @@ describe('Settings Component', () => {
       )
     })
 
-    await waitFor(
-      () => {
-        expect(screen.getByText('System Instructions')).toBeInTheDocument()
-      },
-      { timeout: 5000 }
-    )
+    // Check for presence of system instructions header and panel
+    expect(screen.getByText('System Instructions')).toBeInTheDocument()
+    expect(screen.getByTestId('system-instructions-panel')).toBeInTheDocument()
   })
 
   it('opens to temperatures section when specified', async () => {
@@ -264,11 +272,8 @@ describe('Settings Component', () => {
       )
     })
 
-    await waitFor(
-      () => {
-        expect(screen.getByText('Temperatures')).toBeInTheDocument()
-      },
-      { timeout: 5000 }
-    )
+    // Check for presence of temperatures header and panel
+    expect(screen.getByText('Temperatures')).toBeInTheDocument()
+    expect(screen.getByTestId('temperatures-panel')).toBeInTheDocument()
   })
 })
