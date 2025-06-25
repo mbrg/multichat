@@ -1,4 +1,4 @@
-import { anthropic } from '@ai-sdk/anthropic'
+import { createAnthropic } from '@ai-sdk/anthropic'
 import type { ModelInfo, GenerationOptions } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { AbstractAIProvider } from './AbstractAIProvider'
@@ -8,7 +8,10 @@ export class AnthropicProvider extends AbstractAIProvider {
   readonly models = getModelsByProvider('anthropic')
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
-    return anthropic(modelId)
+    const anthropicProvider = createAnthropic({
+      apiKey: apiKey
+    })
+    return anthropicProvider(modelId)
   }
 
   protected getProviderOptions(

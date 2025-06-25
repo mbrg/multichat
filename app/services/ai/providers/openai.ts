@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import type { ModelInfo, GenerationOptions } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { AbstractAIProvider } from './AbstractAIProvider'
@@ -8,7 +8,10 @@ export class OpenAIProvider extends AbstractAIProvider {
   readonly models = getModelsByProvider('openai')
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
-    return openai(modelId)
+    const openaiProvider = createOpenAI({
+      apiKey: apiKey
+    })
+    return openaiProvider(modelId)
   }
 
   protected getProviderOptions(

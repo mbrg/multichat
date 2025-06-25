@@ -162,10 +162,13 @@ export function useAIChat(options: UseAIChatOptions = {}) {
       setPossibilities({})
 
       try {
-        // Parse enabled providers
-        const enabledProviders = settings.enabledProviders
+        // Parse enabled providers and convert to array of strings
+        const enabledProvidersObj = settings.enabledProviders
           ? JSON.parse(settings.enabledProviders)
-          : []
+          : {}
+        const enabledProviders = Object.keys(enabledProvidersObj).filter(
+          key => enabledProvidersObj[key] === true
+        )
 
         // Prepare request
         const request: ChatCompletionRequest = {

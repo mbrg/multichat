@@ -1,4 +1,4 @@
-import { mistral } from '@ai-sdk/mistral'
+import { createMistral } from '@ai-sdk/mistral'
 import type { ModelInfo, GenerationOptions } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { AbstractAIProvider } from './AbstractAIProvider'
@@ -8,7 +8,10 @@ export class MistralProvider extends AbstractAIProvider {
   readonly models = getModelsByProvider('mistral')
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
-    return mistral(modelId)
+    const mistralProvider = createMistral({
+      apiKey: apiKey
+    })
+    return mistralProvider(modelId)
   }
 
   protected getProviderOptions(

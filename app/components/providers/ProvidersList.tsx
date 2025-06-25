@@ -13,6 +13,7 @@ interface Provider {
 interface ProvidersListProps {
   providers: Provider[]
   configuredProviders: Provider[]
+  validationStatus: Record<string, 'valid' | 'invalid' | 'validating' | null>
   isAuthenticated: boolean
   showAddForm: boolean
   onShowAddForm: () => void
@@ -26,6 +27,7 @@ interface ProvidersListProps {
  */
 export const ProvidersList: React.FC<ProvidersListProps> = ({
   configuredProviders,
+  validationStatus,
   isAuthenticated,
   showAddForm,
   onShowAddForm,
@@ -60,6 +62,7 @@ export const ProvidersList: React.FC<ProvidersListProps> = ({
         <ProviderConfig
           key={provider.id}
           provider={provider}
+          validationStatus={validationStatus[provider.id]}
           onToggle={onToggleProvider}
           onRemove={onRemoveApiKey}
         />

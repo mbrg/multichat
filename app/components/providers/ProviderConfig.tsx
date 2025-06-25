@@ -12,6 +12,7 @@ interface Provider {
 
 interface ProviderConfigProps {
   provider: Provider
+  validationStatus?: 'valid' | 'invalid' | 'validating' | null
   onToggle: (providerId: string) => void
   onRemove: (providerId: string) => void
 }
@@ -22,9 +23,37 @@ interface ProviderConfigProps {
  */
 export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   provider,
+  validationStatus,
   onToggle,
   onRemove,
 }) => {
+  const getValidationDisplay = () => {
+    switch (validationStatus) {
+      case 'validating':
+        return (
+          <div className="flex items-center gap-1 text-xs text-yellow-400">
+            <div className="w-3 h-3 border border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+            Validating...
+          </div>
+        )
+      case 'valid':
+        return (
+          <div className="flex items-center gap-1 text-xs text-green-400">
+            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+            Valid API key
+          </div>
+        )
+      case 'invalid':
+        return (
+          <div className="flex items-center gap-1 text-xs text-red-400">
+            <div className="w-3 h-3 rounded-full bg-red-400"></div>
+            Invalid API key
+          </div>
+        )
+      default:
+        return <div className="text-xs text-[#666]">API key configured</div>
+    }
+  }
   return (
     <div className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
       <div className="flex items-center gap-3">
@@ -41,15 +70,20 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           <div className="text-sm text-[#e0e0e0] font-medium">
             {provider.name.replace(' API Key', '')}
           </div>
-          <div className="text-xs text-[#666]">API key configured</div>
+          {getValidationDisplay()}
         </div>
       </div>
       <div className="flex items-center gap-3">
         {/* Enable/Disable Toggle */}
         <button
           onClick={() => onToggle(provider.id)}
+          disabled={validationStatus === 'invalid'}
           className={`relative w-10 h-5 rounded-full transition-colors ${
-            provider.enabled ? 'bg-[#667eea]' : 'bg-[#2a2a2a]'
+            validationStatus === 'invalid'
+              ? 'bg-[#2a2a2a] opacity-50 cursor-not-allowed'
+              : provider.enabled 
+              ? 'bg-[#667eea]' 
+              : 'bg-[#2a2a2a]'
           }`}
         >
           <div

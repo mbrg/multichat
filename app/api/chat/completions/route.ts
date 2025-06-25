@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../../lib/auth'
 import { PermutationGenerator } from '@/services/ai/permutations'
 import { PossibilityExecutor } from '@/services/ai/executor'
 import type { ChatCompletionRequest, StreamEvent } from '@/types/api'
@@ -36,6 +38,12 @@ const requestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Parse and validate request
     const body = await request.json()
     const validatedData = requestSchema.parse(body) as ChatCompletionRequest

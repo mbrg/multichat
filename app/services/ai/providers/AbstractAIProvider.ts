@@ -93,22 +93,27 @@ export abstract class AbstractAIProvider implements AIProvider {
    */
   async validateApiKey(): Promise<boolean> {
     try {
+      console.log(`[${this.name}] Starting API key validation`)
       const apiKey = await this.getApiKey()
+      console.log(`[${this.name}] API key retrieved: ${apiKey ? `${apiKey.length} chars` : 'null'}`)
       if (!apiKey) return false
 
       const validationModel = await this.createModel(
         this.getValidationModelId(),
         apiKey
       )
+      console.log(`[${this.name}] Model created for validation`)
 
       await generateText({
         model: validationModel,
-        messages: [{ role: 'user', content: 'test' }],
+        messages: [{ role: 'user', content: 'hi' }],
         maxTokens: 1,
       })
+      console.log(`[${this.name}] Validation successful`)
 
       return true
-    } catch {
+    } catch (error) {
+      console.log(`[${this.name}] Validation failed:`, error)
       return false
     }
   }

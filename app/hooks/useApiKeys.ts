@@ -19,6 +19,14 @@ export interface EnabledProviders {
   together: boolean
 }
 
+interface ApiKeyValidationStatus {
+  openai?: 'valid' | 'invalid' | 'validating' | null
+  anthropic?: 'valid' | 'invalid' | 'validating' | null
+  google?: 'valid' | 'invalid' | 'validating' | null
+  mistral?: 'valid' | 'invalid' | 'validating' | null
+  together?: 'valid' | 'invalid' | 'validating' | null
+}
+
 export const useApiKeys = () => {
   const { data: session, status } = useSession()
   const [apiKeys, setApiKeys] = useState<ApiKeys>({})
@@ -29,6 +37,7 @@ export const useApiKeys = () => {
     mistral: false,
     together: false,
   })
+  const [validationStatus, setValidationStatus] = useState<ApiKeyValidationStatus>({})
   const [isLoading, setIsLoading] = useState(false)
   const hasInitialized = useRef(false)
 
@@ -98,6 +107,42 @@ export const useApiKeys = () => {
     setIsLoading(false)
   }
 
+  const validateApiKey = async (provider: keyof ApiKeys) => {
+    try {
+      setValidationStatus(prev => ({ ...prev, [provider]: 'validating' }))
+      
+      const response = await fetch('/api/apikeys/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Validation request failed')
+      }
+
+      const { isValid } = await response.json()
+      const status = isValid ? 'valid' : 'invalid'
+      
+      setValidationStatus(prev => ({ ...prev, [provider]: status }))
+      
+      // If invalid, disable the provider
+      if (!isValid) {
+        const newEnabledProviders = { ...enabledProviders, [provider]: false }
+        setEnabledProviders(newEnabledProviders)
+        await CloudSettings.setEnabledProviders(
+          JSON.stringify(newEnabledProviders)
+        )
+      }
+      
+      return isValid
+    } catch (error) {
+      console.error('Error validating API key:', error)
+      setValidationStatus(prev => ({ ...prev, [provider]: 'invalid' }))
+      return false
+    }
+  }
+
   const saveApiKey = async (provider: keyof ApiKeys, key: string) => {
     try {
       if (key.trim()) {
@@ -107,12 +152,17 @@ export const useApiKeys = () => {
         // Update local state
         setApiKeys((prev) => ({ ...prev, [provider]: '***' }))
 
-        // Auto-enable when API key is added (update settings separately)
-        const newEnabledProviders = { ...enabledProviders, [provider]: true }
-        setEnabledProviders(newEnabledProviders)
-        await CloudSettings.setEnabledProviders(
-          JSON.stringify(newEnabledProviders)
-        )
+        // Validate the API key after saving
+        const isValid = await validateApiKey(provider)
+
+        // Only auto-enable if the key is valid
+        if (isValid) {
+          const newEnabledProviders = { ...enabledProviders, [provider]: true }
+          setEnabledProviders(newEnabledProviders)
+          await CloudSettings.setEnabledProviders(
+            JSON.stringify(newEnabledProviders)
+          )
+        }
       } else {
         // Remove empty key
         await clearApiKey(provider)
@@ -134,6 +184,9 @@ export const useApiKeys = () => {
         delete newKeys[provider]
         return newKeys
       })
+
+      // Clear validation status
+      setValidationStatus(prev => ({ ...prev, [provider]: null }))
 
       // Auto-disable when API key is removed (update settings separately)
       const newEnabledProviders = { ...enabledProviders, [provider]: false }
@@ -209,6 +262,7 @@ export const useApiKeys = () => {
   return {
     apiKeys,
     enabledProviders,
+    validationStatus,
     isLoading,
     saveApiKey,
     clearApiKey,
@@ -218,6 +272,7 @@ export const useApiKeys = () => {
     hasApiKey,
     clearAllKeys,
     loadApiKeys,
+    validateApiKey,
     isAuthenticated: Boolean(session?.user),
   }
 }

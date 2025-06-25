@@ -1,4 +1,4 @@
-import { google } from '@ai-sdk/google'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import type { ModelInfo, GenerationOptions } from '../../../types/ai'
 import { getModelsByProvider } from '../config'
 import { AbstractAIProvider } from './AbstractAIProvider'
@@ -8,7 +8,10 @@ export class GoogleProvider extends AbstractAIProvider {
   readonly models = getModelsByProvider('google')
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
-    return google(modelId)
+    const googleProvider = createGoogleGenerativeAI({
+      apiKey: apiKey
+    })
+    return googleProvider(modelId)
   }
 
   protected getProviderOptions(
