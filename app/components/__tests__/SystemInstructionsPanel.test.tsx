@@ -267,7 +267,7 @@ describe('SystemInstructionsPanel', () => {
   })
 
   describe('Error Handling', () => {
-    it('should handle CloudSettings load errors', async () => {
+    it('should handle CloudSettings load errors gracefully', async () => {
       mockCloudSettings.getSystemInstructions.mockRejectedValue(
         new Error('Network error')
       )
@@ -275,21 +275,28 @@ describe('SystemInstructionsPanel', () => {
       render(<SystemInstructionsPanel />)
 
       await waitFor(() => {
-        // Should not crash and should show some content
+        // Should not crash and should show default UI when load fails
         expect(screen.getByText(/Add Instruction/)).toBeInTheDocument()
+        expect(
+          screen.getByText('No system instructions configured')
+        ).toBeInTheDocument()
       })
     })
 
-    it('should handle save errors', async () => {
+    it('should handle save errors gracefully', async () => {
       mockCloudSettings.setSystemInstructions.mockRejectedValue(
         new Error('Save failed')
       )
 
       render(<SystemInstructionsPanel />)
 
+      // Wait for component to finish loading before interacting
       await waitFor(() => {
-        fireEvent.click(screen.getByText('+ Add Instruction'))
+        expect(screen.getByText('+ Add Instruction')).toBeInTheDocument()
       })
+
+      // Open the form
+      fireEvent.click(screen.getByText('+ Add Instruction'))
 
       const nameInput = screen.getByRole('textbox', { name: /name/i })
       const contentInput = screen.getByRole('textbox', { name: /content/i })
@@ -300,10 +307,17 @@ describe('SystemInstructionsPanel', () => {
       const saveButton = screen.getByText('Add Instruction')
       fireEvent.click(saveButton)
 
-      // Should not crash and should still show the form (error is logged to console)
+      // Test the actual behavior: component handles error gracefully
       await waitFor(() => {
         expect(mockCloudSettings.setSystemInstructions).toHaveBeenCalled()
       })
+
+      // Most important: component doesn't crash and remains functional
+      // User can still interact with the form or close it
+      expect(screen.getByRole('textbox', { name: /name/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('textbox', { name: /content/i })
+      ).toBeInTheDocument()
     })
   })
 

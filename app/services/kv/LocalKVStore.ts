@@ -53,9 +53,9 @@ export class LocalKVStore implements IKVStore {
   }
 
   async get<T = any>(key: string): Promise<T | null> {
-    const value = this.data[key] || null
+    const value = key in this.data ? this.data[key] : null
     console.log(
-      `[LocalKVStore:${this.instanceId}] GET ${key} -> ${value ? 'found' : 'null'}`
+      `[LocalKVStore:${this.instanceId}] GET ${key} -> ${value !== null ? 'found' : 'null'}`
     )
     return value
   }

@@ -35,6 +35,17 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
 // Set up test environment variables
 process.env.KV_ENCRYPTION_KEY = 'test-encryption-key-for-testing'
 
+// Suppress console output during tests for cleaner test runs
+// Error handling tests should test behavior, not console output
+global.console = {
+  ...console,
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+  info: vi.fn(),
+  debug: vi.fn(),
+}
+
 // Clear mocks between tests
 import { beforeEach } from 'vitest'
 beforeEach(() => {

@@ -10,6 +10,12 @@ vi.mock('next-auth/react')
 vi.mock('../../utils/cloudApiKeys')
 vi.mock('../../utils/cloudSettings')
 
+// Mock global fetch for validation endpoint
+global.fetch = vi.fn().mockResolvedValue({
+  ok: true,
+  json: () => Promise.resolve({ isValid: true }),
+})
+
 const sessionHook = vi.mocked(useSession)
 
 describe('useApiKeys', () => {

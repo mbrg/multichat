@@ -146,7 +146,12 @@ const ApiKeysPanel: React.FC = () => {
         <ProvidersList
           providers={providers}
           configuredProviders={getConfiguredProviders()}
-          validationStatus={validationStatus}
+          validationStatus={
+            validationStatus as Record<
+              string,
+              'valid' | 'invalid' | 'validating' | null
+            >
+          }
           isAuthenticated={isAuthenticated}
           showAddForm={showAddForm}
           onShowAddForm={() => setShowAddForm(true)}

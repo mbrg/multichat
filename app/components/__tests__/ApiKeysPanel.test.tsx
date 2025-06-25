@@ -29,6 +29,7 @@ describe('ApiKeysPanel', () => {
       mistral: false,
       together: false,
     },
+    validationStatus: {},
     isLoading: false,
     isAuthenticated: true,
     saveApiKey: vi.fn(),
@@ -39,6 +40,7 @@ describe('ApiKeysPanel', () => {
     hasApiKey: vi.fn(),
     loadApiKeys: vi.fn(),
     clearAllKeys: vi.fn(),
+    validateApiKey: vi.fn(),
   }
 
   const mockAuthPopup = {
@@ -286,9 +288,11 @@ describe('ApiKeysPanel', () => {
       const removeButton = screen.getByTitle('Remove API key')
       fireEvent.click(removeButton)
 
-      // Should not crash
+      // Should handle error gracefully - component doesn't crash, UI remains functional
       await waitFor(() => {
         expect(mockHook.clearApiKey).toHaveBeenCalled()
+        // Component should still be functional after error
+        expect(screen.getByText('+ Add Key')).toBeInTheDocument()
       })
     })
 

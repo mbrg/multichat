@@ -74,6 +74,13 @@ vi.mock('../../hooks/useApiKeys', () => ({
       mistral: true,
       together: true,
     },
+    validationStatus: {
+      openai: 'valid',
+      anthropic: null,
+      google: null,
+      mistral: null,
+      together: null,
+    },
     isLoading: false,
     isAuthenticated: true,
     saveApiKey: mockSaveApiKey,
@@ -81,6 +88,7 @@ vi.mock('../../hooks/useApiKeys', () => ({
     toggleProvider: mockToggleProvider,
     getApiKey: mockGetApiKey,
     clearAllKeys: mockClearAllKeys,
+    validateApiKey: vi.fn(),
   }),
 }))
 
@@ -177,7 +185,7 @@ describe('Settings Component', () => {
 
     // Should show OpenAI as configured (from mock hook returning '***')
     expect(screen.getByText('OpenAI')).toBeInTheDocument()
-    expect(screen.getByText('API key configured')).toBeInTheDocument()
+    expect(screen.getByText('Valid API key')).toBeInTheDocument()
   })
 
   it('shows add form when add button is clicked', async () => {
