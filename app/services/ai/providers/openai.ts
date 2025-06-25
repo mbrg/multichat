@@ -9,7 +9,7 @@ export class OpenAIProvider extends AbstractAIProvider {
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
     const openaiProvider = createOpenAI({
-      apiKey: apiKey
+      apiKey: apiKey,
     })
     return openaiProvider(modelId)
   }

@@ -28,15 +28,15 @@ const ChatDemo: React.FC = () => {
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
     if (settingsLoading || !settings) return false
-    
+
     const enabledProviderKeys = Object.keys(enabledProviders).filter(
-      key => enabledProviders[key as keyof typeof enabledProviders]
+      (key) => enabledProviders[key as keyof typeof enabledProviders]
     ) as (keyof typeof enabledProviders)[]
 
     if (enabledProviderKeys.length === 0) return false
 
-    const missingKeys = enabledProviderKeys.filter(provider => 
-      !hasApiKey(provider)
+    const missingKeys = enabledProviderKeys.filter(
+      (provider) => !hasApiKey(provider)
     )
 
     return missingKeys.length === 0
@@ -65,7 +65,7 @@ const ChatDemo: React.FC = () => {
 
       // Validate API keys before allowing message submission
       const enabledProviderKeys = Object.keys(enabledProviders).filter(
-        key => enabledProviders[key as keyof typeof enabledProviders]
+        (key) => enabledProviders[key as keyof typeof enabledProviders]
       ) as (keyof typeof enabledProviders)[]
 
       // Check if any providers are enabled and have API keys
@@ -74,8 +74,8 @@ const ChatDemo: React.FC = () => {
         return
       }
 
-      const missingKeys = enabledProviderKeys.filter(provider => 
-        !hasApiKey(provider)
+      const missingKeys = enabledProviderKeys.filter(
+        (provider) => !hasApiKey(provider)
       )
 
       if (missingKeys.length > 0) {
@@ -116,7 +116,15 @@ const ChatDemo: React.FC = () => {
         console.error('Error generating response:', error)
       }
     },
-    [messages, settings, settingsLoading, generatePossibilities, reset, enabledProviders, hasApiKey]
+    [
+      messages,
+      settings,
+      settingsLoading,
+      generatePossibilities,
+      reset,
+      enabledProviders,
+      hasApiKey,
+    ]
   )
 
   const handleSelectPossibility = useCallback(

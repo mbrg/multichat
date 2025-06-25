@@ -9,7 +9,7 @@ export class AnthropicProvider extends AbstractAIProvider {
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
     const anthropicProvider = createAnthropic({
-      apiKey: apiKey
+      apiKey: apiKey,
     })
     return anthropicProvider(modelId)
   }

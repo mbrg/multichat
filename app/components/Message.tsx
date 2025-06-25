@@ -215,7 +215,9 @@ const Message: React.FC<ExtendedMessageProps> = ({
                                 className="ml-2 p-1 hover:bg-[#2a2a3a] rounded text-[#888] hover:text-[#e0e0e0] transition-colors"
                                 title="Expand options"
                               >
-                                {expandedPossibility === possibility.id ? '▼' : '▶'}
+                                {expandedPossibility === possibility.id
+                                  ? '▼'
+                                  : '▶'}
                               </button>
                             </div>
                           </div>

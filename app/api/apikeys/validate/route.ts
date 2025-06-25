@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const providerInstance = providerInstances[provider as keyof typeof providerInstances]
+    const providerInstance =
+      providerInstances[provider as keyof typeof providerInstances]
     if (!providerInstance) {
       return NextResponse.json(
         { error: `Provider ${provider} not supported for validation` },
@@ -60,12 +61,12 @@ export async function POST(request: NextRequest) {
     const isValid = await providerInstance.validateApiKey()
     console.log(`[Validation] ${provider} validation result: ${isValid}`)
 
-    return NextResponse.json({ 
-      provider, 
+    return NextResponse.json({
+      provider,
       isValid,
-      message: isValid 
-        ? 'API key is valid' 
-        : 'API key is invalid or missing. Please check your key and try again.'
+      message: isValid
+        ? 'API key is valid'
+        : 'API key is invalid or missing. Please check your key and try again.',
     })
   } catch (error) {
     console.error('Failed to validate API key:', error)

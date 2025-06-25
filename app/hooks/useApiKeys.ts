@@ -37,7 +37,8 @@ export const useApiKeys = () => {
     mistral: false,
     together: false,
   })
-  const [validationStatus, setValidationStatus] = useState<ApiKeyValidationStatus>({})
+  const [validationStatus, setValidationStatus] =
+    useState<ApiKeyValidationStatus>({})
   const [isLoading, setIsLoading] = useState(false)
   const hasInitialized = useRef(false)
 
@@ -109,8 +110,8 @@ export const useApiKeys = () => {
 
   const validateApiKey = async (provider: keyof ApiKeys) => {
     try {
-      setValidationStatus(prev => ({ ...prev, [provider]: 'validating' }))
-      
+      setValidationStatus((prev) => ({ ...prev, [provider]: 'validating' }))
+
       const response = await fetch('/api/apikeys/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,9 +124,9 @@ export const useApiKeys = () => {
 
       const { isValid } = await response.json()
       const status = isValid ? 'valid' : 'invalid'
-      
-      setValidationStatus(prev => ({ ...prev, [provider]: status }))
-      
+
+      setValidationStatus((prev) => ({ ...prev, [provider]: status }))
+
       // If invalid, disable the provider
       if (!isValid) {
         const newEnabledProviders = { ...enabledProviders, [provider]: false }
@@ -134,11 +135,11 @@ export const useApiKeys = () => {
           JSON.stringify(newEnabledProviders)
         )
       }
-      
+
       return isValid
     } catch (error) {
       console.error('Error validating API key:', error)
-      setValidationStatus(prev => ({ ...prev, [provider]: 'invalid' }))
+      setValidationStatus((prev) => ({ ...prev, [provider]: 'invalid' }))
       return false
     }
   }
@@ -186,7 +187,7 @@ export const useApiKeys = () => {
       })
 
       // Clear validation status
-      setValidationStatus(prev => ({ ...prev, [provider]: null }))
+      setValidationStatus((prev) => ({ ...prev, [provider]: null }))
 
       // Auto-disable when API key is removed (update settings separately)
       const newEnabledProviders = { ...enabledProviders, [provider]: false }

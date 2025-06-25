@@ -9,7 +9,7 @@ export class MistralProvider extends AbstractAIProvider {
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
     const mistralProvider = createMistral({
-      apiKey: apiKey
+      apiKey: apiKey,
     })
     return mistralProvider(modelId)
   }

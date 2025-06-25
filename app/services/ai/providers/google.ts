@@ -9,7 +9,7 @@ export class GoogleProvider extends AbstractAIProvider {
 
   protected async createModel(modelId: string, apiKey: string): Promise<any> {
     const googleProvider = createGoogleGenerativeAI({
-      apiKey: apiKey
+      apiKey: apiKey,
     })
     return googleProvider(modelId)
   }

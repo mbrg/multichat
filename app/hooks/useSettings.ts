@@ -47,69 +47,75 @@ export function useSettings(): UseSettingsResult {
     }
   }, [session?.user?.id])
 
-  const updateSettings = useCallback(async (updates: Partial<UserSettings>) => {
-    // Don't update if user is not authenticated
-    if (!session?.user?.id) {
-      throw new Error('Authentication required to update settings')
-    }
-
-    try {
-      setError(null)
-
-      const response = await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to update settings: ${response.status}`)
+  const updateSettings = useCallback(
+    async (updates: Partial<UserSettings>) => {
+      // Don't update if user is not authenticated
+      if (!session?.user?.id) {
+        throw new Error('Authentication required to update settings')
       }
 
-      const updatedSettings = await response.json()
-      setSettings(updatedSettings)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error')
-      setError(error)
-      console.error('Failed to update settings:', error)
-      throw error
-    }
-  }, [session?.user?.id])
+      try {
+        setError(null)
 
-  const deleteSettings = useCallback(async (key?: keyof UserSettings) => {
-    // Don't delete if user is not authenticated
-    if (!session?.user?.id) {
-      throw new Error('Authentication required to delete settings')
-    }
+        const response = await fetch('/api/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updates),
+        })
 
-    try {
-      setError(null)
+        if (!response.ok) {
+          throw new Error(`Failed to update settings: ${response.status}`)
+        }
 
-      const url = key ? `/api/settings?key=${key}` : '/api/settings'
-      const response = await fetch(url, {
-        method: 'DELETE',
-      })
+        const updatedSettings = await response.json()
+        setSettings(updatedSettings)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error')
+        setError(error)
+        console.error('Failed to update settings:', error)
+        throw error
+      }
+    },
+    [session?.user?.id]
+  )
 
-      if (!response.ok) {
-        throw new Error(`Failed to delete settings: ${response.status}`)
+  const deleteSettings = useCallback(
+    async (key?: keyof UserSettings) => {
+      // Don't delete if user is not authenticated
+      if (!session?.user?.id) {
+        throw new Error('Authentication required to delete settings')
       }
 
-      const result = await response.json()
+      try {
+        setError(null)
 
-      if (key && result.settings) {
-        setSettings(result.settings)
-      } else {
-        setSettings(null)
+        const url = key ? `/api/settings?key=${key}` : '/api/settings'
+        const response = await fetch(url, {
+          method: 'DELETE',
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to delete settings: ${response.status}`)
+        }
+
+        const result = await response.json()
+
+        if (key && result.settings) {
+          setSettings(result.settings)
+        } else {
+          setSettings(null)
+        }
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error')
+        setError(error)
+        console.error('Failed to delete settings:', error)
+        throw error
       }
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error')
-      setError(error)
-      console.error('Failed to delete settings:', error)
-      throw error
-    }
-  }, [session?.user?.id])
+    },
+    [session?.user?.id]
+  )
 
   const refresh = useCallback(async () => {
     await fetchSettings()

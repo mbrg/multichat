@@ -17,12 +17,12 @@ interface MenuItemsProps {
  * Menu items for settings and navigation
  * Provides structured menu options
  */
-export const MenuItems: React.FC<MenuItemsProps> = ({ 
-  session, 
-  status, 
-  onSignIn, 
-  onSignOut, 
-  onSettingsClick 
+export const MenuItems: React.FC<MenuItemsProps> = ({
+  session,
+  status,
+  onSignIn,
+  onSignOut,
+  onSettingsClick,
 }) => {
   const menuItems = [
     {

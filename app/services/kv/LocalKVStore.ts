@@ -26,7 +26,9 @@ export class LocalKVStore implements IKVStore {
     try {
       const fileContent = require('fs').readFileSync(this.kvFile, 'utf-8')
       this.data = JSON.parse(fileContent)
-      console.log(`[LocalKVStore:${this.instanceId}] Loaded data from ${this.kvFile}`)
+      console.log(
+        `[LocalKVStore:${this.instanceId}] Loaded data from ${this.kvFile}`
+      )
     } catch (error) {
       // File doesn't exist or is invalid, start with empty data
       this.data = {}
@@ -38,16 +40,23 @@ export class LocalKVStore implements IKVStore {
     try {
       const fileContent = JSON.stringify(this.data, null, 2)
       await fs.writeFile(this.kvFile, fileContent, 'utf-8')
-      console.log(`[LocalKVStore:${this.instanceId}] Saved data to ${this.kvFile}`)
+      console.log(
+        `[LocalKVStore:${this.instanceId}] Saved data to ${this.kvFile}`
+      )
     } catch (error) {
-      console.error(`[LocalKVStore:${this.instanceId}] Failed to save data:`, error)
+      console.error(
+        `[LocalKVStore:${this.instanceId}] Failed to save data:`,
+        error
+      )
       throw error
     }
   }
 
   async get<T = any>(key: string): Promise<T | null> {
     const value = this.data[key] || null
-    console.log(`[LocalKVStore:${this.instanceId}] GET ${key} -> ${value ? 'found' : 'null'}`)
+    console.log(
+      `[LocalKVStore:${this.instanceId}] GET ${key} -> ${value ? 'found' : 'null'}`
+    )
     return value
   }
 

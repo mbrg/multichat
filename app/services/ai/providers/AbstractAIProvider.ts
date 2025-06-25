@@ -95,7 +95,9 @@ export abstract class AbstractAIProvider implements AIProvider {
     try {
       console.log(`[${this.name}] Starting API key validation`)
       const apiKey = await this.getApiKey()
-      console.log(`[${this.name}] API key retrieved: ${apiKey ? `${apiKey.length} chars` : 'null'}`)
+      console.log(
+        `[${this.name}] API key retrieved: ${apiKey ? `${apiKey.length} chars` : 'null'}`
+      )
       if (!apiKey) return false
 
       const validationModel = await this.createModel(

@@ -69,10 +69,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
             <div className="flex items-center gap-2 text-amber-400 text-sm">
               <span>⚠️</span>
               <span>
-                {!session?.user 
-                  ? "Sign in to save and manage your API keys securely." 
-                  : "Configure API keys in the settings menu to start chatting with AI models."
-                }
+                {!session?.user
+                  ? 'Sign in to save and manage your API keys securely.'
+                  : 'Configure API keys in the settings menu to start chatting with AI models.'}
               </span>
             </div>
           </div>
@@ -104,10 +103,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
             onSendMessage={onSendMessage}
             disabled={isLoading || disabled}
             placeholder={
-              isLoading 
-                ? 'Generating response...' 
-                : disabled 
-                  ? (!session?.user ? 'Sign in to start chatting...' : 'Configure API keys in settings...') 
+              isLoading
+                ? 'Generating response...'
+                : disabled
+                  ? !session?.user
+                    ? 'Sign in to start chatting...'
+                    : 'Configure API keys in settings...'
                   : 'Type message...'
             }
             className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"

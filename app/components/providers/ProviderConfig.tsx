@@ -81,9 +81,9 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           className={`relative w-10 h-5 rounded-full transition-colors ${
             validationStatus === 'invalid'
               ? 'bg-[#2a2a2a] opacity-50 cursor-not-allowed'
-              : provider.enabled 
-              ? 'bg-[#667eea]' 
-              : 'bg-[#2a2a2a]'
+              : provider.enabled
+                ? 'bg-[#667eea]'
+                : 'bg-[#2a2a2a]'
           }`}
         >
           <div
