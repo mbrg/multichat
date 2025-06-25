@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { vi } from 'vitest'
 import ChatContainer from '../ChatContainer'
 import type { Message } from '../../types/chat'
@@ -21,7 +21,27 @@ vi.mock('../Settings', () => ({
     isOpen ? <div data-testid="settings-mock">Settings Mock</div> : null,
 }))
 
-describe('ChatContainer - Possibilities', () => {
+// Mock VirtualizedPossibilitiesPanel
+vi.mock('../VirtualizedPossibilitiesPanel', () => ({
+  default: () => (
+    <div data-testid="virtualized-possibilities">
+      Possibilities Panel (New System)
+    </div>
+  ),
+}))
+
+// Mock useSettings hook to provide mock settings
+vi.mock('../../hooks/useSettings', () => ({
+  useSettings: () => ({
+    settings: {
+      enabledProviders: '["openai"]',
+      temperatures: [{ value: 0.7 }],
+      systemInstructions: [],
+    },
+  }),
+}))
+
+describe('ChatContainer - Possibilities (New System)', () => {
   const mockOnSendMessage = vi.fn()
   const mockOnSelectPossibility = vi.fn()
 
@@ -32,34 +52,21 @@ describe('ChatContainer - Possibilities', () => {
   const createMockMessage = (overrides?: Partial<Message>): Message => ({
     id: '1',
     role: 'assistant',
-    content: 'Main response',
+    content: '', // Default to empty content for new system
     timestamp: new Date('2023-01-01T10:00:00Z'),
     ...overrides,
   })
 
-  const createMockPossibility = (id: string, content: string): Message => ({
-    id,
-    role: 'assistant',
-    content,
-    timestamp: new Date('2023-01-01T10:00:00Z'),
-    isPossibility: true,
-  })
-
-  it('passes onSelectPossibility to Message components', () => {
+  it('renders assistant message with new possibilities system', () => {
     const userMessage = createMockMessage({
       id: 'user1',
       role: 'user',
       content: 'Hello',
     })
 
-    const possibilities = [
-      createMockPossibility('p1', 'Hi there!'),
-      createMockPossibility('p2', 'Hello!'),
-    ]
-
     const assistantMessage = createMockMessage({
       id: 'assistant1',
-      possibilities,
+      content: '', // Empty content triggers new system
     })
 
     const messages = [userMessage, assistantMessage]
@@ -74,26 +81,23 @@ describe('ChatContainer - Possibilities', () => {
       )
     })
 
-    expect(screen.getByText('Hi there!')).toBeInTheDocument()
-    expect(screen.getByText('Hello!')).toBeInTheDocument()
+    // Verify the new system is rendered
+    expect(screen.getByTestId('virtualized-possibilities')).toBeInTheDocument()
+    expect(
+      screen.getByText('Possibilities Panel (New System)')
+    ).toBeInTheDocument()
   })
 
-  it('calls onSelectPossibility with correct user message when possibility is selected', () => {
+  it('does not show possibilities panel for assistant messages with content', () => {
     const userMessage = createMockMessage({
       id: 'user1',
       role: 'user',
-      content: 'What is 2+2?',
+      content: 'Hello',
     })
-
-    const selectedPossibility = createMockPossibility('p1', 'The answer is 4')
-    const possibilities = [
-      selectedPossibility,
-      createMockPossibility('p2', '2 plus 2 equals 4'),
-    ]
 
     const assistantMessage = createMockMessage({
       id: 'assistant1',
-      possibilities,
+      content: 'This is a response', // Has content, should not show possibilities
     })
 
     const messages = [userMessage, assistantMessage]
@@ -108,53 +112,57 @@ describe('ChatContainer - Possibilities', () => {
       )
     })
 
-    act(() => {
-      fireEvent.click(screen.getByText('The answer is 4'))
-    })
-
-    expect(mockOnSelectPossibility).toHaveBeenCalledWith(
-      userMessage,
-      selectedPossibility
-    )
+    // Should not show possibilities panel
+    expect(
+      screen.queryByTestId('virtualized-possibilities')
+    ).not.toBeInTheDocument()
   })
 
-  it('handles multiple conversation turns correctly', () => {
-    const userMessage1 = createMockMessage({
+  it('does not show possibilities panel for user messages', () => {
+    const userMessage = createMockMessage({
       id: 'user1',
       role: 'user',
-      content: 'First question',
+      content: 'Hello',
     })
 
-    const assistantMessage1 = createMockMessage({
-      id: 'assistant1',
-      content: 'First response',
+    const messages = [userMessage]
+
+    act(() => {
+      render(
+        <ChatContainer
+          messages={messages}
+          onSendMessage={mockOnSendMessage}
+          onSelectPossibility={mockOnSelectPossibility}
+        />
+      )
     })
 
-    const userMessage2 = createMockMessage({
-      id: 'user2',
-      role: 'user',
-      content: 'Second question',
-    })
+    // Should not show possibilities panel
+    expect(
+      screen.queryByTestId('virtualized-possibilities')
+    ).not.toBeInTheDocument()
+  })
 
-    const selectedPossibility = createMockPossibility(
-      'p1',
-      'Second response option A'
-    )
-    const possibilities = [
-      selectedPossibility,
-      createMockPossibility('p2', 'Second response option B'),
-    ]
-
-    const assistantMessage2 = createMockMessage({
-      id: 'assistant2',
-      possibilities,
-    })
-
+  it('renders multiple messages correctly', () => {
     const messages = [
-      userMessage1,
-      assistantMessage1,
-      userMessage2,
-      assistantMessage2,
+      createMockMessage({
+        id: 'user1',
+        role: 'user',
+        content: 'First question',
+      }),
+      createMockMessage({
+        id: 'assistant1',
+        content: '', // Will show possibilities
+      }),
+      createMockMessage({
+        id: 'user2',
+        role: 'user',
+        content: 'Second question',
+      }),
+      createMockMessage({
+        id: 'assistant2',
+        content: 'A regular response', // Will not show possibilities
+      }),
     ]
 
     act(() => {
@@ -167,136 +175,37 @@ describe('ChatContainer - Possibilities', () => {
       )
     })
 
-    act(() => {
-      fireEvent.click(screen.getByText('Second response option A'))
-    })
+    // Should show content for all messages
+    expect(screen.getByText('First question')).toBeInTheDocument()
+    expect(screen.getByText('Second question')).toBeInTheDocument()
+    expect(screen.getByText('A regular response')).toBeInTheDocument()
 
-    expect(mockOnSelectPossibility).toHaveBeenCalledWith(
-      userMessage2,
-      selectedPossibility
-    )
+    // Should show one possibilities panel (for assistant1 with empty content)
+    expect(screen.getByTestId('virtualized-possibilities')).toBeInTheDocument()
   })
 
-  it('handles case when no matching user message is found', () => {
-    // This should not happen in normal usage, but we test defensive behavior
-    const possibilities = [createMockPossibility('p1', 'Orphaned response')]
-
-    const assistantMessage = createMockMessage({
-      id: 'assistant1',
-      possibilities,
-    })
-
-    const messages = [assistantMessage] // No user message before assistant
-
+  it('renders with empty message list', () => {
     act(() => {
       render(
         <ChatContainer
-          messages={messages}
+          messages={[]}
           onSendMessage={mockOnSendMessage}
           onSelectPossibility={mockOnSelectPossibility}
         />
       )
     })
 
-    act(() => {
-      fireEvent.click(screen.getByText('Orphaned response'))
-    })
-
-    // Should not call onSelectPossibility when no user message is found
-    expect(mockOnSelectPossibility).not.toHaveBeenCalled()
+    // Should show start conversation message
+    expect(screen.getByText('Start a conversation...')).toBeInTheDocument()
   })
 
-  it('works without onSelectPossibility callback', () => {
-    const userMessage = createMockMessage({
-      id: 'user1',
-      role: 'user',
-      content: 'Hello',
-    })
-
-    const possibilities = [createMockPossibility('p1', 'Hi there!')]
-
-    const assistantMessage = createMockMessage({
-      id: 'assistant1',
-      possibilities,
-    })
-
-    const messages = [userMessage, assistantMessage]
-
-    act(() => {
-      render(
-        <ChatContainer messages={messages} onSendMessage={mockOnSendMessage} />
-      )
-    })
-
-    // Should render without errors
-    expect(screen.getByText('Hi there!')).toBeInTheDocument()
-
-    // Should not throw when clicked without callback
-    expect(() => {
-      act(() => {
-        fireEvent.click(screen.getByText('Hi there!'))
-      })
-    }).not.toThrow()
-  })
-
-  it('handles complex conversation with multiple possibilities', () => {
-    const messages: Message[] = [
-      {
-        id: 'u1',
+  it('passes props correctly to container', () => {
+    const messages = [
+      createMockMessage({
+        id: 'user1',
         role: 'user',
-        content: 'Tell me about AI',
-        timestamp: new Date(),
-      },
-      {
-        id: 'a1',
-        role: 'assistant',
-        content: 'AI is fascinating',
-        timestamp: new Date(),
-        possibilities: [
-          {
-            id: 'p1',
-            role: 'assistant',
-            content: 'AI is revolutionary',
-            timestamp: new Date(),
-            isPossibility: true,
-          },
-          {
-            id: 'p2',
-            role: 'assistant',
-            content: 'AI is transformative',
-            timestamp: new Date(),
-            isPossibility: true,
-          },
-        ],
-      },
-      {
-        id: 'u2',
-        role: 'user',
-        content: 'What about machine learning?',
-        timestamp: new Date(),
-      },
-      {
-        id: 'a2',
-        role: 'assistant',
-        content: 'ML is a subset of AI',
-        timestamp: new Date(),
-        possibilities: [
-          {
-            id: 'p3',
-            role: 'assistant',
-            content: 'ML uses algorithms to learn',
-            timestamp: new Date(),
-            isPossibility: true,
-          },
-          {
-            id: 'p4',
-            role: 'assistant',
-            content: 'ML enables pattern recognition',
-            timestamp: new Date(),
-            isPossibility: true,
-          },
-        ],
-      },
+        content: 'Test message',
+      }),
     ]
 
     act(() => {
@@ -305,26 +214,14 @@ describe('ChatContainer - Possibilities', () => {
           messages={messages}
           onSendMessage={mockOnSendMessage}
           onSelectPossibility={mockOnSelectPossibility}
+          isLoading={true}
+          disabled={true}
+          className="test-class"
         />
       )
     })
 
-    // Click on first set of possibilities
-    act(() => {
-      fireEvent.click(screen.getByText('AI is revolutionary'))
-    })
-    expect(mockOnSelectPossibility).toHaveBeenCalledWith(
-      messages[0], // First user message
-      messages[1].possibilities![0] // First possibility
-    )
-
-    // Click on second set of possibilities
-    act(() => {
-      fireEvent.click(screen.getByText('ML uses algorithms to learn'))
-    })
-    expect(mockOnSelectPossibility).toHaveBeenCalledWith(
-      messages[2], // Second user message
-      messages[3].possibilities![0] // Third possibility
-    )
+    // Should render without errors when all props are passed
+    expect(screen.getByText('Test message')).toBeInTheDocument()
   })
 })

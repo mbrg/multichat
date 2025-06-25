@@ -12,16 +12,12 @@ import type {
   GenerationOptions,
   ResponseOption,
 } from '../../types/ai'
+import type { StreamingOptions } from './providers/AbstractAIProvider'
 import {
   getAllModels,
   getModelById,
   getDefaultTemperatureRange,
 } from './config'
-
-export interface StreamingOptions extends GenerationOptions {
-  onToken?: (token: string) => void
-  stream?: boolean
-}
 
 export class AIService {
   private providers: Map<string, AIProvider> = new Map()
@@ -78,6 +74,74 @@ export class AIService {
     } catch (error) {
       throw new Error(
         `Failed to generate response: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+  }
+
+  /**
+   * Generate streaming response with real token-level streaming
+   */
+  async *generateStreamingResponse(
+    messages: Message[],
+    modelId: string,
+    options: StreamingOptions = {}
+  ): AsyncGenerator<{
+    type: 'token' | 'complete'
+    token?: string
+    response?: ResponseOption
+  }> {
+    const model = getModelById(modelId)
+    if (!model) {
+      throw new Error(`Model not found: ${modelId}`)
+    }
+
+    const provider = this.getProvider(model.provider)
+    if (!provider) {
+      throw new Error(`Provider not found: ${model.provider}`)
+    }
+
+    // Check if provider supports streaming (has the new method)
+    if (
+      !('generateStreamingResponse' in provider) ||
+      typeof provider.generateStreamingResponse !== 'function'
+    ) {
+      throw new Error(`Provider ${model.provider} does not support streaming`)
+    }
+
+    try {
+      const streamingProvider = provider as any // Type assertion for streaming method
+      const streamGenerator = streamingProvider.generateStreamingResponse(
+        messages,
+        model,
+        options
+      )
+
+      for await (const event of streamGenerator) {
+        if (event.type === 'token') {
+          yield {
+            type: 'token',
+            token: event.token,
+          }
+        } else if (event.type === 'complete') {
+          yield {
+            type: 'complete',
+            response: {
+              id: crypto.randomUUID(),
+              model,
+              content: event.response.content,
+              probability: event.response.probability,
+              logprobs: event.response.logprobs,
+              isStreaming: true,
+              temperature: options.temperature,
+              finishReason: event.response.finishReason,
+              usage: event.response.usage,
+            },
+          }
+        }
+      }
+    } catch (error) {
+      throw new Error(
+        `Failed to generate streaming response: ${error instanceof Error ? error.message : 'Unknown error'}`
       )
     }
   }

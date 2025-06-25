@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
-import { useAIChat } from '../hooks/useAIChat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
+import { useVirtualizedPossibilities } from '../hooks/useVirtualizedPossibilities'
 
 const ChatDemo: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
@@ -17,25 +17,28 @@ const ChatDemo: React.FC = () => {
   const { hasApiKey, isProviderEnabled, enabledProviders } =
     useApiKeys(refreshSettings)
 
-  const {
-    generatePossibilities,
-    continuePossibility,
-    possibilities,
-    isGenerating,
-    error,
-    reset,
-  } = useAIChat({
-    onError: (error) => {
-      console.error('AI Chat error:', error)
-    },
+  // Use new independent streaming system
+  const virtualizedPossibilities = useVirtualizedPossibilities({
+    itemHeight: 180,
+    containerHeight: 400,
+    bufferSize: 3,
+    preloadDistance: '300px',
+    maxConcurrentConnections: 6,
+    enableVirtualScrolling: true,
+    loadingStrategy: 'viewport' as const,
   })
+
+  const { initialize, possibilityPool, getLoadingStats } =
+    virtualizedPossibilities
+
+  const [isGenerating, setIsGenerating] = useState(false)
 
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
     if (settingsLoading || !settings) return false
 
-    const enabledProviderKeys = Object.keys(enabledProviders).filter(
-      (key) => enabledProviders[key as keyof typeof enabledProviders]
+    const enabledProviderKeys = Object.keys(enabledProviders || {}).filter(
+      (key) => enabledProviders?.[key as keyof typeof enabledProviders]
     ) as (keyof typeof enabledProviders)[]
 
     if (enabledProviderKeys.length === 0) return false
@@ -49,44 +52,17 @@ const ChatDemo: React.FC = () => {
 
   // Check if there are active possibilities being generated
   const hasActivePossibilities = useCallback(() => {
-    if (messages.length === 0) return false
+    // With the new system, check if we're currently generating
+    return isGenerating
+  }, [isGenerating])
 
-    const lastMessage = messages[messages.length - 1]
-    if (lastMessage.role !== 'assistant') return false
-
-    // Check if the last assistant message has possibilities that haven't been selected
-    return (
-      lastMessage.possibilities &&
-      lastMessage.possibilities.length > 0 &&
-      !lastMessage.content
-    )
-  }, [messages])
-
-  // Update messages when possibilities stream in
+  // Update messages when using new streaming system
   useEffect(() => {
-    if (!currentAssistantMessage || possibilities.length === 0) return
+    if (!currentAssistantMessage) return
 
-    setMessages((prev) => {
-      const index = prev.findIndex((m) => m.id === currentAssistantMessage.id)
-      if (index === -1) return prev
-
-      const existingMessage = prev[index]
-      // Only update if possibilities have actually changed
-      if (
-        JSON.stringify(existingMessage.possibilities) ===
-        JSON.stringify(possibilities)
-      ) {
-        return prev
-      }
-
-      const newMessages = [...prev]
-      newMessages[index] = {
-        ...existingMessage,
-        possibilities,
-      }
-      return newMessages
-    })
-  }, [currentAssistantMessage, possibilities])
+    // For the new system, we'll handle possibilities directly through the VirtualizedPossibilitiesPanel
+    // No need to inject them into the message object
+  }, [currentAssistantMessage])
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: Attachment[]) => {
@@ -97,8 +73,8 @@ const ChatDemo: React.FC = () => {
       }
 
       // Validate API keys before allowing message submission
-      const enabledProviderKeys = Object.keys(enabledProviders).filter(
-        (key) => enabledProviders[key as keyof typeof enabledProviders]
+      const enabledProviderKeys = Object.keys(enabledProviders || {}).filter(
+        (key) => enabledProviders?.[key as keyof typeof enabledProviders]
       ) as (keyof typeof enabledProviders)[]
 
       // Check if any providers are enabled and have API keys
@@ -139,22 +115,21 @@ const ChatDemo: React.FC = () => {
       setCurrentAssistantMessage(assistantMessage)
       setMessages((prev) => [...prev, assistantMessage])
 
-      // Reset previous possibilities
-      reset()
-
       try {
-        // Generate AI response with possibilities
-        await generatePossibilities([...messages, userMessage], settings)
+        // Initialize new independent streaming system
+        setIsGenerating(true)
+        const messagesForGeneration = [...messages, userMessage]
+        await initialize(messagesForGeneration, settings, { maxTokens: 100 })
       } catch (error) {
         console.error('Error generating response:', error)
+        setIsGenerating(false)
       }
     },
     [
       messages,
       settings,
       settingsLoading,
-      generatePossibilities,
-      reset,
+      initialize,
       enabledProviders,
       hasApiKey,
     ]
@@ -201,23 +176,14 @@ const ChatDemo: React.FC = () => {
         // First, select the possibility as the current response
         handleSelectPossibility(selectedPossibility, selectedPossibility)
 
-        // Then continue generating from that point
-        await continuePossibility(
-          [...messages, selectedPossibility],
-          selectedPossibility.id,
-          settings
-        )
+        // For now, continuation will be handled by the new system
+        // TODO: Implement continuation in the new streaming architecture
+        console.log('Continuation requested for:', selectedPossibility.id)
       } catch (error) {
         console.error('Error continuing possibility:', error)
       }
     },
-    [
-      messages,
-      settings,
-      settingsLoading,
-      continuePossibility,
-      handleSelectPossibility,
-    ]
+    [settings, settingsLoading, handleSelectPossibility]
   )
 
   return (

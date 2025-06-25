@@ -38,8 +38,12 @@ export function useAIChat(options: UseAIChatOptions = {}) {
   const [possibilities, setPossibilities] = useState<PossibilityState>({})
   const [error, setError] = useState<Error | null>(null)
 
-  // Extract callbacks to avoid stale closure issues
-  const { onPossibilityUpdate, onError } = options
+  // Extract callbacks to avoid stale closure issues - use useCallback to prevent infinite loops
+  const onPossibilityUpdate = useCallback(
+    options.onPossibilityUpdate || (() => {}),
+    [options.onPossibilityUpdate]
+  )
+  const onError = useCallback(options.onError || (() => {}), [options.onError])
 
   const handleStreamEvent = useCallback(
     (event: StreamEvent) => {

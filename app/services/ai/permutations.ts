@@ -11,6 +11,12 @@ export class PermutationGenerator {
   ): Permutation[] {
     const permutations: Permutation[] = []
 
+    // Guard against undefined or non-iterable enabledProviders
+    if (!settings.enabledProviders || !Array.isArray(settings.enabledProviders)) {
+      console.error('enabledProviders is not a valid array:', settings.enabledProviders)
+      return []
+    }
+
     // For each enabled provider
     for (const provider of settings.enabledProviders) {
       // Get models for this provider
@@ -81,6 +87,12 @@ export class PermutationGenerator {
     settings: ChatCompletionRequest['settings']
   ): number {
     let count = 0
+
+    // Guard against undefined or non-iterable enabledProviders
+    if (!settings.enabledProviders || !Array.isArray(settings.enabledProviders)) {
+      console.error('enabledProviders is not a valid array in calculatePermutationCount:', settings.enabledProviders)
+      return 0
+    }
 
     for (const provider of settings.enabledProviders) {
       const modelCount = this.getModelsForProvider(provider).length

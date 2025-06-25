@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import type { ChatContainerProps, Message as MessageType } from '../types/chat'
-import Message from './Message'
+import MessageWithIndependentPossibilities from './MessageWithIndependentPossibilities'
 import MessageInput from './MessageInput'
 import Settings from './Settings'
 import AuthPopup from './AuthPopup'
@@ -104,12 +104,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           </div>
         ) : (
           messages.map((message) => (
-            <Message
+            <MessageWithIndependentPossibilities
               key={message.id}
               message={message}
               onSelectPossibility={handleSelectPossibility}
               onContinuePossibility={handleContinuePossibility}
               className="max-w-[800px] w-full self-center animate-fadeIn"
+              showPossibilities={
+                message.role === 'assistant' && !message.content
+              }
             />
           ))
         )}

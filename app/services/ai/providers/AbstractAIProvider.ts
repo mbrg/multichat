@@ -1,4 +1,4 @@
-import { generateText, type GenerateTextResult } from 'ai'
+import { generateText, streamText, type GenerateTextResult } from 'ai'
 import type {
   AIProvider,
   Message,
@@ -8,6 +8,11 @@ import type {
 } from '../../../types/ai'
 import { ServerKeys } from '../../../utils/serverKeys'
 import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
+
+export interface StreamingOptions extends GenerationOptions {
+  onToken?: (token: string) => void
+  stream?: boolean
+}
 
 /**
  * Abstract base class for AI providers using Template Method pattern.
@@ -82,6 +87,96 @@ export abstract class AbstractAIProvider implements AIProvider {
       console.error(`${this.name} API error:`, error)
       throw new Error(
         `${this.name} API error: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      )
+    }
+  }
+
+  /**
+   * Template method for streaming generation with real token-level streaming
+   */
+  async *generateStreamingResponse(
+    messages: Message[],
+    model: ModelInfo,
+    options: StreamingOptions
+  ): AsyncGenerator<{
+    type: 'token' | 'complete'
+    token?: string
+    response?: ResponseWithLogprobs
+  }> {
+    try {
+      // Common API key validation
+      const apiKey = await this.getApiKey()
+      if (!apiKey) {
+        throw new Error(`${this.name} API key not configured`)
+      }
+
+      // Common message formatting
+      const formattedMessages = messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }))
+
+      // Provider-specific model creation
+      const providerModel = await this.createModel(model.id, apiKey)
+
+      // Provider-specific options
+      const providerOptions = this.getProviderOptions(options, model)
+
+      // Stream generation call
+      const result = await streamText({
+        model: providerModel,
+        messages: formattedMessages,
+        ...providerOptions,
+      })
+
+      let fullContent = ''
+
+      // Stream tokens as they arrive
+      for await (const textPart of result.textStream) {
+        fullContent += textPart
+
+        // Call token callback if provided
+        if (options.onToken) {
+          options.onToken(textPart)
+        }
+
+        // Yield token event
+        yield {
+          type: 'token',
+          token: textPart,
+        }
+      }
+
+      // Wait for final result
+      const finalResult = await result.finishReason
+      const finalUsage = await result.usage
+
+      // Create complete response
+      const completeResponse: ResponseWithLogprobs = {
+        content: fullContent,
+        logprobs: undefined, // Logprobs may not be available in streaming mode
+        probability: null, // Will need to calculate differently for streaming
+        finishReason: finalResult || 'stop',
+        usage: finalUsage
+          ? {
+              promptTokens: finalUsage.promptTokens,
+              completionTokens: finalUsage.completionTokens,
+              totalTokens: finalUsage.totalTokens,
+            }
+          : undefined,
+      }
+
+      // Yield completion event
+      yield {
+        type: 'complete',
+        response: completeResponse,
+      }
+    } catch (error) {
+      console.error(`${this.name} streaming API error:`, error)
+      throw new Error(
+        `${this.name} streaming API error: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
       )

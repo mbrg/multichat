@@ -16,7 +16,8 @@
       "Bash(npm run format:*)",
       "Bash(npm run format:*)",
       "Bash(rm:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }
