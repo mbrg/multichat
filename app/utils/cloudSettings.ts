@@ -1,4 +1,5 @@
 import { SystemInstruction, Temperature, UserSettings } from '../types/settings'
+import { DEFAULT_SYSTEM_INSTRUCTION } from '../constants/defaults'
 
 export type { SystemInstruction, Temperature, UserSettings }
 
@@ -67,17 +68,7 @@ export class CloudSettings {
   // System instructions methods
   static async getSystemInstructions(): Promise<SystemInstruction[]> {
     const settings = await this.getSettings()
-    return (
-      settings.systemInstructions || [
-        {
-          id: 'default',
-          name: 'default',
-          content:
-            'You are a helpful, creative, and insightful AI assistant. You provide clear, accurate, and thoughtful responses while considering multiple perspectives.',
-          enabled: true,
-        },
-      ]
-    )
+    return settings.systemInstructions || [DEFAULT_SYSTEM_INSTRUCTION]
   }
 
   static async setSystemInstructions(

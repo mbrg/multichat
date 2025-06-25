@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { CloudSettings } from '../utils/cloudSettings'
 import { SystemInstruction } from '../types/settings'
+import { SYSTEM_INSTRUCTION_LIMITS, ERROR_MESSAGES, VALIDATION_PATTERNS } from '../constants/defaults'
 
-const SYSTEM_INSTRUCTION_MAX_CHARS = 6000
+const SYSTEM_INSTRUCTION_MAX_CHARS = SYSTEM_INSTRUCTION_LIMITS.MAX_CONTENT_CHARS
 
 const SystemInstructionsPanel: React.FC = () => {
   const { data: session, status } = useSession()
@@ -47,22 +48,22 @@ const SystemInstructionsPanel: React.FC = () => {
     excludeId?: string
   ): string | null => {
     if (!name.trim()) {
-      return 'Name is required'
+      return ERROR_MESSAGES.NAME_REQUIRED
     }
     if (name !== name.toLowerCase()) {
-      return 'Name must be lowercase'
+      return ERROR_MESSAGES.NAME_MUST_BE_LOWERCASE
     }
-    if (name.length > 20) {
-      return 'Name must be 20 characters or less'
+    if (name.length > SYSTEM_INSTRUCTION_LIMITS.MAX_NAME_CHARS) {
+      return ERROR_MESSAGES.NAME_TOO_LONG
     }
-    if (!/^[a-z0-9-_]+$/.test(name)) {
-      return 'Name can only contain lowercase letters, numbers, hyphens, and underscores'
+    if (!VALIDATION_PATTERNS.SYSTEM_INSTRUCTION_NAME.test(name)) {
+      return ERROR_MESSAGES.NAME_INVALID_FORMAT
     }
     const existingInstruction = systemInstructions.find(
       (inst) => inst.name === name && inst.id !== excludeId
     )
     if (existingInstruction) {
-      return 'Name must be unique'
+      return ERROR_MESSAGES.NAME_MUST_BE_UNIQUE
     }
     return null
   }
@@ -70,10 +71,10 @@ const SystemInstructionsPanel: React.FC = () => {
   // Validation helper for instruction content
   const validateInstructionContent = (content: string): string | null => {
     if (!content.trim()) {
-      return 'Content is required'
+      return ERROR_MESSAGES.CONTENT_REQUIRED
     }
     if (content.length > SYSTEM_INSTRUCTION_MAX_CHARS) {
-      return `Content must be ${SYSTEM_INSTRUCTION_MAX_CHARS} characters or less`
+      return ERROR_MESSAGES.CONTENT_TOO_LONG
     }
     return null
   }

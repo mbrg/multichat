@@ -3,15 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '../../lib/auth'
 import { getKVStore } from '../../services/kv'
 import { deriveUserKey, encrypt, decrypt } from '../../utils/crypto'
+import { AI_PROVIDER_LIST, type AIProviderType } from '../../constants/providers'
 
-const VALID_API_KEY_PROVIDERS = [
-  'openai',
-  'anthropic',
-  'google',
-  'mistral',
-  'together',
-] as const
-type ApiKeyProvider = (typeof VALID_API_KEY_PROVIDERS)[number]
+const VALID_API_KEY_PROVIDERS = AI_PROVIDER_LIST
+type ApiKeyProvider = AIProviderType
 
 interface ApiKeyData {
   [key: string]: string

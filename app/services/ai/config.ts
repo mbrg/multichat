@@ -1,4 +1,5 @@
 import type { ModelInfo, ProviderType } from '../../types/ai'
+import { SUPPORTED_MIME_COMBINATIONS } from '../../constants/defaults'
 
 export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
   openai: [

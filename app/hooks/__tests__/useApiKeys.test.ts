@@ -1,23 +1,18 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useApiKeys } from '../useApiKeys'
-import { StorageService } from '../../services/storage'
-import { ApiKeyStorage } from '../../types/storage'
 import { useSession } from 'next-auth/react'
 import { CloudApiKeys } from '../../utils/cloudApiKeys'
 import { CloudSettings } from '../../utils/cloudSettings'
 
 // Mock dependencies
-vi.mock('../../services/storage')
 vi.mock('next-auth/react')
 vi.mock('../../utils/cloudApiKeys')
 vi.mock('../../utils/cloudSettings')
 
-const storageService = vi.mocked(StorageService)
 const sessionHook = vi.mocked(useSession)
 
 describe('useApiKeys', () => {
-  let storage: ApiKeyStorage
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -45,20 +40,6 @@ describe('useApiKeys', () => {
     vi.mocked(CloudSettings.setEnabledProviders).mockResolvedValue()
     vi.mocked(CloudSettings.deleteAllSettings).mockResolvedValue()
 
-    // Create a mock storage that implements the interface
-    storage = {
-      storeApiKey: vi.fn(),
-      getApiKey: vi.fn(),
-      getAllApiKeys: vi.fn().mockResolvedValue({}),
-      removeApiKey: vi.fn(),
-      clearAllSecrets: vi.fn(),
-      isAuthenticated: vi.fn().mockResolvedValue(false),
-      storeSecret: vi.fn(),
-      getSecret: vi.fn(),
-      removeSecret: vi.fn(),
-    }
-
-    storageService.getStorage.mockResolvedValue(storage)
 
     sessionHook.mockReturnValue({
       data: {
@@ -70,17 +51,16 @@ describe('useApiKeys', () => {
     })
   })
 
-  describe('Storage Interface Integration', () => {
-    it('should use storage service to get appropriate storage implementation', async () => {
+  describe('Cloud API Integration', () => {
+    it('should load API keys from CloudApiKeys service', async () => {
       const { result } = renderHook(() => useApiKeys())
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      expect(storageService.getStorage).toHaveBeenCalled()
-      expect(storage.getAllApiKeys).toHaveBeenCalled()
-      expect(result.current.storage).toBe(storage)
+      expect(CloudApiKeys.getApiKeyStatus).toHaveBeenCalled()
+      expect(CloudSettings.getEnabledProviders).toHaveBeenCalled()
     })
 
     it('should load API keys from storage', async () => {
@@ -216,10 +196,10 @@ describe('useApiKeys', () => {
   })
 
   describe('Error Handling', () => {
-    it('should handle storage failures gracefully', async () => {
-      storage.getAllApiKeys = vi
-        .fn()
-        .mockRejectedValue(new Error('Storage error'))
+    it('should handle CloudApiKeys failures gracefully', async () => {
+      vi.mocked(CloudApiKeys.getApiKeyStatus).mockRejectedValue(
+        new Error('API error')
+      )
 
       const { result } = renderHook(() => useApiKeys())
 
@@ -231,9 +211,9 @@ describe('useApiKeys', () => {
       expect(result.current.apiKeys).toEqual({})
     })
 
-    it('should handle uninitialized storage', async () => {
-      storageService.getStorage.mockRejectedValue(
-        new Error('Storage init failed')
+    it('should handle CloudSettings failures gracefully', async () => {
+      vi.mocked(CloudSettings.getEnabledProviders).mockRejectedValue(
+        new Error('Settings error')
       )
 
       const { result } = renderHook(() => useApiKeys())
@@ -242,13 +222,13 @@ describe('useApiKeys', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      // Should handle saveApiKey gracefully when storage is null
-      await act(async () => {
-        await result.current.saveApiKey('openai', 'test-key')
+      // Should not crash and should be loading
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
       })
 
-      // Should not crash
-      expect(result.current.storage).toBeNull()
+      // Should have empty providers
+      expect(result.current.enabledProviders.openai).toBe(false)
     })
   })
 

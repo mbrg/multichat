@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { StorageService } from '../services/storage'
-import { ApiKeyStorage } from '../types/storage'
 import { useSession } from 'next-auth/react'
 import { CloudApiKeys } from '../utils/cloudApiKeys'
 import { CloudSettings } from '../utils/cloudSettings'
@@ -32,7 +30,6 @@ export const useApiKeys = () => {
     together: false,
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [storage, setStorage] = useState<ApiKeyStorage | null>(null)
   const hasInitialized = useRef(false)
 
   // Load API keys and settings on mount - only for authenticated users
@@ -49,16 +46,6 @@ export const useApiKeys = () => {
       const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
       const keys: ApiKeys = {}
 
-      // Get appropriate storage implementation
-      const storageInstance = await StorageService.getStorage()
-      setStorage(storageInstance)
-
-      try {
-        const allKeys = await storageInstance.getAllApiKeys()
-        Object.assign(keys, allKeys)
-      } catch (error) {
-        console.warn('Failed to load keys from storage:', error)
-      }
 
       setApiKeys(keys)
 
@@ -113,11 +100,6 @@ export const useApiKeys = () => {
   }
 
   const saveApiKey = async (provider: keyof ApiKeys, key: string) => {
-    if (!storage) {
-      console.error('Storage not initialized')
-      return
-    }
-
     try {
       if (key.trim()) {
         // Store API key via CloudApiKeys only
@@ -199,11 +181,6 @@ export const useApiKeys = () => {
   }
 
   const clearAllKeys = async () => {
-    if (!storage) {
-      console.error('Storage not initialized')
-      return
-    }
-
     console.log('Clearing all API keys...')
 
     try {
@@ -243,6 +220,5 @@ export const useApiKeys = () => {
     clearAllKeys,
     loadApiKeys,
     isAuthenticated: Boolean(session?.user),
-    storage,
   }
 }

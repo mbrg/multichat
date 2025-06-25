@@ -17,14 +17,6 @@ vi.mock('next-auth', () => ({
   getServerSession: vi.fn(),
 }))
 
-// Mock StorageService for tests
-vi.mock('./services/storage', () => ({
-  StorageService: {
-    getStorage: vi.fn(),
-    getCloudStorage: vi.fn(),
-    getEnvironmentStorage: vi.fn(),
-  },
-}))
 
 // Mock ServerKeys for tests
 vi.mock('./utils/serverKeys', () => ({
