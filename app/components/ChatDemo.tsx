@@ -3,7 +3,6 @@ import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
-import { useVirtualizedPossibilities } from '../hooks/useVirtualizedPossibilities'
 
 const ChatDemo: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
@@ -16,20 +15,6 @@ const ChatDemo: React.FC = () => {
   } = useSettings()
   const { hasApiKey, isProviderEnabled, enabledProviders } =
     useApiKeys(refreshSettings)
-
-  // Use new independent streaming system
-  const virtualizedPossibilities = useVirtualizedPossibilities({
-    itemHeight: 180,
-    containerHeight: 400,
-    bufferSize: 3,
-    preloadDistance: '300px',
-    maxConcurrentConnections: 6,
-    enableVirtualScrolling: true,
-    loadingStrategy: 'viewport' as const,
-  })
-
-  const { initialize, possibilityPool, getLoadingStats } =
-    virtualizedPossibilities
 
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -116,20 +101,16 @@ const ChatDemo: React.FC = () => {
       setMessages((prev) => [...prev, assistantMessage])
 
       try {
-        // Initialize new independent streaming system
         setIsGenerating(true)
-        const messagesForGeneration = [...messages, userMessage]
-        await initialize(messagesForGeneration, settings, { maxTokens: 100 })
+        // The new VirtualizedPossibilitiesPanel will handle streaming automatically
       } catch (error) {
         console.error('Error generating response:', error)
         setIsGenerating(false)
       }
     },
     [
-      messages,
       settings,
       settingsLoading,
-      initialize,
       enabledProviders,
       hasApiKey,
     ]

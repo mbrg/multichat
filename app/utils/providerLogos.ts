@@ -7,8 +7,8 @@ import huggingfaceLogo from '../assets/huggingface.svg'
 
 export const providerLogos = {
   openai: {
-    light: openaiLogoWhite,
-    dark: openaiLogoBlack,
+    light: openaiLogoBlack,
+    dark: openaiLogoWhite,
   },
   anthropic: {
     light: anthropicLogo,

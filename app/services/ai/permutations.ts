@@ -1,6 +1,7 @@
 import type { Permutation, ChatCompletionRequest } from '@/types/api'
 import type { SystemInstruction } from '@/types/settings'
 import { getAllModels } from './config'
+import { DEFAULT_SYSTEM_INSTRUCTION } from '@/constants/defaults'
 
 export class PermutationGenerator {
   /**
@@ -26,11 +27,11 @@ export class PermutationGenerator {
       for (const model of models) {
         // For each temperature
         for (const temperature of settings.temperatures) {
-          // For each system instruction (including none)
-          const instructions: (SystemInstruction | null)[] = [
-            null,
-            ...settings.systemInstructions,
-          ]
+          // For each system instruction - ensure we always have at least one
+          const instructions: SystemInstruction[] = 
+            settings.systemInstructions.length > 0 
+              ? settings.systemInstructions 
+              : [DEFAULT_SYSTEM_INSTRUCTION]
 
           for (const instruction of instructions) {
             permutations.push({
@@ -97,7 +98,9 @@ export class PermutationGenerator {
     for (const provider of settings.enabledProviders) {
       const modelCount = this.getModelsForProvider(provider).length
       const temperatureCount = settings.temperatures.length
-      const instructionCount = settings.systemInstructions.length + 1 // +1 for null
+      const instructionCount = settings.systemInstructions.length > 0 
+        ? settings.systemInstructions.length 
+        : 1 // Default instruction
 
       count += modelCount * temperatureCount * instructionCount
     }

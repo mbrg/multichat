@@ -2,8 +2,9 @@ import React, { useRef, useEffect } from 'react'
 import Image from 'next/image'
 import type { PossibilityResponse } from '@/types/api'
 import type { PossibilityMetadata } from '@/services/ai/PossibilityMetadataService'
-import type { PossibilityStatus } from '@/hooks/usePossibilityPool'
-import openaiLogo from '../assets/OpenAI-black-monoblossom.svg'
+import { getProviderLogo } from '../utils/providerLogos'
+
+type PossibilityStatus = 'pending' | 'loading' | 'streaming' | 'complete' | 'error' | 'cancelled'
 
 interface PossibilityItemVirtualizedProps {
   metadata: PossibilityMetadata
@@ -38,11 +39,9 @@ const PossibilityItemVirtualized: React.FC<PossibilityItemVirtualizedProps> = ({
 
   // Get provider icon
   const getProviderIcon = (provider: string) => {
-    // For now, using OpenAI logo for all providers
-    // In the future, this could be expanded to provider-specific icons
     return (
       <Image
-        src={openaiLogo}
+        src={getProviderLogo(provider, 'light')}
         alt={provider}
         width={16}
         height={16}

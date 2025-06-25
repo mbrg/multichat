@@ -62,7 +62,7 @@ export class PossibilityMetadataService {
         } else if (typeof settings.enabledProviders === 'object') {
           // Convert {openai: true, anthropic: true, google: false} to ['openai', 'anthropic']
           enabledProviders = Object.keys(settings.enabledProviders).filter(
-            key => settings.enabledProviders[key] === true
+            (key: string) => (settings.enabledProviders as unknown as Record<string, boolean>)[key] === true
           )
         }
       }
@@ -83,18 +83,29 @@ export class PossibilityMetadataService {
     const permutations =
       this.permutationGenerator.generatePermutations(permutationSettings)
 
-    // Convert permutations to metadata with priority and ordering
-    return permutations.map((permutation, index) => ({
-      id: permutation.id,
-      provider: permutation.provider,
-      model: permutation.model,
-      temperature: permutation.temperature,
-      systemInstruction: permutation.systemInstruction || null,
-      systemPrompt: permutation.systemPrompt,
-      priority: this.calculatePriority(permutation, index),
-      estimatedTokens: options.maxTokens || 100,
-      order: index,
-    }))
+    // Apply possibility multiplier to generate multiple instances of each permutation
+    const multiplier = settings.possibilityMultiplier || 1
+    const allMetadata: PossibilityMetadata[] = []
+    
+    permutations.forEach((permutation, baseIndex) => {
+      for (let instance = 0; instance < multiplier; instance++) {
+        const uniqueId = `${permutation.id}_${instance}`
+        const metadata: PossibilityMetadata = {
+          id: uniqueId,
+          provider: permutation.provider,
+          model: permutation.model,
+          temperature: permutation.temperature,
+          systemInstruction: permutation.systemInstruction || null,
+          systemPrompt: permutation.systemPrompt,
+          priority: this.calculatePriority(permutation, baseIndex),
+          estimatedTokens: options.maxTokens || 100,
+          order: baseIndex * multiplier + instance,
+        }
+        allMetadata.push(metadata)
+      }
+    })
+
+    return allMetadata
   }
 
   /**
@@ -135,7 +146,7 @@ export class PossibilityMetadataService {
         } else if (typeof settings.enabledProviders === 'object') {
           // Convert {openai: true, anthropic: true, google: false} to ['openai', 'anthropic']
           enabledProviders = Object.keys(settings.enabledProviders).filter(
-            key => settings.enabledProviders[key] === true
+            (key: string) => (settings.enabledProviders as unknown as Record<string, boolean>)[key] === true
           )
         }
       }
@@ -188,7 +199,7 @@ export class PossibilityMetadataService {
    */
   metadataToPermutation(metadata: PossibilityMetadata): Permutation {
     return {
-      id: metadata.id,
+      id: metadata.id, // Keep the full unique ID for tracking
       provider: metadata.provider,
       model: metadata.model,
       temperature: metadata.temperature,
@@ -227,44 +238,28 @@ export class PossibilityMetadataService {
     permutation: Permutation,
     index: number
   ): 'high' | 'medium' | 'low' {
-    // High priority for:
-    // - Popular models (GPT-4, Claude-3.5, etc.)
-    // - Standard temperatures (0.7)
-    // - No system instruction (base response)
-
-    const isPopularModel = this.isPopularModel(permutation.model)
+    // Import from config to get model priority
+    const { getModelById } = require('./config')
+    const model = getModelById(permutation.model)
+    
     const isStandardTemperature = Math.abs(permutation.temperature - 0.7) < 0.1
-    const hasNoSystemInstruction = !permutation.systemInstruction
-
-    // High priority: popular model + standard temp + no system instruction
-    if (isPopularModel && isStandardTemperature && hasNoSystemInstruction) {
+    const isEarlyIndex = index < 8 // First 8 possibilities are always high priority
+    
+    // Use model's configured priority as base
+    const modelPriority = model?.priority || 'low'
+    
+    // Boost priority for standard temperature or early index
+    if (modelPriority === 'high' || isStandardTemperature || isEarlyIndex) {
       return 'high'
     }
-
-    // Medium priority: popular model OR standard temp
-    if (isPopularModel || isStandardTemperature) {
+    
+    if (modelPriority === 'medium' || isStandardTemperature) {
       return 'medium'
     }
 
-    // Low priority: everything else
     return 'low'
   }
 
-  /**
-   * Check if model is considered "popular" for prioritization
-   */
-  private isPopularModel(modelId: string): boolean {
-    const popularModels = [
-      'gpt-4o',
-      'gpt-4o-mini',
-      'claude-3-5-sonnet-20241022',
-      'claude-3-5-haiku-20241022',
-      'gemini-1.5-pro-latest',
-      'gemini-1.5-flash-latest',
-    ]
-
-    return popularModels.includes(modelId)
-  }
 
   /**
    * Estimate loading time based on model and provider

@@ -113,6 +113,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
               showPossibilities={
                 message.role === 'assistant' && !message.content
               }
+              conversationMessages={messages}
             />
           ))
         )}

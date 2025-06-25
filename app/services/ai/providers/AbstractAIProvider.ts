@@ -105,37 +105,47 @@ export abstract class AbstractAIProvider implements AIProvider {
     token?: string
     response?: ResponseWithLogprobs
   }> {
+    console.log(`[${this.name}] Starting streaming response for model: ${model.id}`)
     try {
       // Common API key validation
       const apiKey = await this.getApiKey()
       if (!apiKey) {
         throw new Error(`${this.name} API key not configured`)
       }
+      console.log(`[${this.name}] API key validated`)
 
       // Common message formatting
       const formattedMessages = messages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }))
+      console.log(`[${this.name}] Messages formatted: ${formattedMessages.length} messages`)
 
       // Provider-specific model creation
       const providerModel = await this.createModel(model.id, apiKey)
+      console.log(`[${this.name}] Model created`)
 
       // Provider-specific options
       const providerOptions = this.getProviderOptions(options, model)
+      console.log(`[${this.name}] Provider options:`, providerOptions)
 
       // Stream generation call
+      console.log(`[${this.name}] Starting streamText call`)
       const result = await streamText({
         model: providerModel,
         messages: formattedMessages,
         ...providerOptions,
       })
+      console.log(`[${this.name}] StreamText initialized`)
 
       let fullContent = ''
+      let tokenCount = 0
 
       // Stream tokens as they arrive
+      console.log(`[${this.name}] Starting token stream`)
       for await (const textPart of result.textStream) {
         fullContent += textPart
+        tokenCount++
 
         // Call token callback if provided
         if (options.onToken) {
@@ -147,11 +157,31 @@ export abstract class AbstractAIProvider implements AIProvider {
           type: 'token',
           token: textPart,
         }
-      }
 
-      // Wait for final result
-      const finalResult = await result.finishReason
-      const finalUsage = await result.usage
+        // Log every 10 tokens to avoid spam
+        if (tokenCount % 10 === 0) {
+          console.log(`[${this.name}] Streamed ${tokenCount} tokens so far`)
+        }
+      }
+      console.log(`[${this.name}] Token stream completed, total tokens: ${tokenCount}`)
+
+      // Wait for final result with timeout
+      console.log(`[${this.name}] Waiting for finishReason and usage`)
+      const finalResult = await Promise.race([
+        result.finishReason,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout waiting for finishReason')), 5000)
+        )
+      ]) as any
+      
+      const finalUsage = await Promise.race([
+        result.usage,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout waiting for usage')), 5000)
+        )
+      ]) as any
+
+      console.log(`[${this.name}] Final result:`, { finalResult, finalUsage })
 
       // Create complete response
       const completeResponse: ResponseWithLogprobs = {
@@ -168,6 +198,7 @@ export abstract class AbstractAIProvider implements AIProvider {
           : undefined,
       }
 
+      console.log(`[${this.name}] Streaming completed successfully`)
       // Yield completion event
       yield {
         type: 'complete',

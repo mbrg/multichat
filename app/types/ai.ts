@@ -17,10 +17,12 @@ export interface Attachment {
 export interface ModelInfo {
   id: string
   name: string
+  alias: string
   provider: string
   description: string
   supportsLogprobs: boolean
   maxTokens: number
+  priority: 'high' | 'medium' | 'low'
   supportedMimeTypes?: string[]
 }
 

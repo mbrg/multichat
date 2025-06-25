@@ -1,6 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import type { Message } from '../types/chat'
+import type { ChatMessage } from '../types/api'
 import AttachmentPreview from './AttachmentPreview'
 import VirtualizedPossibilitiesPanel from './VirtualizedPossibilitiesPanel'
 import { getProviderLogo, getProviderFromModel } from '../utils/providerLogos'
@@ -12,6 +13,7 @@ interface MessageWithIndependentPossibilitiesProps {
   onContinuePossibility?: (possibility: Message) => void
   className?: string
   showPossibilities?: boolean
+  conversationMessages?: Message[]
 }
 
 const MessageWithIndependentPossibilities: React.FC<
@@ -22,9 +24,20 @@ const MessageWithIndependentPossibilities: React.FC<
   onContinuePossibility,
   className = '',
   showPossibilities = true,
+  conversationMessages = [],
 }) => {
   const isUser = message.role === 'user'
   const { settings } = useSettings()
+
+  // Convert conversation messages to ChatMessage format for the possibilities system
+  const convertToChatMessages = (messages: Message[]): ChatMessage[] => {
+    return messages.map((msg): ChatMessage => ({
+      id: msg.id,
+      role: msg.role,
+      content: msg.content,
+      timestamp: msg.timestamp,
+    }))
+  }
 
   // Convert Message selection callback to handle VirtualizedPossibilitiesPanel response format
   const handleSelectResponse = (response: any) => {
@@ -125,11 +138,8 @@ const MessageWithIndependentPossibilities: React.FC<
           {/* Independent Streaming Possibilities Panel */}
           {!isUser && showPossibilities && !message.content && settings && (
             <div className="mt-3">
-              <div className="text-xs text-[#888] font-medium mb-2">
-                Possibilities:
-              </div>
               <VirtualizedPossibilitiesPanel
-                messages={[message]}
+                messages={convertToChatMessages(conversationMessages.filter(m => m.role === 'user'))}
                 settings={settings}
                 isActive={true}
                 onSelectResponse={handleSelectResponse}
