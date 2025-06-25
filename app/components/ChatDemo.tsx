@@ -9,8 +9,13 @@ const ChatDemo: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
-  const { settings, loading: settingsLoading } = useSettings()
-  const { hasApiKey, isProviderEnabled, enabledProviders } = useApiKeys()
+  const {
+    settings,
+    loading: settingsLoading,
+    refresh: refreshSettings,
+  } = useSettings()
+  const { hasApiKey, isProviderEnabled, enabledProviders } =
+    useApiKeys(refreshSettings)
 
   const {
     generatePossibilities,
@@ -42,18 +47,31 @@ const ChatDemo: React.FC = () => {
     return missingKeys.length === 0
   }, [settingsLoading, settings, enabledProviders, hasApiKey])
 
-  // Update assistant message with new possibilities as they stream in
+  // Update messages when possibilities stream in
   useEffect(() => {
-    if (currentAssistantMessage && possibilities.length > 0) {
-      setCurrentAssistantMessage((prev) => {
-        if (!prev) return null
-        return {
-          ...prev,
-          possibilities,
-        }
-      })
-    }
-  }, [possibilities, currentAssistantMessage])
+    if (!currentAssistantMessage || possibilities.length === 0) return
+
+    setMessages((prev) => {
+      const index = prev.findIndex((m) => m.id === currentAssistantMessage.id)
+      if (index === -1) return prev
+
+      const existingMessage = prev[index]
+      // Only update if possibilities have actually changed
+      if (
+        JSON.stringify(existingMessage.possibilities) ===
+        JSON.stringify(possibilities)
+      ) {
+        return prev
+      }
+
+      const newMessages = [...prev]
+      newMessages[index] = {
+        ...existingMessage,
+        possibilities,
+      }
+      return newMessages
+    })
+  }, [currentAssistantMessage, possibilities])
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: Attachment[]) => {
@@ -186,20 +204,6 @@ const ChatDemo: React.FC = () => {
       handleSelectPossibility,
     ]
   )
-
-  // Update messages when assistant message changes
-  useEffect(() => {
-    if (currentAssistantMessage) {
-      setMessages((prev) => {
-        const index = prev.findIndex((m) => m.id === currentAssistantMessage.id)
-        if (index === -1) return prev
-
-        const newMessages = [...prev]
-        newMessages[index] = currentAssistantMessage
-        return newMessages
-      })
-    }
-  }, [currentAssistantMessage])
 
   return (
     <ChatContainer

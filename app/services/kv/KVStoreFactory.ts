@@ -147,8 +147,8 @@ export class KVStoreFactory {
   /**
    * Create local KV store instance
    */
-  static createLocalKVStore(): LocalKVStore {
-    return new LocalKVStore()
+  static createLocalKVStore(kvFilePath?: string): LocalKVStore {
+    return new LocalKVStore(kvFilePath)
   }
 
   /**

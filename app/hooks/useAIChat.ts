@@ -38,6 +38,9 @@ export function useAIChat(options: UseAIChatOptions = {}) {
   const [possibilities, setPossibilities] = useState<PossibilityState>({})
   const [error, setError] = useState<Error | null>(null)
 
+  // Extract callbacks to avoid stale closure issues
+  const { onPossibilityUpdate, onError } = options
+
   const handleStreamEvent = useCallback(
     (event: StreamEvent) => {
       switch (event.type) {
@@ -107,7 +110,7 @@ export function useAIChat(options: UseAIChatOptions = {}) {
             }
 
             // Notify callback
-            if (options.onPossibilityUpdate) {
+            if (onPossibilityUpdate) {
               const response: PossibilityResponse = {
                 id: completedPossibility.id,
                 provider: completedPossibility.provider,
@@ -123,7 +126,7 @@ export function useAIChat(options: UseAIChatOptions = {}) {
                   hasLogprobs: !!completedPossibility.logprobs,
                 },
               }
-              options.onPossibilityUpdate(response)
+              onPossibilityUpdate(response)
             }
 
             return {
@@ -152,7 +155,7 @@ export function useAIChat(options: UseAIChatOptions = {}) {
         }
       }
     },
-    [options]
+    [onPossibilityUpdate]
   )
 
   const generatePossibilities = useCallback(
@@ -234,12 +237,12 @@ export function useAIChat(options: UseAIChatOptions = {}) {
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
         setError(error)
-        options.onError?.(error)
+        onError?.(error)
       } finally {
         setIsGenerating(false)
       }
     },
-    [handleStreamEvent, options]
+    [handleStreamEvent, onError]
   )
 
   const continuePossibility = useCallback(
@@ -324,12 +327,12 @@ export function useAIChat(options: UseAIChatOptions = {}) {
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
         setError(error)
-        options.onError?.(error)
+        onError?.(error)
       } finally {
         setIsGenerating(false)
       }
     },
-    [options]
+    [onError]
   )
 
   const reset = useCallback(() => {

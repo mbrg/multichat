@@ -19,9 +19,13 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": [
+        "./app/*"
+      ]
     },
-    "types": ["vitest/globals"],
+    "types": [
+      "vitest/globals"
+    ],
     "plugins": [
       {
         "name": "next"
@@ -29,10 +33,10 @@
     ]
   },
   "include": [
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

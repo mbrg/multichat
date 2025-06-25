@@ -8,22 +8,38 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { KVStoreFactory } from '../KVStoreFactory'
+import { promises as fs } from 'fs'
+import { join } from 'path'
+import { tmpdir } from 'os'
 
 describe('KV Integration Tests - Environment-Based Selection', () => {
   let originalEnv: any
+  let testKvFile: string
 
   beforeEach(() => {
     // Save original environment
     originalEnv = { ...process.env }
+    // Create unique test file path
+    testKvFile = join(
+      tmpdir(),
+      `kv-test-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.json`
+    )
     KVStoreFactory.reset()
     vi.clearAllMocks()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     // Restore original environment
     Object.keys(process.env).forEach((key) => delete process.env[key])
     Object.assign(process.env, originalEnv)
     KVStoreFactory.reset()
+
+    // Clean up test-specific file to prevent test pollution
+    try {
+      await fs.unlink(testKvFile)
+    } catch (error) {
+      // File doesn't exist, which is fine
+    }
   })
 
   describe('Development Environment', () => {
@@ -235,7 +251,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
-      const store = await KVStoreFactory.createInstance('auto')
+      const store = KVStoreFactory.createLocalKVStore(testKvFile)
 
       // Test various data types
       const testCases = [
@@ -265,7 +281,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
-      const store = await KVStoreFactory.createInstance('auto')
+      const store = KVStoreFactory.createLocalKVStore(testKvFile)
 
       // Act: Concurrent writes
       const operations = []

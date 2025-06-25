@@ -27,7 +27,7 @@ interface ApiKeyValidationStatus {
   together?: 'valid' | 'invalid' | 'validating' | null
 }
 
-export const useApiKeys = () => {
+export const useApiKeys = (onSettingsChange?: () => void) => {
   const { data: session, status } = useSession()
   const [apiKeys, setApiKeys] = useState<ApiKeys>({})
   const [enabledProviders, setEnabledProviders] = useState<EnabledProviders>({
@@ -163,6 +163,8 @@ export const useApiKeys = () => {
           await CloudSettings.setEnabledProviders(
             JSON.stringify(newEnabledProviders)
           )
+          // Notify about settings change
+          onSettingsChange?.()
         }
       } else {
         // Remove empty key
@@ -195,6 +197,8 @@ export const useApiKeys = () => {
       await CloudSettings.setEnabledProviders(
         JSON.stringify(newEnabledProviders)
       )
+      // Notify about settings change
+      onSettingsChange?.()
     } catch (error) {
       console.error('Error clearing API key:', error)
       throw error
@@ -214,6 +218,8 @@ export const useApiKeys = () => {
       await CloudSettings.setEnabledProviders(
         JSON.stringify(newEnabledProviders)
       )
+      // Notify about settings change
+      onSettingsChange?.()
     } catch (error) {
       console.error('Failed to save provider settings:', error)
       // Revert local state on error
