@@ -1,6 +1,6 @@
 /**
  * Global Event Bus
- * 
+ *
  * Implements a type-safe publish-subscribe pattern following Dave Farley's principles:
  * - Decouples components for fast feedback loops
  * - Enables multiple subscribers for better extensibility
@@ -8,7 +8,7 @@
  * - Highly testable with clear event contracts
  */
 
-export type EventType = 
+export type EventType =
   // AI Generation Events
   | 'ai:generation:started'
   | 'ai:generation:progress'
@@ -19,20 +19,20 @@ export type EventType =
   | 'ai:possibility:updated'
   | 'ai:possibility:completed'
   | 'ai:token:received'
-  
+
   // User Interface Events
   | 'ui:possibility:selected'
   | 'ui:possibility:continued'
   | 'ui:settings:opened'
   | 'ui:settings:saved'
   | 'ui:message:sent'
-  
+
   // System Events
   | 'system:error:occurred'
   | 'system:performance:measured'
   | 'system:connection:status'
   | 'system:auth:changed'
-  
+
   // API Events
   | 'api:key:validated'
   | 'api:key:expired'
@@ -187,7 +187,7 @@ export interface APIProviderFailedEvent extends BaseEvent {
 }
 
 // Union type for all events
-export type AppEvent = 
+export type AppEvent =
   | AIGenerationStartedEvent
   | AIGenerationProgressEvent
   | AIGenerationCompletedEvent
@@ -203,7 +203,9 @@ export type AppEvent =
   | APIKeyValidatedEvent
   | APIProviderFailedEvent
 
-export type EventHandler<T extends AppEvent = AppEvent> = (event: T) => void | Promise<void>
+export type EventHandler<T extends AppEvent = AppEvent> = (
+  event: T
+) => void | Promise<void>
 
 export interface EventSubscription {
   unsubscribe: () => void
@@ -272,7 +274,7 @@ export class EventBus {
           this.subscribers.delete(eventType)
         }
         this.updateSubscriberCount()
-      }
+      },
     }
   }
 
@@ -287,7 +289,7 @@ export class EventBus {
       unsubscribe: () => {
         this.wildcardSubscribers.delete(handler)
         this.updateSubscriberCount()
-      }
+      },
     }
   }
 
@@ -311,7 +313,8 @@ export class EventBus {
 
     // Update metrics
     this.metrics.totalEvents++
-    this.metrics.eventTypeCounts[eventType] = (this.metrics.eventTypeCounts[eventType] || 0) + 1
+    this.metrics.eventTypeCounts[eventType] =
+      (this.metrics.eventTypeCounts[eventType] || 0) + 1
 
     // Get all relevant handlers
     const specificHandlers = this.subscribers.get(eventType) || new Set()
@@ -324,7 +327,7 @@ export class EventBus {
       } catch (error) {
         this.metrics.errorCount++
         console.error(`Event handler error for ${eventType}:`, error)
-        
+
         // Publish error event (but prevent infinite loops)
         if (eventType !== 'system:error:occurred') {
           this.publish('system:error:occurred', {
@@ -334,7 +337,7 @@ export class EventBus {
             context: {
               originalEventType: eventType,
               originalEventId: event.id,
-            }
+            },
           })
         }
       }
@@ -348,8 +351,9 @@ export class EventBus {
     if (this.processingTimes.length > this.maxProcessingTimes) {
       this.processingTimes.shift()
     }
-    this.metrics.averageProcessingTime = 
-      this.processingTimes.reduce((sum, time) => sum + time, 0) / this.processingTimes.length
+    this.metrics.averageProcessingTime =
+      this.processingTimes.reduce((sum, time) => sum + time, 0) /
+      this.processingTimes.length
   }
 
   /**
@@ -370,7 +374,8 @@ export class EventBus {
 
     // Update metrics
     this.metrics.totalEvents++
-    this.metrics.eventTypeCounts[eventType] = (this.metrics.eventTypeCounts[eventType] || 0) + 1
+    this.metrics.eventTypeCounts[eventType] =
+      (this.metrics.eventTypeCounts[eventType] || 0) + 1
 
     // Get all relevant handlers
     const specificHandlers = this.subscribers.get(eventType) || new Set()
@@ -382,7 +387,9 @@ export class EventBus {
         const result = handler(event)
         // If handler returns a promise, warn about async usage
         if (result instanceof Promise) {
-          console.warn(`Async handler used in publishSync for ${eventType}. Consider using publish() instead.`)
+          console.warn(
+            `Async handler used in publishSync for ${eventType}. Consider using publish() instead.`
+          )
         }
       } catch (error) {
         this.metrics.errorCount++
@@ -419,7 +426,10 @@ export class EventBus {
    */
   getSubscriberCount(eventType?: EventType): number {
     if (eventType) {
-      return (this.subscribers.get(eventType)?.size || 0) + this.wildcardSubscribers.size
+      return (
+        (this.subscribers.get(eventType)?.size || 0) +
+        this.wildcardSubscribers.size
+      )
     }
     return this.metrics.subscriberCount
   }
@@ -451,7 +461,7 @@ export const eventBus = EventBus.getInstance()
  * Convenience function for subscribing to events
  */
 export function on<T extends AppEvent>(
-  eventType: T['type'], 
+  eventType: T['type'],
   handler: EventHandler<T>
 ): EventSubscription {
   return eventBus.subscribe(eventType, handler)
@@ -461,8 +471,8 @@ export function on<T extends AppEvent>(
  * Convenience function for publishing events
  */
 export function emit<T extends AppEvent>(
-  eventType: T['type'], 
-  data: T['data'], 
+  eventType: T['type'],
+  data: T['data'],
   options?: { source?: string; id?: string }
 ): Promise<void> {
   return eventBus.publish(eventType, data, options)
@@ -472,8 +482,8 @@ export function emit<T extends AppEvent>(
  * Convenience function for synchronous event publishing
  */
 export function emitSync<T extends AppEvent>(
-  eventType: T['type'], 
-  data: T['data'], 
+  eventType: T['type'],
+  data: T['data'],
   options?: { source?: string; id?: string }
 ): void {
   return eventBus.publishSync(eventType, data, options)

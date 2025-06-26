@@ -1,6 +1,6 @@
 /**
  * Possibility Generation State Machine
- * 
+ *
  * Implements a finite state machine for AI possibility generation following Dave Farley's principles:
  * - Explicit state transitions prevent invalid states and race conditions
  * - Fast feedback loops with immediate state updates
@@ -8,7 +8,7 @@
  * - Highly testable with predictable state transitions
  */
 
-export type PossibilityGenerationState = 
+export type PossibilityGenerationState =
   | 'idle'
   | 'initializing'
   | 'generating'
@@ -17,16 +17,40 @@ export type PossibilityGenerationState =
   | 'failed'
   | 'cancelled'
 
-export type PossibilityGenerationEvent = 
-  | { type: 'START_GENERATION'; payload: { requestId: string; possibilityCount: number } }
+export type PossibilityGenerationEvent =
+  | {
+      type: 'START_GENERATION'
+      payload: { requestId: string; possibilityCount: number }
+    }
   | { type: 'GENERATION_INITIALIZED'; payload: { requestId: string } }
-  | { type: 'STREAMING_STARTED'; payload: { requestId: string; activeStreams: number } }
-  | { type: 'TOKEN_RECEIVED'; payload: { requestId: string; possibilityId: string; token: string } }
-  | { type: 'POSSIBILITY_COMPLETED'; payload: { requestId: string; possibilityId: string } }
-  | { type: 'ALL_COMPLETED'; payload: { requestId: string; totalCompleted: number } }
-  | { type: 'ERROR_OCCURRED'; payload: { requestId: string; error: Error; retryable: boolean } }
-  | { type: 'CANCEL_GENERATION'; payload: { requestId: string; reason: string } }
-  | { type: 'RETRY_GENERATION'; payload: { requestId: string; attempt: number } }
+  | {
+      type: 'STREAMING_STARTED'
+      payload: { requestId: string; activeStreams: number }
+    }
+  | {
+      type: 'TOKEN_RECEIVED'
+      payload: { requestId: string; possibilityId: string; token: string }
+    }
+  | {
+      type: 'POSSIBILITY_COMPLETED'
+      payload: { requestId: string; possibilityId: string }
+    }
+  | {
+      type: 'ALL_COMPLETED'
+      payload: { requestId: string; totalCompleted: number }
+    }
+  | {
+      type: 'ERROR_OCCURRED'
+      payload: { requestId: string; error: Error; retryable: boolean }
+    }
+  | {
+      type: 'CANCEL_GENERATION'
+      payload: { requestId: string; reason: string }
+    }
+  | {
+      type: 'RETRY_GENERATION'
+      payload: { requestId: string; attempt: number }
+    }
   | { type: 'RESET'; payload?: undefined }
 
 export interface PossibilityGenerationContext {
@@ -45,8 +69,14 @@ export interface StateTransition {
   from: PossibilityGenerationState
   to: PossibilityGenerationState
   event: PossibilityGenerationEvent['type']
-  guard?: (context: PossibilityGenerationContext, event: PossibilityGenerationEvent) => boolean
-  action?: (context: PossibilityGenerationContext, event: PossibilityGenerationEvent) => Partial<PossibilityGenerationContext>
+  guard?: (
+    context: PossibilityGenerationContext,
+    event: PossibilityGenerationEvent
+  ) => boolean
+  action?: (
+    context: PossibilityGenerationContext,
+    event: PossibilityGenerationEvent
+  ) => Partial<PossibilityGenerationContext>
 }
 
 export type StateChangeListener = (
@@ -87,16 +117,21 @@ export class PossibilityGenerationStateMachine {
         from: 'idle',
         to: 'initializing',
         event: 'START_GENERATION',
-        action: (context, event) => ({
-          requestId: event.payload.requestId,
-          possibilityCount: event.payload.possibilityCount,
-          completedCount: 0,
-          activeStreams: 0,
-          errors: [],
-          retryAttempt: 0,
-          startTime: Date.now(),
-          lastActivity: Date.now(),
-        }),
+        action: (context, event) => {
+          if (event.type === 'START_GENERATION' && event.payload) {
+            return {
+              requestId: event.payload.requestId,
+              possibilityCount: event.payload.possibilityCount,
+              completedCount: 0,
+              activeStreams: 0,
+              errors: [],
+              retryAttempt: 0,
+              startTime: Date.now(),
+              lastActivity: Date.now(),
+            }
+          }
+          return context
+        },
       },
 
       // Initialization complete
@@ -114,10 +149,20 @@ export class PossibilityGenerationStateMachine {
         from: 'generating',
         to: 'streaming',
         event: 'STREAMING_STARTED',
-        action: (context, event) => ({
-          activeStreams: event.payload.activeStreams,
-          lastActivity: Date.now(),
-        }),
+        action: (context, event) => {
+          if (
+            event.type === 'STREAMING_STARTED' &&
+            event.payload &&
+            'activeStreams' in event.payload
+          ) {
+            return {
+              ...context,
+              activeStreams: event.payload.activeStreams,
+              lastActivity: Date.now(),
+            }
+          }
+          return { ...context, lastActivity: Date.now() }
+        },
       },
 
       // Token received during streaming
@@ -146,12 +191,31 @@ export class PossibilityGenerationStateMachine {
         from: 'streaming',
         to: 'completed',
         event: 'ALL_COMPLETED',
-        guard: (context, event) => event.payload.totalCompleted === context.possibilityCount,
-        action: (context, event) => ({
-          completedCount: event.payload.totalCompleted,
-          activeStreams: 0,
-          lastActivity: Date.now(),
-        }),
+        guard: (context, event) => {
+          if (
+            event.type === 'ALL_COMPLETED' &&
+            event.payload &&
+            'totalCompleted' in event.payload
+          ) {
+            return event.payload.totalCompleted === context.possibilityCount
+          }
+          return false
+        },
+        action: (context, event) => {
+          if (
+            event.type === 'ALL_COMPLETED' &&
+            event.payload &&
+            'totalCompleted' in event.payload
+          ) {
+            return {
+              ...context,
+              completedCount: event.payload.totalCompleted,
+              activeStreams: 0,
+              lastActivity: Date.now(),
+            }
+          }
+          return { ...context, lastActivity: Date.now() }
+        },
       },
 
       // Error handling
@@ -159,22 +223,66 @@ export class PossibilityGenerationStateMachine {
         from: 'generating',
         to: 'failed',
         event: 'ERROR_OCCURRED',
-        guard: (context, event) => !event.payload.retryable || context.retryAttempt >= context.maxRetries,
-        action: (context, event) => ({
-          errors: [...context.errors, event.payload.error],
-          lastActivity: Date.now(),
-        }),
+        guard: (context, event) => {
+          if (
+            event.type === 'ERROR_OCCURRED' &&
+            event.payload &&
+            'retryable' in event.payload
+          ) {
+            return (
+              !event.payload.retryable ||
+              context.retryAttempt >= context.maxRetries
+            )
+          }
+          return true
+        },
+        action: (context, event) => {
+          if (
+            event.type === 'ERROR_OCCURRED' &&
+            event.payload &&
+            'error' in event.payload
+          ) {
+            return {
+              ...context,
+              errors: [...context.errors, event.payload.error],
+              lastActivity: Date.now(),
+            }
+          }
+          return { ...context, lastActivity: Date.now() }
+        },
       },
 
       {
         from: 'streaming',
         to: 'failed',
         event: 'ERROR_OCCURRED',
-        guard: (context, event) => !event.payload.retryable || context.retryAttempt >= context.maxRetries,
-        action: (context, event) => ({
-          errors: [...context.errors, event.payload.error],
-          lastActivity: Date.now(),
-        }),
+        guard: (context, event) => {
+          if (
+            event.type === 'ERROR_OCCURRED' &&
+            event.payload &&
+            'retryable' in event.payload
+          ) {
+            return (
+              !event.payload.retryable ||
+              context.retryAttempt >= context.maxRetries
+            )
+          }
+          return true
+        },
+        action: (context, event) => {
+          if (
+            event.type === 'ERROR_OCCURRED' &&
+            event.payload &&
+            'error' in event.payload
+          ) {
+            return {
+              ...context,
+              errors: [...context.errors, event.payload.error],
+              lastActivity: Date.now(),
+            }
+          }
+          return { ...context, lastActivity: Date.now() }
+        },
       },
 
       // Retry logic
@@ -183,11 +291,21 @@ export class PossibilityGenerationStateMachine {
         to: 'initializing',
         event: 'RETRY_GENERATION',
         guard: (context) => context.retryAttempt < context.maxRetries,
-        action: (context, event) => ({
-          retryAttempt: event.payload.attempt,
-          errors: [], // Clear errors on retry
-          lastActivity: Date.now(),
-        }),
+        action: (context, event) => {
+          if (
+            event.type === 'RETRY_GENERATION' &&
+            event.payload &&
+            'attempt' in event.payload
+          ) {
+            return {
+              ...context,
+              retryAttempt: event.payload.attempt,
+              errors: [], // Clear errors on retry
+              lastActivity: Date.now(),
+            }
+          }
+          return { ...context, lastActivity: Date.now() }
+        },
       },
 
       {
@@ -195,11 +313,21 @@ export class PossibilityGenerationStateMachine {
         to: 'initializing',
         event: 'RETRY_GENERATION',
         guard: (context) => context.retryAttempt < context.maxRetries,
-        action: (context, event) => ({
-          retryAttempt: event.payload.attempt,
-          errors: [], // Clear errors on retry
-          lastActivity: Date.now(),
-        }),
+        action: (context, event) => {
+          if (
+            event.type === 'RETRY_GENERATION' &&
+            event.payload &&
+            'attempt' in event.payload
+          ) {
+            return {
+              ...context,
+              retryAttempt: event.payload.attempt,
+              errors: [], // Clear errors on retry
+              lastActivity: Date.now(),
+            }
+          }
+          return { ...context, lastActivity: Date.now() }
+        },
       },
 
       // Cancellation
@@ -230,16 +358,32 @@ export class PossibilityGenerationStateMachine {
         event: 'RESET',
         action: () => this.createInitialContext(),
       },
-
       {
         from: 'failed',
         to: 'idle',
         event: 'RESET',
         action: () => this.createInitialContext(),
       },
-
       {
         from: 'cancelled',
+        to: 'idle',
+        event: 'RESET',
+        action: () => this.createInitialContext(),
+      },
+      {
+        from: 'initializing',
+        to: 'idle',
+        event: 'RESET',
+        action: () => this.createInitialContext(),
+      },
+      {
+        from: 'generating',
+        to: 'idle',
+        event: 'RESET',
+        action: () => this.createInitialContext(),
+      },
+      {
+        from: 'streaming',
         to: 'idle',
         event: 'RESET',
         action: () => this.createInitialContext(),
@@ -252,7 +396,7 @@ export class PossibilityGenerationStateMachine {
    */
   send(event: PossibilityGenerationEvent): boolean {
     const validTransitions = this.transitions.filter(
-      t => t.from === this.currentState && t.event === event.type
+      (t) => t.from === this.currentState && t.event === event.type
     )
 
     for (const transition of validTransitions) {
@@ -274,7 +418,7 @@ export class PossibilityGenerationStateMachine {
       this.currentState = newState
 
       // Notify listeners
-      this.listeners.forEach(listener => {
+      this.listeners.forEach((listener) => {
         try {
           listener(newState, oldState, this.context, event)
         } catch (error) {
@@ -316,7 +460,7 @@ export class PossibilityGenerationStateMachine {
    */
   can(eventType: PossibilityGenerationEvent['type']): boolean {
     return this.transitions.some(
-      t => t.from === this.currentState && t.event === eventType
+      (t) => t.from === this.currentState && t.event === eventType
     )
   }
 
@@ -325,7 +469,7 @@ export class PossibilityGenerationStateMachine {
    */
   onStateChange(listener: StateChangeListener): () => void {
     this.listeners.push(listener)
-    
+
     // Return unsubscribe function
     return () => {
       const index = this.listeners.indexOf(listener)
@@ -347,17 +491,21 @@ export class PossibilityGenerationStateMachine {
     errorCount: number
   } {
     const now = Date.now()
-    const isActive = ['initializing', 'generating', 'streaming'].includes(this.currentState)
-    
+    const isActive = ['initializing', 'generating', 'streaming'].includes(
+      this.currentState
+    )
+
     return {
       state: this.currentState,
-      progress: this.context.possibilityCount > 0 
-        ? this.context.completedCount / this.context.possibilityCount 
-        : 0,
+      progress:
+        this.context.possibilityCount > 0
+          ? this.context.completedCount / this.context.possibilityCount
+          : 0,
       duration: this.context.startTime ? now - this.context.startTime : null,
       isActive,
-      canRetry: this.context.retryAttempt < this.context.maxRetries && 
-               (this.currentState === 'failed' || this.context.errors.length > 0),
+      canRetry:
+        this.context.retryAttempt < this.context.maxRetries &&
+        (this.currentState === 'failed' || this.context.errors.length > 0),
       errorCount: this.context.errors.length,
     }
   }

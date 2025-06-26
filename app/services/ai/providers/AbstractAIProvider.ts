@@ -23,12 +23,14 @@ export interface StreamingOptions extends GenerationOptions {
 export abstract class AbstractAIProvider implements AIProvider {
   abstract readonly name: string
   abstract readonly models: ModelInfo[]
-  
-  private circuitBreaker: CircuitBreaker
 
-  constructor() {
-    // Each provider gets its own circuit breaker
-    this.circuitBreaker = createAIProviderBreaker(this.getProviderKey())
+  private _circuitBreaker: CircuitBreaker | null = null
+
+  private get circuitBreaker(): CircuitBreaker {
+    if (!this._circuitBreaker) {
+      this._circuitBreaker = createAIProviderBreaker(this.getProviderKey())
+    }
+    return this._circuitBreaker
   }
 
   /**
@@ -122,7 +124,9 @@ export abstract class AbstractAIProvider implements AIProvider {
 
     // Check circuit breaker state before starting
     if (this.circuitBreaker.getState() === 'open') {
-      throw new Error(`${this.name} circuit breaker is open, streaming unavailable`)
+      throw new Error(
+        `${this.name} circuit breaker is open, streaming unavailable`
+      )
     }
 
     try {
@@ -225,10 +229,10 @@ export abstract class AbstractAIProvider implements AIProvider {
       }
 
       console.log(`[${this.name}] Streaming completed successfully`)
-      
+
       // Record success for circuit breaker
       this.circuitBreaker.recordOperationSuccess()
-      
+
       // Yield completion event
       yield {
         type: 'complete',
@@ -236,10 +240,10 @@ export abstract class AbstractAIProvider implements AIProvider {
       }
     } catch (error) {
       console.error(`${this.name} streaming API error:`, error)
-      
+
       // Record failure for circuit breaker
       this.circuitBreaker.recordOperationFailure()
-      
+
       throw new Error(
         `${this.name} streaming API error: ${
           error instanceof Error ? error.message : 'Unknown error'

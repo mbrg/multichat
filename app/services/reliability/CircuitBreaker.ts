@@ -1,6 +1,6 @@
 /**
  * Circuit Breaker Pattern Implementation
- * 
+ *
  * Prevents cascade failures in AI provider calls following Dave Farley's principles:
  * - Fast failure detection to maintain system responsiveness
  * - Automatic recovery mechanisms for resilient operations
@@ -11,11 +11,11 @@
 export type CircuitBreakerState = 'closed' | 'open' | 'half-open'
 
 export interface CircuitBreakerOptions {
-  failureThreshold: number     // Number of failures before opening circuit
-  recoveryTimeout: number      // Time in ms before attempting recovery
-  monitoringWindow: number     // Time window for failure tracking
-  successThreshold: number     // Successes needed in half-open to close circuit
-  maxRetries: number          // Maximum automatic retries
+  failureThreshold: number // Number of failures before opening circuit
+  recoveryTimeout: number // Time in ms before attempting recovery
+  monitoringWindow: number // Time window for failure tracking
+  successThreshold: number // Successes needed in half-open to close circuit
+  maxRetries: number // Maximum automatic retries
 }
 
 export interface CircuitBreakerMetrics {
@@ -127,8 +127,10 @@ export class CircuitBreaker {
 
     if (this.state === 'open') {
       // Check if enough time has passed to attempt recovery
-      if (this.lastFailureTime && 
-          now - this.lastFailureTime >= this.options.recoveryTimeout) {
+      if (
+        this.lastFailureTime &&
+        now - this.lastFailureTime >= this.options.recoveryTimeout
+      ) {
         this.setState('half-open')
         this.successCount = 0 // Reset success counter for half-open period
       }
@@ -151,8 +153,10 @@ export class CircuitBreaker {
   private cleanFailureWindow(): void {
     const now = Date.now()
     const windowStart = now - this.options.monitoringWindow
-    
-    this.failureWindow = this.failureWindow.filter(time => time >= windowStart)
+
+    this.failureWindow = this.failureWindow.filter(
+      (time) => time >= windowStart
+    )
   }
 
   /**
@@ -180,7 +184,7 @@ export class CircuitBreaker {
    */
   getMetrics(): CircuitBreakerMetrics {
     this.cleanFailureWindow()
-    
+
     return {
       state: this.state,
       failureCount: this.failureCount,
@@ -207,15 +211,15 @@ export class CircuitBreaker {
    */
   isHealthy(): boolean {
     this.updateState()
-    
+
     if (this.state === 'closed') {
       return true
     }
-    
+
     if (this.state === 'half-open' && this.successCount > 0) {
       return true
     }
-    
+
     return false
   }
 
@@ -224,7 +228,7 @@ export class CircuitBreaker {
    */
   forceState(state: CircuitBreakerState): void {
     this.setState(state)
-    
+
     if (state === 'closed') {
       this.resetCounters()
     }
@@ -304,15 +308,15 @@ export class CircuitBreakerRegistry {
     if (!this.breakers.has(name)) {
       const defaultOptions: CircuitBreakerOptions = {
         failureThreshold: 5,
-        recoveryTimeout: 30000,     // 30 seconds
-        monitoringWindow: 60000,    // 1 minute
+        recoveryTimeout: 30000, // 30 seconds
+        monitoringWindow: 60000, // 1 minute
         successThreshold: 3,
         maxRetries: 3,
       }
 
       const finalOptions = { ...defaultOptions, ...options }
       const breaker = new CircuitBreaker(name, finalOptions)
-      
+
       this.breakers.set(name, breaker)
       this.configs.set(name, { name, options: finalOptions })
     }
@@ -325,11 +329,11 @@ export class CircuitBreakerRegistry {
    */
   getAllMetrics(): Record<string, CircuitBreakerMetrics> {
     const metrics: Record<string, CircuitBreakerMetrics> = {}
-    
+
     for (const [name, breaker] of this.breakers) {
       metrics[name] = breaker.getMetrics()
     }
-    
+
     return metrics
   }
 
@@ -338,11 +342,11 @@ export class CircuitBreakerRegistry {
    */
   getAllConfigs(): Record<string, CircuitBreakerConfig> {
     const configs: Record<string, CircuitBreakerConfig> = {}
-    
+
     for (const [name, config] of this.configs) {
       configs[name] = config
     }
-    
+
     return configs
   }
 
@@ -363,13 +367,13 @@ export class CircuitBreakerRegistry {
    */
   getUnhealthyBreakers(): string[] {
     const unhealthy: string[] = []
-    
+
     for (const [name, breaker] of this.breakers) {
       if (!breaker.isHealthy()) {
         unhealthy.push(name)
       }
     }
-    
+
     return unhealthy
   }
 
@@ -409,13 +413,16 @@ export const circuitBreakerRegistry = CircuitBreakerRegistry.getInstance()
  * Helper function to create circuit breaker with common AI provider settings
  */
 export function createAIProviderBreaker(providerName: string): CircuitBreaker {
-  return CircuitBreakerRegistry.getInstance().getBreaker(`ai-provider-${providerName}`, {
-    failureThreshold: 3,        // Open after 3 failures
-    recoveryTimeout: 60000,     // Wait 1 minute before trying again  
-    monitoringWindow: 300000,   // Track failures over 5 minutes
-    successThreshold: 2,        // Need 2 successes to close circuit
-    maxRetries: 2,
-  })
+  return CircuitBreakerRegistry.getInstance().getBreaker(
+    `ai-provider-${providerName}`,
+    {
+      failureThreshold: 3, // Open after 3 failures
+      recoveryTimeout: 60000, // Wait 1 minute before trying again
+      monitoringWindow: 300000, // Track failures over 5 minutes
+      successThreshold: 2, // Need 2 successes to close circuit
+      maxRetries: 2,
+    }
+  )
 }
 
 export default CircuitBreaker

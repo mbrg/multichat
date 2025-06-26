@@ -1,6 +1,6 @@
 /**
  * System Monitor Service
- * 
+ *
  * Provides comprehensive monitoring of system health following Dave Farley's principles:
  * - Fast feedback loops with real-time metrics collection
  * - Observable system behavior for debugging and optimization
@@ -66,15 +66,15 @@ export interface SystemRecommendation {
 }
 
 export interface MonitoringConfig {
-  checkInterval: number        // How often to check health (ms)
+  checkInterval: number // How often to check health (ms)
   alertThresholds: {
-    errorRate: number          // Error rate threshold (0-1)
-    responseTime: number       // Response time threshold (ms)
-    memoryUsage: number        // Memory usage threshold (0-1)
-    cpuUsage: number          // CPU usage threshold (0-1)
+    errorRate: number // Error rate threshold (0-1)
+    responseTime: number // Response time threshold (ms)
+    memoryUsage: number // Memory usage threshold (0-1)
+    cpuUsage: number // CPU usage threshold (0-1)
   }
-  retentionPeriod: number      // How long to keep metrics (ms)
-  enabledChecks: string[]      // Which health checks to run
+  retentionPeriod: number // How long to keep metrics (ms)
+  enabledChecks: string[] // Which health checks to run
 }
 
 export class SystemMonitor {
@@ -90,15 +90,21 @@ export class SystemMonitor {
 
   constructor(
     private config: MonitoringConfig = {
-      checkInterval: 30000,      // 30 seconds
+      checkInterval: 30000, // 30 seconds
       alertThresholds: {
-        errorRate: 0.05,         // 5% error rate
-        responseTime: 5000,      // 5 second response time
-        memoryUsage: 0.85,       // 85% memory usage
-        cpuUsage: 0.80,          // 80% CPU usage
+        errorRate: 0.05, // 5% error rate
+        responseTime: 5000, // 5 second response time
+        memoryUsage: 0.85, // 85% memory usage
+        cpuUsage: 0.8, // 80% CPU usage
       },
       retentionPeriod: 86400000, // 24 hours
-      enabledChecks: ['connectionPool', 'circuitBreakers', 'eventBus', 'memory', 'performance']
+      enabledChecks: [
+        'connectionPool',
+        'circuitBreakers',
+        'eventBus',
+        'memory',
+        'performance',
+      ],
     }
   ) {
     this.logger = LoggingService.getInstance()
@@ -138,12 +144,12 @@ export class SystemMonitor {
       component: 'SystemMonitor',
       checkInterval: this.config.checkInterval,
       enabledChecks: this.config.enabledChecks,
-      alertThresholds: this.config.alertThresholds
+      alertThresholds: this.config.alertThresholds,
     })
 
     this.logger.logBusinessMetric('monitoring_started', 1, {
       component: 'SystemMonitor',
-      checkInterval: this.config.checkInterval
+      checkInterval: this.config.checkInterval,
     })
 
     this.checkInterval = setInterval(() => {
@@ -163,7 +169,7 @@ export class SystemMonitor {
       this.checkInterval = null
 
       this.logger.logBusinessMetric('monitoring_stopped', 1, {
-        component: 'SystemMonitor'
+        component: 'SystemMonitor',
       })
     }
   }
@@ -186,7 +192,7 @@ export class SystemMonitor {
    * Get active alerts
    */
   getActiveAlerts(): SystemAlert[] {
-    return this.alerts.filter(alert => !alert.resolved)
+    return this.alerts.filter((alert) => !alert.resolved)
   }
 
   /**
@@ -203,8 +209,6 @@ export class SystemMonitor {
     return this.recommendations
   }
 
-
-
   /**
    * Perform comprehensive health check
    */
@@ -219,7 +223,7 @@ export class SystemMonitor {
         circuitBreakers: await this.checkCircuitBreakers(),
         eventBus: await this.checkEventBus(),
         memory: await this.checkMemoryUsage(),
-        performance: await this.checkPerformance()
+        performance: await this.checkPerformance(),
       }
 
       // Calculate overall health
@@ -234,7 +238,7 @@ export class SystemMonitor {
         overall,
         components,
         alerts: this.getActiveAlerts(),
-        recommendations: this.recommendations
+        recommendations: this.recommendations,
       }
 
       // Store in history
@@ -248,18 +252,18 @@ export class SystemMonitor {
       this.logger.logPerformance({
         operation: 'system_health_check',
         duration: performance.now() - startTime,
+        success: overall.status !== 'critical',
         metadata: {
           overallStatus: overall.status,
           overallScore: overall.score,
-          componentCount: Object.keys(components).length
-        }
+          componentCount: Object.keys(components).length,
+        },
       })
 
       return healthMetrics
-
     } catch (error) {
       this.logger.error('System health check failed', error as Error, {
-        operation: 'performHealthCheck'
+        operation: 'performHealthCheck',
       })
 
       // Return degraded health status
@@ -269,11 +273,11 @@ export class SystemMonitor {
           status: 'critical',
           score: 0,
           uptime: timestamp - this.startTime,
-          lastIncident: timestamp
+          lastIncident: timestamp,
         },
         components: {} as any,
         alerts: this.getActiveAlerts(),
-        recommendations: this.recommendations
+        recommendations: this.recommendations,
       }
     }
   }
@@ -285,9 +289,11 @@ export class SystemMonitor {
     try {
       const poolMetrics = ConnectionPoolService.getInstance().getMetrics()
       const utilizationRate = poolMetrics.activeConnections / 6 // Assuming max 6 connections
-      const failureRate = poolMetrics.completedTasks > 0 
-        ? poolMetrics.failedTasks / (poolMetrics.completedTasks + poolMetrics.failedTasks)
-        : 0
+      const failureRate =
+        poolMetrics.completedTasks > 0
+          ? poolMetrics.failedTasks /
+            (poolMetrics.completedTasks + poolMetrics.failedTasks)
+          : 0
 
       const issues: string[] = []
       let status: ComponentHealth['status'] = 'healthy'
@@ -316,17 +322,17 @@ export class SystemMonitor {
           failedTasks: poolMetrics.failedTasks,
           averageExecutionTime: poolMetrics.averageExecutionTime,
           utilizationRate,
-          failureRate
+          failureRate,
         },
         lastCheck: Date.now(),
-        issues
+        issues,
       }
     } catch (error) {
       return {
         status: 'critical',
         metrics: {},
         lastCheck: Date.now(),
-        issues: ['Failed to check connection pool health']
+        issues: ['Failed to check connection pool health'],
       }
     }
   }
@@ -341,15 +347,24 @@ export class SystemMonitor {
       const unhealthyBreakers = registry.getUnhealthyBreakers()
 
       const totalBreakers = Object.keys(allMetrics).length
-      const openBreakers = Object.values(allMetrics).filter(m => m.state === 'open').length
-      const halfOpenBreakers = Object.values(allMetrics).filter(m => m.state === 'half-open').length
+      const openBreakers = Object.values(allMetrics).filter(
+        (m) => m.state === 'open'
+      ).length
+      const halfOpenBreakers = Object.values(allMetrics).filter(
+        (m) => m.state === 'half-open'
+      ).length
 
       const issues: string[] = []
       let status: ComponentHealth['status'] = 'healthy'
 
       if (unhealthyBreakers.length > 0) {
-        issues.push(`${unhealthyBreakers.length} unhealthy circuit breakers: ${unhealthyBreakers.join(', ')}`)
-        status = unhealthyBreakers.length > totalBreakers * 0.5 ? 'critical' : 'warning'
+        issues.push(
+          `${unhealthyBreakers.length} unhealthy circuit breakers: ${unhealthyBreakers.join(', ')}`
+        )
+        status =
+          unhealthyBreakers.length > totalBreakers * 0.5
+            ? 'critical'
+            : 'warning'
       }
 
       return {
@@ -359,17 +374,20 @@ export class SystemMonitor {
           openBreakers,
           halfOpenBreakers,
           unhealthyBreakers: unhealthyBreakers.length,
-          healthyRatio: totalBreakers > 0 ? (totalBreakers - unhealthyBreakers.length) / totalBreakers : 1
+          healthyRatio:
+            totalBreakers > 0
+              ? (totalBreakers - unhealthyBreakers.length) / totalBreakers
+              : 1,
         },
         lastCheck: Date.now(),
-        issues
+        issues,
       }
     } catch (error) {
       return {
         status: 'critical',
         metrics: {},
         lastCheck: Date.now(),
-        issues: ['Failed to check circuit breaker health']
+        issues: ['Failed to check circuit breaker health'],
       }
     }
   }
@@ -382,7 +400,8 @@ export class SystemMonitor {
       const eventBus = EventBus.getInstance()
       const metrics = eventBus.getMetrics()
 
-      const errorRate = metrics.totalEvents > 0 ? metrics.errorCount / metrics.totalEvents : 0
+      const errorRate =
+        metrics.totalEvents > 0 ? metrics.errorCount / metrics.totalEvents : 0
 
       const issues: string[] = []
       let status: ComponentHealth['status'] = 'healthy'
@@ -393,7 +412,9 @@ export class SystemMonitor {
       }
 
       if (metrics.averageProcessingTime > 100) {
-        issues.push(`Slow event processing: ${metrics.averageProcessingTime.toFixed(1)}ms`)
+        issues.push(
+          `Slow event processing: ${metrics.averageProcessingTime.toFixed(1)}ms`
+        )
         status = status === 'critical' ? 'critical' : 'warning'
       }
 
@@ -404,17 +425,17 @@ export class SystemMonitor {
           subscriberCount: metrics.subscriberCount,
           errorCount: metrics.errorCount,
           averageProcessingTime: metrics.averageProcessingTime,
-          errorRate
+          errorRate,
         },
         lastCheck: Date.now(),
-        issues
+        issues,
       }
     } catch (error) {
       return {
         status: 'critical',
         metrics: {},
         lastCheck: Date.now(),
-        issues: ['Failed to check event bus health']
+        issues: ['Failed to check event bus health'],
       }
     }
   }
@@ -444,14 +465,21 @@ export class SystemMonitor {
           totalJSHeapSize,
           jsHeapSizeLimit,
           heapUsageRatio,
-          allocatedRatio
+          allocatedRatio,
         }
 
         if (heapUsageRatio > this.config.alertThresholds.memoryUsage) {
-          issues.push(`High memory usage: ${(heapUsageRatio * 100).toFixed(1)}%`)
+          issues.push(
+            `High memory usage: ${(heapUsageRatio * 100).toFixed(1)}%`
+          )
           status = 'critical'
-        } else if (heapUsageRatio > this.config.alertThresholds.memoryUsage * 0.8) {
-          issues.push(`Elevated memory usage: ${(heapUsageRatio * 100).toFixed(1)}%`)
+        } else if (
+          heapUsageRatio >
+          this.config.alertThresholds.memoryUsage * 0.8
+        ) {
+          issues.push(
+            `Elevated memory usage: ${(heapUsageRatio * 100).toFixed(1)}%`
+          )
           status = 'warning'
         }
       } else {
@@ -463,14 +491,14 @@ export class SystemMonitor {
         status,
         metrics,
         lastCheck: Date.now(),
-        issues
+        issues,
       }
     } catch (error) {
       return {
         status: 'critical',
         metrics: {},
         lastCheck: Date.now(),
-        issues: ['Failed to check memory usage']
+        issues: ['Failed to check memory usage'],
       }
     }
   }
@@ -489,8 +517,10 @@ export class SystemMonitor {
 
       const metrics: Record<string, number> = {
         uptime: Date.now() - this.startTime,
-        navigationTiming: timing ? timing.loadEventEnd - timing.navigationStart : 0,
-        navigationType: navigation ? navigation.type : 0
+        navigationTiming: timing
+          ? timing.loadEventEnd - timing.navigationStart
+          : 0,
+        navigationType: navigation ? navigation.type : 0,
       }
 
       // Add performance entries if available
@@ -502,11 +532,14 @@ export class SystemMonitor {
         metrics.markCount = marks.length
 
         if (measures.length > 0) {
-          const avgDuration = measures.reduce((sum, m) => sum + m.duration, 0) / measures.length
+          const avgDuration =
+            measures.reduce((sum, m) => sum + m.duration, 0) / measures.length
           metrics.averageMeasureDuration = avgDuration
 
           if (avgDuration > this.config.alertThresholds.responseTime) {
-            issues.push(`Slow performance measures: ${avgDuration.toFixed(1)}ms`)
+            issues.push(
+              `Slow performance measures: ${avgDuration.toFixed(1)}ms`
+            )
             status = 'warning'
           }
         }
@@ -516,14 +549,14 @@ export class SystemMonitor {
         status,
         metrics,
         lastCheck: Date.now(),
-        issues
+        issues,
       }
     } catch (error) {
       return {
         status: 'critical',
         metrics: {},
         lastCheck: Date.now(),
-        issues: ['Failed to check performance metrics']
+        issues: ['Failed to check performance metrics'],
       }
     }
   }
@@ -531,21 +564,25 @@ export class SystemMonitor {
   /**
    * Calculate overall system health
    */
-  private calculateOverallHealth(components: SystemHealthMetrics['components']): SystemHealthStatus {
-    const componentStatuses = Object.values(components).map(c => c.status)
-    const criticalCount = componentStatuses.filter(s => s === 'critical').length
-    const warningCount = componentStatuses.filter(s => s === 'warning').length
-    const healthyCount = componentStatuses.filter(s => s === 'healthy').length
+  private calculateOverallHealth(
+    components: SystemHealthMetrics['components']
+  ): SystemHealthStatus {
+    const componentStatuses = Object.values(components).map((c) => c.status)
+    const criticalCount = componentStatuses.filter(
+      (s) => s === 'critical'
+    ).length
+    const warningCount = componentStatuses.filter((s) => s === 'warning').length
+    const healthyCount = componentStatuses.filter((s) => s === 'healthy').length
 
     let status: SystemHealthStatus['status']
     let score: number
 
     if (criticalCount > 0) {
       status = 'critical'
-      score = Math.max(0, 40 - (criticalCount * 10))
+      score = Math.max(0, 40 - criticalCount * 10)
     } else if (warningCount > 0) {
       status = 'warning'
-      score = Math.max(40, 80 - (warningCount * 10))
+      score = Math.max(40, 80 - warningCount * 10)
     } else {
       status = 'healthy'
       score = 100
@@ -555,18 +592,25 @@ export class SystemMonitor {
       status,
       score,
       uptime: Date.now() - this.startTime,
-      lastIncident: this.alerts.find(a => !a.resolved && a.severity === 'critical')?.timestamp || null
+      lastIncident:
+        this.alerts.find((a) => !a.resolved && a.severity === 'critical')
+          ?.timestamp || null,
     }
   }
 
   /**
    * Generate alerts from component health
    */
-  private generateAlertsFromComponents(components: SystemHealthMetrics['components']): void {
+  private generateAlertsFromComponents(
+    components: SystemHealthMetrics['components']
+  ): void {
     for (const [componentName, health] of Object.entries(components)) {
       if (health.status === 'critical') {
         const existingAlert = this.alerts.find(
-          a => !a.resolved && a.component === componentName && a.severity === 'critical'
+          (a) =>
+            !a.resolved &&
+            a.component === componentName &&
+            a.severity === 'critical'
         )
 
         if (!existingAlert) {
@@ -585,7 +629,9 @@ export class SystemMonitor {
   /**
    * Generate system recommendations
    */
-  private generateRecommendations(components: SystemHealthMetrics['components']): void {
+  private generateRecommendations(
+    components: SystemHealthMetrics['components']
+  ): void {
     // Clear old recommendations
     this.recommendations = []
 
@@ -597,11 +643,12 @@ export class SystemMonitor {
         category: 'performance',
         priority: 'medium',
         title: 'Increase Connection Pool Size',
-        description: 'Connection pool utilization is high, consider increasing the pool size',
+        description:
+          'Connection pool utilization is high, consider increasing the pool size',
         action: 'Review ConnectionPoolService maxConcurrentConnections setting',
         impact: 'medium',
         effort: 'low',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
 
@@ -613,11 +660,12 @@ export class SystemMonitor {
         category: 'reliability',
         priority: 'high',
         title: 'Review Circuit Breaker Configuration',
-        description: 'Some circuit breakers are unhealthy, review thresholds and recovery settings',
+        description:
+          'Some circuit breakers are unhealthy, review thresholds and recovery settings',
         action: 'Check AI provider configurations and network connectivity',
         impact: 'high',
         effort: 'medium',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
 
@@ -629,11 +677,12 @@ export class SystemMonitor {
         category: 'performance',
         priority: 'medium',
         title: 'Optimize Event Handlers',
-        description: 'Event processing is slower than optimal, review event handler performance',
+        description:
+          'Event processing is slower than optimal, review event handler performance',
         action: 'Profile event handlers and optimize slow operations',
         impact: 'medium',
         effort: 'medium',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
     }
   }
@@ -641,7 +690,10 @@ export class SystemMonitor {
   /**
    * Log system health metrics to Vercel dashboard
    */
-  private logSystemHealthToVercel(healthMetrics: SystemHealthMetrics, checkDuration: number): void {
+  private logSystemHealthToVercel(
+    healthMetrics: SystemHealthMetrics,
+    checkDuration: number
+  ): void {
     const { overall, components, alerts } = healthMetrics
 
     // Overall system health log
@@ -653,14 +705,14 @@ export class SystemMonitor {
         uptime: overall.uptime,
         lastIncident: overall.lastIncident,
         checkDuration: Math.round(checkDuration),
-        activeAlerts: alerts.length
+        activeAlerts: alerts.length,
       })
     } else {
       console.log('✅ SYSTEM_HEALTH_OK', {
         timestamp: new Date().toISOString(),
         score: overall.score,
         uptime: overall.uptime,
-        checkDuration: Math.round(checkDuration)
+        checkDuration: Math.round(checkDuration),
       })
     }
 
@@ -672,7 +724,7 @@ export class SystemMonitor {
           component: componentName,
           status: health.status,
           issues: health.issues,
-          metrics: health.metrics
+          metrics: health.metrics,
         })
       } else if (health.status === 'warning') {
         console.warn('⚠️ COMPONENT_WARNING', {
@@ -680,7 +732,7 @@ export class SystemMonitor {
           component: componentName,
           status: health.status,
           issues: health.issues,
-          metrics: health.metrics
+          metrics: health.metrics,
         })
       }
     }
@@ -692,24 +744,24 @@ export class SystemMonitor {
         active: components.connectionPool.metrics.activeConnections,
         queued: components.connectionPool.metrics.queuedTasks,
         utilization: components.connectionPool.metrics.utilizationRate,
-        failureRate: components.connectionPool.metrics.failureRate
+        failureRate: components.connectionPool.metrics.failureRate,
       },
       circuitBreakers: {
         total: components.circuitBreakers.metrics.totalBreakers,
         open: components.circuitBreakers.metrics.openBreakers,
         unhealthy: components.circuitBreakers.metrics.unhealthyBreakers,
-        healthyRatio: components.circuitBreakers.metrics.healthyRatio
+        healthyRatio: components.circuitBreakers.metrics.healthyRatio,
       },
       eventBus: {
         totalEvents: components.eventBus.metrics.totalEvents,
         subscribers: components.eventBus.metrics.subscriberCount,
         errorRate: components.eventBus.metrics.errorRate,
-        avgProcessingTime: components.eventBus.metrics.averageProcessingTime
+        avgProcessingTime: components.eventBus.metrics.averageProcessingTime,
       },
       memory: {
         heapUsage: components.memory.metrics.heapUsageRatio,
-        allocated: components.memory.metrics.allocatedRatio
-      }
+        allocated: components.memory.metrics.allocatedRatio,
+      },
     })
   }
 
@@ -724,7 +776,7 @@ export class SystemMonitor {
       severity: alert.severity,
       component: alert.component,
       message: alert.message,
-      metadata: alert.metadata
+      metadata: alert.metadata,
     }
 
     switch (alert.severity) {
@@ -761,18 +813,18 @@ export class SystemMonitor {
       message,
       timestamp: Date.now(),
       resolved: false,
-      metadata
+      metadata,
     }
 
     this.alerts.push(alert)
-    
+
     // Log to Vercel dashboard
     this.logAlertToVercel(alert)
-    
+
     this.logger.logBusinessMetric('alert_created', 1, {
       component: 'SystemMonitor',
       alertType: type,
-      severity
+      severity,
     })
 
     return alert.id
@@ -782,10 +834,10 @@ export class SystemMonitor {
    * Enhanced alert resolution with Vercel logging
    */
   resolveAlert(alertId: string): boolean {
-    const alert = this.alerts.find(a => a.id === alertId)
+    const alert = this.alerts.find((a) => a.id === alertId)
     if (alert) {
       alert.resolved = true
-      
+
       // Log resolution to Vercel dashboard
       console.log('✅ ALERT_RESOLVED', {
         timestamp: new Date().toISOString(),
@@ -793,13 +845,13 @@ export class SystemMonitor {
         type: alert.type,
         severity: alert.severity,
         component: alert.component,
-        resolutionTime: Date.now() - alert.timestamp
+        resolutionTime: Date.now() - alert.timestamp,
       })
-      
+
       this.logger.logBusinessMetric('alert_resolved', 1, {
         component: 'SystemMonitor',
         alertId,
-        alertType: alert.type
+        alertType: alert.type,
       })
       return true
     }
@@ -813,12 +865,10 @@ export class SystemMonitor {
     const cutoff = Date.now() - this.config.retentionPeriod
 
     // Clean health history
-    this.healthHistory = this.healthHistory.filter(h => h.timestamp > cutoff)
+    this.healthHistory = this.healthHistory.filter((h) => h.timestamp > cutoff)
 
     // Clean old resolved alerts
-    this.alerts = this.alerts.filter(a => 
-      !a.resolved || a.timestamp > cutoff
-    )
+    this.alerts = this.alerts.filter((a) => !a.resolved || a.timestamp > cutoff)
   }
 }
 

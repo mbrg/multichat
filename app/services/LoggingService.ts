@@ -42,6 +42,7 @@ export interface PerformanceMetrics {
   success: boolean
   provider?: string
   model?: string
+  metadata?: Record<string, unknown>
   timestamp: Date
 }
 
