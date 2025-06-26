@@ -75,7 +75,9 @@ export async function POST(request: NextRequest) {
             validatedData.messages,
             permutations,
             {
-              maxTokens: validatedData.options.maxTokens || TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+              maxTokens:
+                validatedData.options.maxTokens ||
+                TOKEN_LIMITS.POSSIBILITY_DEFAULT,
             }
           )
 

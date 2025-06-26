@@ -3,9 +3,9 @@ import { SUPPORTED_MIME_COMBINATIONS } from '../../constants/defaults'
 
 // Token configuration for different model types
 export const TOKEN_LIMITS = {
-  POSSIBILITY_DEFAULT: 100,           // Default tokens for possibility generation
-  POSSIBILITY_REASONING: 1500,        // Tokens for reasoning models in possibilities
-  CONTINUATION_DEFAULT: 1000,         // Additional tokens when continuing from a possibility
+  POSSIBILITY_DEFAULT: 100, // Default tokens for possibility generation
+  POSSIBILITY_REASONING: 1500, // Tokens for reasoning models in possibilities
+  CONTINUATION_DEFAULT: 1000, // Additional tokens when continuing from a possibility
 } as const
 
 export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
@@ -314,7 +314,7 @@ export const isReasoningModel = (modelId: string): boolean => {
 }
 
 export const getDefaultTokenLimit = (modelId: string): number => {
-  return isReasoningModel(modelId) 
-    ? TOKEN_LIMITS.POSSIBILITY_REASONING 
+  return isReasoningModel(modelId)
+    ? TOKEN_LIMITS.POSSIBILITY_REASONING
     : TOKEN_LIMITS.POSSIBILITY_DEFAULT
 }

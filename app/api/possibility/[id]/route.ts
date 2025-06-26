@@ -33,7 +33,10 @@ const possibilityRequestSchema = z.object({
   }),
   options: z
     .object({
-      maxTokens: z.number().optional().default(TOKEN_LIMITS.POSSIBILITY_DEFAULT),
+      maxTokens: z
+        .number()
+        .optional()
+        .default(TOKEN_LIMITS.POSSIBILITY_DEFAULT),
       stream: z.boolean().optional().default(true),
     })
     .optional()

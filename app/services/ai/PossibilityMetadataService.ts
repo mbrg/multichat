@@ -101,7 +101,8 @@ export class PossibilityMetadataService {
           systemInstruction: permutation.systemInstruction || null,
           systemPrompt: permutation.systemPrompt,
           priority: this.calculatePriority(permutation, baseIndex),
-          estimatedTokens: options.maxTokens || getDefaultTokenLimit(permutation.model),
+          estimatedTokens:
+            options.maxTokens || getDefaultTokenLimit(permutation.model),
           order: baseIndex * multiplier + instance,
         }
         allMetadata.push(metadata)
