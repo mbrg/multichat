@@ -41,23 +41,30 @@ export function useSimplePossibilities(
   // Track abort controllers for cleanup
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map())
 
-  // Clear state when settings change
+  // Only cancel requests on unmount to clean up properly
   useEffect(() => {
-    setPossibilities([])
-    loadingRef.current.clear()
-    // Cancel all active requests
-    abortControllersRef.current.forEach((controller) => controller.abort())
-    abortControllersRef.current.clear()
-  }, [settings])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    const controllers = abortControllersRef.current
     return () => {
-      controllers.forEach((controller) => controller.abort())
-      controllers.clear()
+      // Cancel all active requests on unmount
+      abortControllersRef.current.forEach((controller) => {
+        controller.abort()
+      })
+      abortControllersRef.current.clear()
+      // Clear loading state so requests can be retried on remount
+      loadingRef.current.clear()
     }
   }, [])
+
+  // Store messages and metadata in refs to avoid recreating loadPossibility
+  const messagesRef = useRef(messages)
+  const metadataRef = useRef(metadata)
+  
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+  
+  useEffect(() => {
+    metadataRef.current = metadata
+  }, [metadata])
 
   const loadPossibility = useCallback(
     async (possibilityId: string) => {
@@ -67,7 +74,9 @@ export function useSimplePossibilities(
       if (!meta) return
 
       // Check if already loading or loaded to prevent duplicates
-      if (loadingRef.current.has(possibilityId)) return
+      if (loadingRef.current.has(possibilityId)) {
+        return
+      }
 
       // Mark as loading immediately
       loadingRef.current.add(possibilityId)
@@ -150,14 +159,11 @@ export function useSimplePossibilities(
           )
         } catch (error) {
           if (error instanceof Error && error.name === 'AbortError') {
-            console.log(
-              `Request for possibility ${possibilityId} was cancelled`
-            )
+            // Remove from loading set so it can be retried
+            loadingRef.current.delete(possibilityId)
           } else {
             console.error(`Error loading possibility ${possibilityId}:`, error)
           }
-          // Remove from loading set on error
-          loadingRef.current.delete(possibilityId)
           // Remove from possibilities on error
           setPossibilities((prev) => prev.filter((p) => p.id !== possibilityId))
         } finally {

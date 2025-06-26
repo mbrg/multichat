@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSimplePossibilities } from '@/hooks/useSimplePossibilities'
 import type { ChatMessage, PossibilityResponse } from '@/types/api'
 import type { UserSettings } from '@/types/settings'
@@ -29,9 +29,20 @@ const VirtualizedPossibilitiesPanel: React.FC<
   const { possibilities, availableMetadata, loadPossibility } =
     useSimplePossibilities(messages, settings)
 
+  // Track if we've loaded initial possibilities for this conversation
+  const loadedConversationRef = useRef<string>('')
+  const conversationKey = `${messages.length}`
+
+  // Reset conversation tracking on mount so we can reload on remount
+  useEffect(() => {
+    loadedConversationRef.current = ''
+  }, [])
+  
   // Auto-load top 6 high-priority possibilities to show variety
   useEffect(() => {
-    if (isActive && messages.length > 0) {
+    if (isActive && messages.length > 0 && loadedConversationRef.current !== conversationKey) {
+      loadedConversationRef.current = conversationKey
+      
       // Get all high-priority metadata, then load them one by one
       // loadPossibility will handle duplicate prevention internally
       const allMetadata =
@@ -50,7 +61,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
         loadPossibility(meta.id)
       )
     }
-  }, [isActive, messages, loadPossibility, settings])
+  }, [isActive, conversationKey, settings]) // Remove loadPossibility from deps
 
   // Load more possibilities when scrolling near the bottom
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
