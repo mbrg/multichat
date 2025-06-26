@@ -1,6 +1,13 @@
 import type { ModelInfo, ProviderType } from '../../types/ai'
 import { SUPPORTED_MIME_COMBINATIONS } from '../../constants/defaults'
 
+// Token configuration for different model types
+export const TOKEN_LIMITS = {
+  POSSIBILITY_DEFAULT: 100,           // Default tokens for possibility generation
+  POSSIBILITY_REASONING: 1500,        // Tokens for reasoning models in possibilities
+  CONTINUATION_DEFAULT: 1000,         // Additional tokens when continuing from a possibility
+} as const
+
 export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
   openai: [
     {
@@ -66,6 +73,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       maxTokens: 32768,
       priority: 'high',
       supportedMimeTypes: ['text/plain'],
+      isReasoningModel: true,
     },
     {
       id: 'o1-mini',
@@ -77,6 +85,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       maxTokens: 65536,
       priority: 'medium',
       supportedMimeTypes: ['text/plain'],
+      isReasoningModel: true,
     },
   ],
   anthropic: [
@@ -297,4 +306,15 @@ export const getDefaultTemperatureRange = (count: number): number[] => {
     temperatures.push(0.7 + (0.3 * i) / (count - 1))
   }
   return temperatures
+}
+
+export const isReasoningModel = (modelId: string): boolean => {
+  const model = getModelById(modelId)
+  return model?.isReasoningModel === true
+}
+
+export const getDefaultTokenLimit = (modelId: string): number => {
+  return isReasoningModel(modelId) 
+    ? TOKEN_LIMITS.POSSIBILITY_REASONING 
+    : TOKEN_LIMITS.POSSIBILITY_DEFAULT
 }

@@ -24,6 +24,7 @@ export interface ModelInfo {
   maxTokens: number
   priority: 'high' | 'medium' | 'low'
   supportedMimeTypes?: string[]
+  isReasoningModel?: boolean
 }
 
 export interface GenerationOptions {

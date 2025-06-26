@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '../../../lib/auth'
 import { PermutationGenerator } from '@/services/ai/permutations'
 import { PossibilityExecutor } from '@/services/ai/executor'
+import { TOKEN_LIMITS } from '@/services/ai/config'
 import type { ChatCompletionRequest, StreamEvent } from '@/types/api'
 
 // Request validation schema
@@ -29,7 +30,7 @@ const requestSchema = z.object({
     temperatures: z.array(z.number()),
   }),
   options: z.object({
-    maxTokens: z.number().optional().default(100),
+    maxTokens: z.number().optional().default(TOKEN_LIMITS.POSSIBILITY_DEFAULT),
     stream: z.boolean().optional().default(true),
     mode: z.enum(['possibilities', 'continuation']),
     continuationId: z.string().optional(),
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
             validatedData.messages,
             permutations,
             {
-              maxTokens: validatedData.options.maxTokens || 100,
+              maxTokens: validatedData.options.maxTokens || TOKEN_LIMITS.POSSIBILITY_DEFAULT,
             }
           )
 
@@ -145,7 +146,7 @@ async function handleNonStreamingRequest(data: ChatCompletionRequest) {
       data.messages,
       permutations,
       {
-        maxTokens: data.options.maxTokens || 100,
+        maxTokens: data.options.maxTokens || TOKEN_LIMITS.POSSIBILITY_DEFAULT,
       }
     )
 

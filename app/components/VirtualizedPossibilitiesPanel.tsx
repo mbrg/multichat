@@ -24,7 +24,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
   isActive = false,
   onSelectResponse,
   enableVirtualScrolling = true,
-  maxTokens = 100,
+  maxTokens,
 }) => {
   const { possibilities, availableMetadata, loadPossibility } =
     useSimplePossibilities(messages, settings)

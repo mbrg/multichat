@@ -6,6 +6,7 @@ import AttachmentPreview from './AttachmentPreview'
 import VirtualizedPossibilitiesPanel from './VirtualizedPossibilitiesPanel'
 import { getProviderLogo, getProviderFromModel } from '../utils/providerLogos'
 import { useSettings } from '../hooks/useSettings'
+import { TOKEN_LIMITS } from '../services/ai/config'
 
 interface MessageWithIndependentPossibilitiesProps {
   message: Message
@@ -203,7 +204,7 @@ const MessageWithIndependentPossibilities: React.FC<
                   isActive={true}
                   onSelectResponse={handleSelectResponse}
                   enableVirtualScrolling={true}
-                  maxTokens={100}
+                  maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
                 />
               </div>
             )}

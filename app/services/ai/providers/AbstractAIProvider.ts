@@ -221,9 +221,9 @@ export abstract class AbstractAIProvider implements AIProvider {
         finishReason: finalResult || 'stop',
         usage: finalUsage
           ? {
-              promptTokens: finalUsage.promptTokens,
-              completionTokens: finalUsage.completionTokens,
-              totalTokens: finalUsage.totalTokens,
+              promptTokens: finalUsage.promptTokens || 0,
+              completionTokens: finalUsage.completionTokens || 0,
+              totalTokens: finalUsage.totalTokens || 0,
             }
           : undefined,
       }

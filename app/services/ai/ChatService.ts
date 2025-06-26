@@ -22,6 +22,7 @@ import type {
 import { LoggingService } from '../LoggingService'
 import { ConnectionPoolService } from '../ConnectionPoolService'
 import { NetworkError, ValidationError, TimeoutError } from '../../types/errors'
+import { TOKEN_LIMITS } from './config'
 
 export interface PossibilityState {
   id: string
@@ -181,7 +182,7 @@ export class ChatService {
         ],
       },
       options: {
-        maxTokens: 100,
+        maxTokens: TOKEN_LIMITS.POSSIBILITY_DEFAULT,
         stream: true,
         mode: 'possibilities',
       },

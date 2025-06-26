@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../../lib/auth'
 import { AIService } from '@/services/ai'
-import { getAllModels } from '@/services/ai/config'
+import { getAllModels, TOKEN_LIMITS } from '@/services/ai/config'
 import type { ChatMessage, StreamEvent, Permutation } from '@/types/api'
 
 // Request validation schema for individual possibility
@@ -33,7 +33,7 @@ const possibilityRequestSchema = z.object({
   }),
   options: z
     .object({
-      maxTokens: z.number().optional().default(100),
+      maxTokens: z.number().optional().default(TOKEN_LIMITS.POSSIBILITY_DEFAULT),
       stream: z.boolean().optional().default(true),
     })
     .optional()

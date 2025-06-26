@@ -1,6 +1,7 @@
 import { PermutationGenerator } from './permutations'
 import type { Permutation } from '@/types/api'
 import type { UserSettings } from '@/types/settings'
+import { TOKEN_LIMITS, getDefaultTokenLimit } from './config'
 
 export interface PossibilityMetadata {
   id: string
@@ -100,7 +101,7 @@ export class PossibilityMetadataService {
           systemInstruction: permutation.systemInstruction || null,
           systemPrompt: permutation.systemPrompt,
           priority: this.calculatePriority(permutation, baseIndex),
-          estimatedTokens: options.maxTokens || 100,
+          estimatedTokens: options.maxTokens || getDefaultTokenLimit(permutation.model),
           order: baseIndex * multiplier + instance,
         }
         allMetadata.push(metadata)
