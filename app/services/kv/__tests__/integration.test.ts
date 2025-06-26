@@ -46,7 +46,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should fall back to local storage in development without cloud config', async () => {
       // Arrange: Development without cloud config
       Object.assign(process.env, { NODE_ENV: 'development' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
@@ -61,16 +61,18 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should attempt CloudKV when cloud config is present', async () => {
       // Arrange: Development with cloud config
       Object.assign(process.env, { NODE_ENV: 'development' })
-      process.env.KV_URL = 'redis://test:6379'
-      process.env.KV_REST_API_URL = 'https://test-api.vercel.com'
+      process.env.KV_REST_API_URL = 'https://test-api.upstash.io'
+      process.env.KV_REST_API_URL = 'https://test-api.upstash.io'
       process.env.KV_REST_API_TOKEN = 'test-token'
 
-      // Mock @vercel/kv to simulate cloud availability
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn().mockResolvedValue(null),
-          set: vi.fn().mockResolvedValue(undefined),
-          del: vi.fn().mockResolvedValue(undefined),
+      // Mock @upstash/redis to simulate cloud availability
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn().mockResolvedValue(null),
+            set: vi.fn().mockResolvedValue(undefined),
+            del: vi.fn().mockResolvedValue(undefined),
+          }),
         },
       }))
 
@@ -81,9 +83,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         // Assert
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
-        // If @vercel/kv is not available, that's expected in test environment
+        // If @upstash/redis is not available, that's expected in test environment
         expect((error as Error).message).toContain(
-          'Failed to initialize cloud KV store'
+          'Failed to initialize cloud Redis store'
         )
       }
     })
@@ -93,29 +95,31 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should require cloud configuration in production', async () => {
       // Arrange: Production without cloud config
       Object.assign(process.env, { NODE_ENV: 'production' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
       // Act & Assert
       await expect(KVStoreFactory.createInstance('auto')).rejects.toThrow(
-        'Vercel KV configuration required'
+        'Upstash Redis configuration required (KV_REST_API_URL, KV_REST_API_TOKEN)'
       )
     })
 
     it('should use CloudKV when properly configured in production', async () => {
       // Arrange: Production with cloud config
       Object.assign(process.env, { NODE_ENV: 'production' })
-      process.env.KV_URL = 'redis://prod:6379'
-      process.env.KV_REST_API_URL = 'https://prod-api.vercel.com'
+      process.env.KV_REST_API_URL = 'https://prod-api.upstash.io'
+      process.env.KV_REST_API_URL = 'https://prod-api.upstash.io'
       process.env.KV_REST_API_TOKEN = 'prod-token'
 
-      // Mock @vercel/kv
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn().mockResolvedValue(null),
-          set: vi.fn().mockResolvedValue(undefined),
-          del: vi.fn().mockResolvedValue(undefined),
+      // Mock @upstash/redis
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn().mockResolvedValue(null),
+            set: vi.fn().mockResolvedValue(undefined),
+            del: vi.fn().mockResolvedValue(undefined),
+          }),
         },
       }))
 
@@ -126,9 +130,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         // Assert
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
-        // Expected if @vercel/kv is not available
+        // Expected if @upstash/redis is not available
         expect((error as Error).message).toContain(
-          'Failed to initialize cloud KV store'
+          'Failed to initialize cloud Redis store'
         )
       }
     })
@@ -138,16 +142,18 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should only support cloud storage now', async () => {
       // Arrange: Cloud config available
       Object.assign(process.env, { NODE_ENV: 'development' })
-      process.env.KV_URL = 'redis://test:6379'
-      process.env.KV_REST_API_URL = 'https://test-api.vercel.com'
+      process.env.KV_REST_API_URL = 'https://test-api.upstash.io'
+      process.env.KV_REST_API_URL = 'https://test-api.upstash.io'
       process.env.KV_REST_API_TOKEN = 'test-token'
 
-      // Mock @vercel/kv
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn().mockResolvedValue(null),
-          set: vi.fn().mockResolvedValue(undefined),
-          del: vi.fn().mockResolvedValue(undefined),
+      // Mock @upstash/redis
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn().mockResolvedValue(null),
+            set: vi.fn().mockResolvedValue(undefined),
+            del: vi.fn().mockResolvedValue(undefined),
+          }),
         },
       }))
 
@@ -158,9 +164,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         // Assert
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
-        // Expected if @vercel/kv is not available
+        // Expected if @upstash/redis is not available
         expect((error as Error).message).toContain(
-          'Failed to initialize cloud KV store'
+          'Failed to initialize cloud Redis store'
         )
       }
     })
@@ -169,12 +175,14 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
       // Arrange
       Object.assign(process.env, { NODE_ENV: 'development' })
 
-      // Mock @vercel/kv
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn(),
-          set: vi.fn(),
-          del: vi.fn(),
+      // Mock @upstash/redis
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          }),
         },
       }))
 
@@ -185,9 +193,9 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         // Assert
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
-        // Expected if @vercel/kv is not available
+        // Expected if @upstash/redis is not available
         expect((error as Error).message).toContain(
-          'Failed to initialize cloud KV store'
+          'Failed to initialize cloud Redis store'
         )
       }
     })
@@ -197,7 +205,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should return same instance for singleton calls', async () => {
       // Arrange
       Object.assign(process.env, { NODE_ENV: 'development' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
@@ -212,7 +220,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should return different instances after reset', async () => {
       // Arrange
       Object.assign(process.env, { NODE_ENV: 'development' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
@@ -228,7 +236,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should provide implementation type information', async () => {
       // Arrange
       Object.assign(process.env, { NODE_ENV: 'development' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
@@ -247,7 +255,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should handle all data types consistently in local mode', async () => {
       // Arrange
       Object.assign(process.env, { NODE_ENV: 'development' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 
@@ -277,7 +285,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
     it('should handle concurrent operations in local mode', async () => {
       // Arrange
       Object.assign(process.env, { NODE_ENV: 'development' })
-      delete process.env.KV_URL
+      delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_URL
       delete process.env.KV_REST_API_TOKEN
 

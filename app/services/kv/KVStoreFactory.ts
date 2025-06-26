@@ -13,7 +13,6 @@ export type KVStoreType = 'cloud' | 'local' | 'auto'
 
 export interface KVEnvironment {
   NODE_ENV: string
-  KV_URL?: string
   KV_REST_API_URL?: string
   KV_REST_API_TOKEN?: string
 }
@@ -85,7 +84,6 @@ export class KVStoreFactory {
 
     console.log(`[KVStoreFactory] Environment analysis:`)
     console.log(`  NODE_ENV: ${env.NODE_ENV}`)
-    console.log(`  Has KV_URL: ${Boolean(env.KV_URL)}`)
     console.log(`  Has KV_REST_API_URL: ${Boolean(env.KV_REST_API_URL)}`)
     console.log(`  Has KV_REST_API_TOKEN: ${Boolean(env.KV_REST_API_TOKEN)}`)
 
@@ -102,7 +100,7 @@ export class KVStoreFactory {
     // Production requires cloud configuration
     if (!hasCloudConfig) {
       throw new Error(
-        'Vercel KV configuration required (KV_URL, KV_REST_API_URL, KV_REST_API_TOKEN)'
+        'Upstash Redis configuration required (KV_REST_API_URL, KV_REST_API_TOKEN)'
       )
     }
 
@@ -111,10 +109,10 @@ export class KVStoreFactory {
   }
 
   /**
-   * Check if cloud KV configuration is available
+   * Check if cloud Redis configuration is available
    */
   private static hasCloudConfiguration(env: KVEnvironment): boolean {
-    return Boolean(env.KV_URL && env.KV_REST_API_URL && env.KV_REST_API_TOKEN)
+    return Boolean(env.KV_REST_API_URL && env.KV_REST_API_TOKEN)
   }
 
   /**
@@ -123,23 +121,24 @@ export class KVStoreFactory {
   private static getEnvironment(): KVEnvironment {
     return {
       NODE_ENV: process.env.NODE_ENV || 'development',
-      KV_URL: process.env.KV_URL,
       KV_REST_API_URL: process.env.KV_REST_API_URL,
       KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN,
     }
   }
 
   /**
-   * Create cloud KV store instance
+   * Create cloud Redis store instance
    */
   static async createCloudKVStore(): Promise<CloudKVStore> {
     try {
-      const { kv } = await import('@vercel/kv')
-      return new CloudKVStore(kv)
+      return new CloudKVStore()
     } catch (error) {
-      console.error('[KVStoreFactory] Failed to import @vercel/kv:', error)
+      console.error(
+        '[KVStoreFactory] Failed to initialize Upstash Redis:',
+        error
+      )
       throw new Error(
-        'Failed to initialize cloud KV store. Ensure @vercel/kv is installed and configured.'
+        'Failed to initialize cloud Redis store. Ensure @upstash/redis is installed and environment variables are configured.'
       )
     }
   }

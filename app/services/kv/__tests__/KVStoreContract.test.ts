@@ -11,8 +11,8 @@ import { IKVStore } from '../IKVStore'
 // LocalKVStore removed - using cloud-only storage
 import { CloudKVStore } from '../CloudKVStore'
 
-// Mock Vercel KV for testing
-const mockVercelKV = {
+// Mock Upstash Redis for testing
+const mockUpstashRedis = {
   get: async (key: string) =>
     mockStorage.has(key) ? mockStorage.get(key) : null,
   set: async (key: string, value: any) => {
@@ -169,5 +169,5 @@ function runKVStoreContractTests(
 // Run contract tests for cloud implementation only
 runKVStoreContractTests(
   'CloudKVStore',
-  async () => new CloudKVStore(mockVercelKV)
+  async () => new CloudKVStore(mockUpstashRedis as any)
 )

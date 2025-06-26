@@ -1,25 +1,36 @@
 /**
  * Cloud KV Store Implementation
  *
- * Production key-value store using Vercel KV.
- * Provides persistent, distributed storage.
+ * Production key-value store using Upstash Redis.
+ * Provides persistent, distributed storage with full Redis features.
  */
 
+import { Redis } from '@upstash/redis'
 import { IKVStore } from './IKVStore'
 
 export class CloudKVStore implements IKVStore {
-  private kv: any
+  private redis: Redis
   private readonly instanceId: string
 
-  constructor(kvInstance: any) {
-    this.kv = kvInstance
+  constructor(redisInstance?: Redis) {
+    if (redisInstance) {
+      this.redis = redisInstance
+    } else {
+      // Use Vercel-provided environment variables
+      this.redis = new Redis({
+        url: process.env.KV_REST_API_URL!,
+        token: process.env.KV_REST_API_TOKEN!,
+      })
+    }
     this.instanceId = Math.random().toString(36).substring(2, 8)
-    console.log(`[CloudKVStore:${this.instanceId}] Initialized Vercel KV store`)
+    console.log(
+      `[CloudKVStore:${this.instanceId}] Initialized Upstash Redis store`
+    )
   }
 
   async get<T = any>(key: string): Promise<T | null> {
     try {
-      const value = (await this.kv.get(key)) as T | null
+      const value = (await this.redis.get(key)) as T | null
       console.log(
         `[CloudKVStore:${this.instanceId}] GET ${key} -> ${value ? 'found' : 'null'}`
       )
@@ -35,7 +46,7 @@ export class CloudKVStore implements IKVStore {
 
   async set(key: string, value: any): Promise<void> {
     try {
-      await this.kv.set(key, value)
+      await this.redis.set(key, value)
       console.log(`[CloudKVStore:${this.instanceId}] SET ${key} -> stored`)
     } catch (error) {
       console.error(
@@ -48,7 +59,7 @@ export class CloudKVStore implements IKVStore {
 
   async del(key: string): Promise<void> {
     try {
-      await this.kv.del(key)
+      await this.redis.del(key)
       console.log(`[CloudKVStore:${this.instanceId}] DEL ${key} -> deleted`)
     } catch (error) {
       console.error(
@@ -60,6 +71,6 @@ export class CloudKVStore implements IKVStore {
   }
 
   getImplementationName(): string {
-    return `CloudKVStore:${this.instanceId}`
+    return `CloudKVStore:${this.instanceId}:Upstash`
   }
 }

@@ -19,7 +19,6 @@ describe('KVStoreFactory', () => {
     it('should fall back to local storage in development without cloud config', async () => {
       // Mock environment without cloud config
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_URL', undefined)
       vi.stubEnv('KV_REST_API_URL', undefined)
       vi.stubEnv('KV_REST_API_TOKEN', undefined)
 
@@ -31,16 +30,18 @@ describe('KVStoreFactory', () => {
     it('should use cloud KV in development with cloud config', async () => {
       // Mock environment with cloud config
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_URL', 'redis://localhost:6379')
-      vi.stubEnv('KV_REST_API_URL', 'https://api.vercel.com/kv')
+      vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
+      vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
       vi.stubEnv('KV_REST_API_TOKEN', 'token123')
 
-      // Mock the @vercel/kv import
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn(),
-          set: vi.fn(),
-          del: vi.fn(),
+      // Mock the @upstash/redis import
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          }),
         },
       }))
 
@@ -52,16 +53,18 @@ describe('KVStoreFactory', () => {
     it('should use cloud KV in production with cloud config', async () => {
       // Mock environment with cloud config
       vi.stubEnv('NODE_ENV', 'production')
-      vi.stubEnv('KV_URL', 'redis://production:6379')
-      vi.stubEnv('KV_REST_API_URL', 'https://api.vercel.com/kv')
+      vi.stubEnv('KV_REST_API_URL', 'https://prod-api.upstash.io')
+      vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
       vi.stubEnv('KV_REST_API_TOKEN', 'prod-token123')
 
-      // Mock the @vercel/kv import
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn(),
-          set: vi.fn(),
-          del: vi.fn(),
+      // Mock the @upstash/redis import
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          }),
         },
       }))
 
@@ -73,12 +76,11 @@ describe('KVStoreFactory', () => {
     it('should throw error in production without cloud config', async () => {
       // Mock production environment without cloud config
       vi.stubEnv('NODE_ENV', 'production')
-      vi.stubEnv('KV_URL', undefined)
       vi.stubEnv('KV_REST_API_URL', undefined)
       vi.stubEnv('KV_REST_API_TOKEN', undefined)
 
       await expect(KVStoreFactory.createInstance('auto')).rejects.toThrow(
-        'Vercel KV configuration required'
+        'Upstash Redis configuration required (KV_REST_API_URL, KV_REST_API_TOKEN)'
       )
     })
   })
@@ -87,16 +89,18 @@ describe('KVStoreFactory', () => {
     it('should only support cloud storage now', async () => {
       // Cloud config available
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_URL', 'redis://localhost:6379')
-      vi.stubEnv('KV_REST_API_URL', 'https://api.vercel.com/kv')
+      vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
+      vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
       vi.stubEnv('KV_REST_API_TOKEN', 'token123')
 
-      // Mock the @vercel/kv import
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn(),
-          set: vi.fn(),
-          del: vi.fn(),
+      // Mock the @upstash/redis import
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          }),
         },
       }))
 
@@ -106,12 +110,14 @@ describe('KVStoreFactory', () => {
     })
 
     it('should respect explicit cloud type selection', async () => {
-      // Mock the @vercel/kv import
-      vi.doMock('@vercel/kv', () => ({
-        kv: {
-          get: vi.fn(),
-          set: vi.fn(),
-          del: vi.fn(),
+      // Mock the @upstash/redis import
+      vi.doMock('@upstash/redis', () => ({
+        Redis: {
+          fromEnv: vi.fn().mockReturnValue({
+            get: vi.fn(),
+            set: vi.fn(),
+            del: vi.fn(),
+          }),
         },
       }))
 
@@ -126,7 +132,6 @@ describe('KVStoreFactory', () => {
   describe('Singleton Behavior', () => {
     it('should return the same instance on multiple calls', async () => {
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_URL', undefined)
       vi.stubEnv('KV_REST_API_URL', undefined)
       vi.stubEnv('KV_REST_API_TOKEN', undefined)
 
@@ -138,7 +143,6 @@ describe('KVStoreFactory', () => {
 
     it('should return different instances after reset', async () => {
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_URL', undefined)
       vi.stubEnv('KV_REST_API_URL', undefined)
       vi.stubEnv('KV_REST_API_TOKEN', undefined)
 
@@ -151,14 +155,14 @@ describe('KVStoreFactory', () => {
   })
 
   describe('Error Handling', () => {
-    it('should handle missing @vercel/kv dependency gracefully', async () => {
+    it('should handle missing @upstash/redis dependency gracefully', async () => {
       // Mock import failure using vi.mock at top level would be hoisted
       // Instead, mock the createCloudKVStore method directly
       const spy = vi.spyOn(KVStoreFactory, 'createCloudKVStore')
-      spy.mockRejectedValue(new Error('Failed to initialize cloud KV store'))
+      spy.mockRejectedValue(new Error('Failed to initialize cloud Redis store'))
 
       await expect(KVStoreFactory.createInstance('cloud')).rejects.toThrow(
-        'Failed to initialize cloud KV store'
+        'Failed to initialize cloud Redis store'
       )
 
       spy.mockRestore()
@@ -172,7 +176,6 @@ describe('KVStoreFactory', () => {
 
     it('should return implementation name when instance exists', async () => {
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_URL', undefined)
       vi.stubEnv('KV_REST_API_URL', undefined)
       vi.stubEnv('KV_REST_API_TOKEN', undefined)
 
