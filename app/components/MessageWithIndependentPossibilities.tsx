@@ -94,7 +94,7 @@ const MessageWithIndependentPossibilities: React.FC<
                 typeof message.model === 'string' 
                   ? getProviderFromModel(message.model || 'openai')
                   : (message.model as any)?.provider || 'openai',
-                'dark'
+                'light'
               )}
               alt="AI"
               width={24}

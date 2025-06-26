@@ -48,7 +48,7 @@ const Message: React.FC<ExtendedMessageProps> = ({
             <Image
               src={getProviderLogo(
                 getProviderFromModel(message.model || 'openai'),
-                'dark'
+                'light'
               )}
               alt="AI"
               width={24}
