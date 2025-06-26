@@ -109,7 +109,7 @@ const MessageWithIndependentPossibilities: React.FC<
       <div className="flex-1">
         {/* Message Bubble */}
         <div
-          className={`border rounded-xl p-4 relative word-wrap break-word overflow-wrap break-word ${
+          className={`border rounded-xl relative word-wrap break-word overflow-wrap break-word ${
             isUser
               ? 'bg-[#2a2a3a] border-[#3a3a4a]'
               : 'bg-[#1a1a1a] border-[#2a2a2a]'
@@ -121,7 +121,7 @@ const MessageWithIndependentPossibilities: React.FC<
               message.probability ||
               message.temperature !== undefined ||
               message.systemInstruction) && (
-              <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
+              <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-xs font-bold border border-[#3a3a4a] flex items-center gap-2 z-10">
                 {message.model && (
                   <span className="text-[#888]">{getDisplayModelName(message.model)}</span>
                 )}
@@ -143,40 +143,43 @@ const MessageWithIndependentPossibilities: React.FC<
               </div>
             )}
 
-          {message.content && (
-            <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
-              {message.content}
-            </div>
-          )}
+          {/* Message Content Container */}
+          <div className={isUser ? "p-4" : "pt-6 pb-4 px-4"}>
+            {message.content && (
+              <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
+                {message.content}
+              </div>
+            )}
 
-          {/* Attachments */}
-          {message.attachments && message.attachments.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {message.attachments.map((attachment) => (
-                <AttachmentPreview
-                  key={attachment.id}
-                  attachment={attachment}
-                  className="max-w-xs"
+            {/* Attachments */}
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {message.attachments.map((attachment) => (
+                  <AttachmentPreview
+                    key={attachment.id}
+                    attachment={attachment}
+                    className="max-w-xs"
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Independent Streaming Possibilities Panel */}
+            {!isUser && showPossibilities && !message.content && settings && (
+              <div className="mt-3">
+                <VirtualizedPossibilitiesPanel
+                  messages={convertToChatMessages(
+                    conversationMessages.filter((m) => m.role === 'user')
+                  )}
+                  settings={settings}
+                  isActive={true}
+                  onSelectResponse={handleSelectResponse}
+                  enableVirtualScrolling={true}
+                  maxTokens={100}
                 />
-              ))}
-            </div>
-          )}
-
-          {/* Independent Streaming Possibilities Panel */}
-          {!isUser && showPossibilities && !message.content && settings && (
-            <div className="mt-3">
-              <VirtualizedPossibilitiesPanel
-                messages={convertToChatMessages(
-                  conversationMessages.filter((m) => m.role === 'user')
-                )}
-                settings={settings}
-                isActive={true}
-                onSelectResponse={handleSelectResponse}
-                enableVirtualScrolling={true}
-                maxTokens={100}
-              />
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
