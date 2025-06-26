@@ -37,12 +37,16 @@ const VirtualizedPossibilitiesPanel: React.FC<
   useEffect(() => {
     loadedConversationRef.current = ''
   }, [])
-  
+
   // Auto-load top 6 high-priority possibilities to show variety
   useEffect(() => {
-    if (isActive && messages.length > 0 && loadedConversationRef.current !== conversationKey) {
+    if (
+      isActive &&
+      messages.length > 0 &&
+      loadedConversationRef.current !== conversationKey
+    ) {
       loadedConversationRef.current = conversationKey
-      
+
       // Get all high-priority metadata, then load them one by one
       // loadPossibility will handle duplicate prevention internally
       const allMetadata =
@@ -61,8 +65,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
         loadPossibility(meta.id)
       )
     }
-  }, [isActive, conversationKey, settings]) // Remove loadPossibility from deps
-
+  }, [isActive, conversationKey, settings, loadPossibility, messages.length])
 
   return (
     <>
@@ -105,9 +108,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
         `}
       >
         {/* Scrollable area */}
-        <div
-          className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent"
-        >
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
           <div className="px-4 py-2">
             {/* Show streaming possibilities */}
             <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
@@ -150,7 +151,6 @@ const VirtualizedPossibilitiesPanel: React.FC<
           </div>
         </div>
       </div>
-
     </>
   )
 }

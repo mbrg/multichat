@@ -60,16 +60,22 @@ const MessageWithIndependentPossibilities: React.FC<
       id: response.id,
       role: 'assistant',
       content: response.content,
-      model: typeof response.model === 'string' ? response.model : response.model?.id,
+      model:
+        typeof response.model === 'string'
+          ? response.model
+          : response.model?.id,
       temperature: response.temperature,
       probability: response.probability,
       timestamp: response.timestamp || new Date(),
-      systemInstruction: response.systemInstruction?.name || response.systemInstruction,
+      systemInstruction:
+        response.systemInstruction?.name || response.systemInstruction,
       isPossibility: true,
     }
-    
+
     // Find the last user message from the conversation to pass as the first parameter
-    const lastUserMessage = conversationMessages.filter(m => m.role === 'user').pop()
+    const lastUserMessage = conversationMessages
+      .filter((m) => m.role === 'user')
+      .pop()
     if (lastUserMessage) {
       onSelectPossibility?.(lastUserMessage, messageResponse)
     }
@@ -91,7 +97,7 @@ const MessageWithIndependentPossibilities: React.FC<
           ) : (
             <Image
               src={getProviderLogo(
-                typeof message.model === 'string' 
+                typeof message.model === 'string'
                   ? getProviderFromModel(message.model || 'openai')
                   : (message.model as any)?.provider || 'openai',
                 'light'
@@ -123,7 +129,9 @@ const MessageWithIndependentPossibilities: React.FC<
               message.systemInstruction) && (
               <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-xs font-bold border border-[#3a3a4a] flex items-center gap-2 z-10">
                 {message.model && (
-                  <span className="text-[#888]">{getDisplayModelName(message.model)}</span>
+                  <span className="text-[#888]">
+                    {getDisplayModelName(message.model)}
+                  </span>
                 )}
                 {message.temperature !== undefined && (
                   <span className="text-[#ffa726]" title="Temperature">
@@ -131,7 +139,10 @@ const MessageWithIndependentPossibilities: React.FC<
                   </span>
                 )}
                 {message.systemInstruction && (
-                  <span className="bg-purple-900/30 text-purple-400 px-2 py-1 rounded" title={`System: ${message.systemInstruction}`}>
+                  <span
+                    className="bg-purple-900/30 text-purple-400 px-2 py-1 rounded"
+                    title={`System: ${message.systemInstruction}`}
+                  >
                     {message.systemInstruction}
                   </span>
                 )}
@@ -144,7 +155,7 @@ const MessageWithIndependentPossibilities: React.FC<
             )}
 
           {/* Message Content Container */}
-          <div className={isUser ? "p-4" : "pt-6 pb-4 px-4"}>
+          <div className={isUser ? 'p-4' : 'pt-6 pb-4 px-4'}>
             {message.content && (
               <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
                 {message.content}
@@ -169,14 +180,23 @@ const MessageWithIndependentPossibilities: React.FC<
               <div className="mt-3">
                 <VirtualizedPossibilitiesPanel
                   messages={(() => {
-                    console.debug('[MessageWithIndependentPossibilities] Original conversationMessages:', conversationMessages)
-                    // Filter out empty messages, especially trailing empty assistant messages
-                    const filteredMessages = conversationMessages.filter(msg => 
-                      msg.content && msg.content.trim() !== ''
+                    console.debug(
+                      '[MessageWithIndependentPossibilities] Original conversationMessages:',
+                      conversationMessages
                     )
-                    console.debug('[MessageWithIndependentPossibilities] Filtered messages:', filteredMessages)
+                    // Filter out empty messages, especially trailing empty assistant messages
+                    const filteredMessages = conversationMessages.filter(
+                      (msg) => msg.content && msg.content.trim() !== ''
+                    )
+                    console.debug(
+                      '[MessageWithIndependentPossibilities] Filtered messages:',
+                      filteredMessages
+                    )
                     const converted = convertToChatMessages(filteredMessages)
-                    console.debug('[MessageWithIndependentPossibilities] Converted ChatMessages:', converted)
+                    console.debug(
+                      '[MessageWithIndependentPossibilities] Converted ChatMessages:',
+                      converted
+                    )
                     return converted
                   })()}
                   settings={settings}

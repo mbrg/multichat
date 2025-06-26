@@ -29,7 +29,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSelectPossibility = (userMessage: MessageType, possibility: MessageType) => {
+  const handleSelectPossibility = (
+    userMessage: MessageType,
+    possibility: MessageType
+  ) => {
     // The userMessage and possibility are now provided directly by the component
     onSelectPossibility?.(userMessage, possibility)
   }

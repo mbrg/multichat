@@ -124,7 +124,9 @@ const ChatDemo: React.FC = () => {
         )
 
         if (assistantMessageIndex === -1) {
-          console.error('Could not find assistant message to replace with selected possibility')
+          console.error(
+            'Could not find assistant message to replace with selected possibility'
+          )
           return prevMessages
         }
 
@@ -136,9 +138,11 @@ const ChatDemo: React.FC = () => {
           id: newMessages[assistantMessageIndex].id, // Keep original ID
           role: 'assistant',
           content: selectedPossibility.content,
-          model: typeof selectedPossibility.model === 'string' 
-            ? selectedPossibility.model 
-            : (selectedPossibility.model as any)?.id || (selectedPossibility.model as any)?.name,
+          model:
+            typeof selectedPossibility.model === 'string'
+              ? selectedPossibility.model
+              : (selectedPossibility.model as any)?.id ||
+                (selectedPossibility.model as any)?.name,
           temperature: selectedPossibility.temperature,
           probability: selectedPossibility.probability,
           timestamp: newMessages[assistantMessageIndex].timestamp, // Keep original timestamp
@@ -148,7 +152,7 @@ const ChatDemo: React.FC = () => {
         }
 
         newMessages[assistantMessageIndex] = fixedAssistantMessage
-        
+
         // Stop generating since user made a selection
         setIsGenerating(false)
 

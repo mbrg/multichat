@@ -43,25 +43,28 @@ export function useSimplePossibilities(
 
   // Only cancel requests on unmount to clean up properly
   useEffect(() => {
+    const abortControllers = abortControllersRef.current
+    const loadingSet = loadingRef.current
+
     return () => {
       // Cancel all active requests on unmount
-      abortControllersRef.current.forEach((controller) => {
+      abortControllers.forEach((controller) => {
         controller.abort()
       })
-      abortControllersRef.current.clear()
+      abortControllers.clear()
       // Clear loading state so requests can be retried on remount
-      loadingRef.current.clear()
+      loadingSet.clear()
     }
   }, [])
 
   // Store messages and metadata in refs to avoid recreating loadPossibility
   const messagesRef = useRef(messages)
   const metadataRef = useRef(metadata)
-  
+
   useEffect(() => {
     messagesRef.current = messages
   }, [messages])
-  
+
   useEffect(() => {
     metadataRef.current = metadata
   }, [metadata])
