@@ -8,6 +8,8 @@ import type {
 } from '../../../types/ai'
 import { ServerKeys } from '../../../utils/serverKeys'
 import { calculateProbabilityFromLogprobs } from '../../../utils/logprobs'
+import { createAIProviderBreaker } from '../../reliability/CircuitBreaker'
+import type { CircuitBreaker } from '../../reliability/CircuitBreaker'
 
 export interface StreamingOptions extends GenerationOptions {
   onToken?: (token: string) => void
@@ -21,6 +23,13 @@ export interface StreamingOptions extends GenerationOptions {
 export abstract class AbstractAIProvider implements AIProvider {
   abstract readonly name: string
   abstract readonly models: ModelInfo[]
+  
+  private circuitBreaker: CircuitBreaker
+
+  constructor() {
+    // Each provider gets its own circuit breaker
+    this.circuitBreaker = createAIProviderBreaker(this.getProviderKey())
+  }
 
   /**
    * Abstract method to get the provider-specific model instance
@@ -48,53 +57,55 @@ export abstract class AbstractAIProvider implements AIProvider {
   }
 
   /**
-   * Template method implementing the common generation flow
+   * Template method implementing the common generation flow with circuit breaker protection
    */
   async generateResponse(
     messages: Message[],
     model: ModelInfo,
     options: GenerationOptions
   ): Promise<ResponseWithLogprobs> {
-    try {
-      // Common API key validation
-      const apiKey = await this.getApiKey()
-      if (!apiKey) {
-        throw new Error(`${this.name} API key not configured`)
+    return this.circuitBreaker.execute(async () => {
+      try {
+        // Common API key validation
+        const apiKey = await this.getApiKey()
+        if (!apiKey) {
+          throw new Error(`${this.name} API key not configured`)
+        }
+
+        // Common message formatting
+        const formattedMessages = messages.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }))
+
+        // Provider-specific model creation
+        const providerModel = await this.createModel(model.id, apiKey)
+
+        // Provider-specific options
+        const providerOptions = this.getProviderOptions(options, model)
+
+        // Common generation call
+        const result = await generateText({
+          model: providerModel,
+          messages: formattedMessages,
+          ...providerOptions,
+        })
+
+        // Common response mapping
+        return this.mapResponse(result)
+      } catch (error) {
+        console.error(`${this.name} API error:`, error)
+        throw new Error(
+          `${this.name} API error: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        )
       }
-
-      // Common message formatting
-      const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }))
-
-      // Provider-specific model creation
-      const providerModel = await this.createModel(model.id, apiKey)
-
-      // Provider-specific options
-      const providerOptions = this.getProviderOptions(options, model)
-
-      // Common generation call
-      const result = await generateText({
-        model: providerModel,
-        messages: formattedMessages,
-        ...providerOptions,
-      })
-
-      // Common response mapping
-      return this.mapResponse(result)
-    } catch (error) {
-      console.error(`${this.name} API error:`, error)
-      throw new Error(
-        `${this.name} API error: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      )
-    }
+    })
   }
 
   /**
-   * Template method for streaming generation with real token-level streaming
+   * Template method for streaming generation with real token-level streaming and circuit breaker protection
    */
   async *generateStreamingResponse(
     messages: Message[],
@@ -108,6 +119,12 @@ export abstract class AbstractAIProvider implements AIProvider {
     console.log(
       `[${this.name}] Starting streaming response for model: ${model.id}`
     )
+
+    // Check circuit breaker state before starting
+    if (this.circuitBreaker.getState() === 'open') {
+      throw new Error(`${this.name} circuit breaker is open, streaming unavailable`)
+    }
+
     try {
       // Common API key validation
       const apiKey = await this.getApiKey()
@@ -208,6 +225,10 @@ export abstract class AbstractAIProvider implements AIProvider {
       }
 
       console.log(`[${this.name}] Streaming completed successfully`)
+      
+      // Record success for circuit breaker
+      this.circuitBreaker.recordOperationSuccess()
+      
       // Yield completion event
       yield {
         type: 'complete',
@@ -215,6 +236,10 @@ export abstract class AbstractAIProvider implements AIProvider {
       }
     } catch (error) {
       console.error(`${this.name} streaming API error:`, error)
+      
+      // Record failure for circuit breaker
+      this.circuitBreaker.recordOperationFailure()
+      
       throw new Error(
         `${this.name} streaming API error: ${
           error instanceof Error ? error.message : 'Unknown error'

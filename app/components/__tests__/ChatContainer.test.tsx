@@ -21,6 +21,40 @@ vi.mock('../Settings', () => ({
     isOpen ? <div data-testid="settings-mock">Settings Mock</div> : null,
 }))
 
+// Mock AuthPopup component
+vi.mock('../AuthPopup', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="auth-popup-mock">Auth Popup Mock</div> : null,
+}))
+
+// Mock MessageInput component to control placeholders
+vi.mock('../MessageInput', () => ({
+  default: ({ placeholder }: { placeholder: string }) => (
+    <input
+      role="textbox"
+      placeholder={placeholder}
+      data-testid="message-input-mock"
+    />
+  ),
+}))
+
+// Mock MessageWithIndependentPossibilities
+vi.mock('../MessageWithIndependentPossibilities', () => ({
+  default: ({ message }: { message: any }) => (
+    <div data-testid={`message-${message.id}`}>
+      {message.content || '[Empty message]'}
+    </div>
+  ),
+}))
+
+// Mock useAuthPopup hook
+vi.mock('../../hooks/useAuthPopup', () => ({
+  useAuthPopup: () => ({
+    isPopupOpen: false,
+    closePopup: vi.fn(),
+  }),
+}))
+
 describe('ChatContainer', () => {
   const mockOnSendMessage = vi.fn()
 
