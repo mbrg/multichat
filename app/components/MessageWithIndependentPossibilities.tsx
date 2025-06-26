@@ -29,6 +29,18 @@ const MessageWithIndependentPossibilities: React.FC<
   const isUser = message.role === 'user'
   const { settings } = useSettings()
 
+  // Helper function to get display model name (same as OptionCard)
+  const getDisplayModelName = (modelName: string): string => {
+    // Trim Anthropic model names: claude-3-5-sonnet-20241022 -> c-3-5-sonnet
+    if (modelName.includes('claude')) {
+      return modelName
+        .replace('claude-', 'c-')
+        .replace(/-\d{8}$/, '') // Remove date suffix
+        .replace(/-\d{6}$/, '') // Remove shorter date suffix
+    }
+    return modelName
+  }
+
   // Convert conversation messages to ChatMessage format for the possibilities system
   const convertToChatMessages = (messages: Message[]): ChatMessage[] => {
     return messages.map(
@@ -52,7 +64,7 @@ const MessageWithIndependentPossibilities: React.FC<
       temperature: response.temperature,
       probability: response.probability,
       timestamp: response.timestamp || new Date(),
-      systemInstruction: response.systemInstruction,
+      systemInstruction: response.systemInstruction?.name || response.systemInstruction,
       isPossibility: true,
     }
     
@@ -107,18 +119,24 @@ const MessageWithIndependentPossibilities: React.FC<
           {!isUser &&
             (message.model ||
               message.probability ||
-              message.temperature !== undefined) && (
-              <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-[#667eea] text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
+              message.temperature !== undefined ||
+              message.systemInstruction) && (
+              <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
                 {message.model && (
-                  <span className="text-[#888]">{message.model}</span>
+                  <span className="text-[#888]">{getDisplayModelName(message.model)}</span>
                 )}
                 {message.temperature !== undefined && (
                   <span className="text-[#ffa726]" title="Temperature">
                     T:{message.temperature?.toFixed(1)}
                   </span>
                 )}
+                {message.systemInstruction && (
+                  <span className="bg-purple-900/30 text-purple-400 px-2 py-1 rounded" title={`System: ${message.systemInstruction}`}>
+                    {message.systemInstruction}
+                  </span>
+                )}
                 {message.probability && (
-                  <span title="Probability Score">
+                  <span className="text-[#667eea]" title="Probability Score">
                     P:{Math.round(message.probability * 100)}%
                   </span>
                 )}
