@@ -90,9 +90,10 @@ npm run vercel:deploy # Deploy to Vercel production
    - Connection pooling prevents resource overload
 
 5. **Testing Strategy**:
-   - 320+ tests with comprehensive coverage
+   - Comprehensive test suite using Vitest and React Testing Library
    - Mock implementations for external services
    - Integration tests for critical paths
+   - Test files organized alongside source code
 
 ### Important Files & Locations
 
@@ -111,7 +112,7 @@ npm run vercel:deploy # Deploy to Vercel production
 
 ### Recent Architecture Changes
 
-The project underwent a comprehensive architectural audit and independent streaming implementation (2025-06-25) that:
+The project underwent a comprehensive architectural audit and independent streaming implementation (2025-06-26) that:
 - Eliminated 95% code duplication in AI providers through `AbstractAIProvider` base class
 - Implemented independent streaming possibilities with Server-Sent Events (SSE)
 - Added virtual scrolling reducing memory usage by 70% and initial load time by 60%
