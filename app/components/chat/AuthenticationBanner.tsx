@@ -13,6 +13,8 @@ export interface AuthenticationBannerProps {
   isLoading: boolean
   isAuthenticated: boolean
   messages: MessageType[]
+  settingsLoading: boolean
+  apiKeysLoading: boolean
 }
 
 export const AuthenticationBanner: React.FC<AuthenticationBannerProps> = ({
@@ -20,9 +22,16 @@ export const AuthenticationBanner: React.FC<AuthenticationBannerProps> = ({
   isLoading,
   isAuthenticated,
   messages,
+  settingsLoading,
+  apiKeysLoading,
 }) => {
   // Don't show anything if not disabled or currently loading
   if (!disabled || isLoading) {
+    return null
+  }
+
+  // Don't show warnings while authentication state is still loading
+  if (settingsLoading || apiKeysLoading) {
     return null
   }
 

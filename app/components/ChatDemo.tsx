@@ -13,8 +13,12 @@ const ChatDemo: React.FC = () => {
     loading: settingsLoading,
     refresh: refreshSettings,
   } = useSettings()
-  const { hasApiKey, isProviderEnabled, enabledProviders } =
-    useApiKeys(refreshSettings)
+  const {
+    hasApiKey,
+    isProviderEnabled,
+    enabledProviders,
+    isLoading: apiKeysLoading,
+  } = useApiKeys(refreshSettings)
 
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -192,6 +196,8 @@ const ChatDemo: React.FC = () => {
       isLoading={isGenerating}
       disabled={!isSystemReady() || hasActivePossibilities()}
       className="h-screen"
+      settingsLoading={settingsLoading}
+      apiKeysLoading={apiKeysLoading}
     />
   )
 }

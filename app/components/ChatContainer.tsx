@@ -18,6 +18,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   isLoading = false,
   disabled = false,
   className = '',
+  settingsLoading = false,
+  apiKeysLoading = false,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -52,6 +54,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         isLoading={isLoading}
         isAuthenticated={isAuthenticated}
         messages={messages}
+        settingsLoading={settingsLoading}
+        apiKeysLoading={apiKeysLoading}
       />
 
       <MessagesList

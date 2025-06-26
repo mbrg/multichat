@@ -19,6 +19,8 @@ describe('AuthenticationBanner', () => {
     isLoading: false,
     isAuthenticated: true,
     messages: [],
+    settingsLoading: false,
+    apiKeysLoading: false,
   }
 
   describe('when not disabled', () => {
@@ -32,12 +34,49 @@ describe('AuthenticationBanner', () => {
   })
 
   describe('when loading', () => {
-    it('should not render anything when loading', () => {
+    it('should not render anything when isLoading is true', () => {
       const { container } = render(
         <AuthenticationBanner
           {...defaultProps}
           disabled={true}
           isLoading={true}
+        />
+      )
+
+      expect(container.firstChild).toBeNull()
+    })
+
+    it('should not render anything when settingsLoading is true', () => {
+      const { container } = render(
+        <AuthenticationBanner
+          {...defaultProps}
+          disabled={true}
+          settingsLoading={true}
+        />
+      )
+
+      expect(container.firstChild).toBeNull()
+    })
+
+    it('should not render anything when apiKeysLoading is true', () => {
+      const { container } = render(
+        <AuthenticationBanner
+          {...defaultProps}
+          disabled={true}
+          apiKeysLoading={true}
+        />
+      )
+
+      expect(container.firstChild).toBeNull()
+    })
+
+    it('should not render anything when both settings and API keys are loading', () => {
+      const { container } = render(
+        <AuthenticationBanner
+          {...defaultProps}
+          disabled={true}
+          settingsLoading={true}
+          apiKeysLoading={true}
         />
       )
 
