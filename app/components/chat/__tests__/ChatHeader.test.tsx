@@ -25,7 +25,7 @@ describe('ChatHeader', () => {
 
     render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
 
-    expect(screen.getByText('Infinite Chat')).toBeInTheDocument()
+    expect(screen.getByText('multichat')).toBeInTheDocument()
   })
 
   it('should have the correct styling classes', () => {

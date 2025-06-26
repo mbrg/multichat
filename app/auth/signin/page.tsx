@@ -43,7 +43,7 @@ export default function SignIn() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-bold text-white">
-            Sign in to Infinite Chat
+            Sign in to multichat
           </h2>
           <p className="mt-2 text-sm text-white/70">
             Connect with multiple AI models in one conversation

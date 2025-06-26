@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Infinite Chat - Multi-Model AI Chat Interface',
+  title: 'multichat - Multi-Model AI Chat Interface',
   description:
     'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
   keywords: [
@@ -13,22 +13,22 @@ export const metadata: Metadata = {
     'Google',
     'Mistral',
   ],
-  authors: [{ name: 'Infinite Chat Team' }],
-  creator: 'Infinite Chat',
-  publisher: 'Infinite Chat',
+  authors: [{ name: 'multichat Team' }],
+  creator: 'multichat',
+  publisher: 'multichat',
   robots: 'index, follow',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://infinite-chat.vercel.app',
-    title: 'Infinite Chat - Multi-Model AI Chat Interface',
+    url: 'https://multichat.vercel.app',
+    title: 'multichat - Multi-Model AI Chat Interface',
     description:
       'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
-    siteName: 'Infinite Chat',
+    siteName: 'multichat',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Infinite Chat - Multi-Model AI Chat Interface',
+    title: 'multichat - Multi-Model AI Chat Interface',
     description:
       'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
   },

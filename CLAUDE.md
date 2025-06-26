@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Infinite Chat is a production-ready Next.js application that provides a multi-model AI chat interface with an "infinite possibilities" panel showing multiple AI responses simultaneously. The project emphasizes security, maintainability, and extensibility.
+multichat is a production-ready Next.js application that provides a multi-model AI chat interface with an "infinite possibilities" panel showing multiple AI responses simultaneously. The project emphasizes security, maintainability, and extensibility.
 
 ## Essential Commands
 
