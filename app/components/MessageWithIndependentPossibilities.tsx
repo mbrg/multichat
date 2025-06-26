@@ -168,9 +168,17 @@ const MessageWithIndependentPossibilities: React.FC<
             {!isUser && showPossibilities && !message.content && settings && (
               <div className="mt-3">
                 <VirtualizedPossibilitiesPanel
-                  messages={convertToChatMessages(
-                    conversationMessages.filter((m) => m.role === 'user')
-                  )}
+                  messages={(() => {
+                    console.debug('[MessageWithIndependentPossibilities] Original conversationMessages:', conversationMessages)
+                    // Filter out empty messages, especially trailing empty assistant messages
+                    const filteredMessages = conversationMessages.filter(msg => 
+                      msg.content && msg.content.trim() !== ''
+                    )
+                    console.debug('[MessageWithIndependentPossibilities] Filtered messages:', filteredMessages)
+                    const converted = convertToChatMessages(filteredMessages)
+                    console.debug('[MessageWithIndependentPossibilities] Converted ChatMessages:', converted)
+                    return converted
+                  })()}
                   settings={settings}
                   isActive={true}
                   onSelectResponse={handleSelectResponse}
