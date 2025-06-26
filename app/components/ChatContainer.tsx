@@ -29,18 +29,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSelectPossibility = (possibility: MessageType) => {
-    // Find the user message that corresponds to this assistant message with possibilities
-    const currentMessageIndex = messages.findIndex(
-      (msg) =>
-        msg.role === 'assistant' &&
-        msg.possibilities?.some((p) => p.id === possibility.id)
-    )
-
-    if (currentMessageIndex > 0) {
-      const userMessage = messages[currentMessageIndex - 1]
-      onSelectPossibility?.(userMessage, possibility)
-    }
+  const handleSelectPossibility = (userMessage: MessageType, possibility: MessageType) => {
+    // The userMessage and possibility are now provided directly by the component
+    onSelectPossibility?.(userMessage, possibility)
   }
 
   const handleContinuePossibility = (possibility: MessageType) => {

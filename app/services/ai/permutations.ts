@@ -13,8 +13,14 @@ export class PermutationGenerator {
     const permutations: Permutation[] = []
 
     // Guard against undefined or non-iterable enabledProviders
-    if (!settings.enabledProviders || !Array.isArray(settings.enabledProviders)) {
-      console.error('enabledProviders is not a valid array:', settings.enabledProviders)
+    if (
+      !settings.enabledProviders ||
+      !Array.isArray(settings.enabledProviders)
+    ) {
+      console.error(
+        'enabledProviders is not a valid array:',
+        settings.enabledProviders
+      )
       return []
     }
 
@@ -28,9 +34,9 @@ export class PermutationGenerator {
         // For each temperature
         for (const temperature of settings.temperatures) {
           // For each system instruction - ensure we always have at least one
-          const instructions: SystemInstruction[] = 
-            settings.systemInstructions.length > 0 
-              ? settings.systemInstructions 
+          const instructions: SystemInstruction[] =
+            settings.systemInstructions.length > 0
+              ? settings.systemInstructions
               : [DEFAULT_SYSTEM_INSTRUCTION]
 
           for (const instruction of instructions) {
@@ -90,17 +96,24 @@ export class PermutationGenerator {
     let count = 0
 
     // Guard against undefined or non-iterable enabledProviders
-    if (!settings.enabledProviders || !Array.isArray(settings.enabledProviders)) {
-      console.error('enabledProviders is not a valid array in calculatePermutationCount:', settings.enabledProviders)
+    if (
+      !settings.enabledProviders ||
+      !Array.isArray(settings.enabledProviders)
+    ) {
+      console.error(
+        'enabledProviders is not a valid array in calculatePermutationCount:',
+        settings.enabledProviders
+      )
       return 0
     }
 
     for (const provider of settings.enabledProviders) {
       const modelCount = this.getModelsForProvider(provider).length
       const temperatureCount = settings.temperatures.length
-      const instructionCount = settings.systemInstructions.length > 0 
-        ? settings.systemInstructions.length 
-        : 1 // Default instruction
+      const instructionCount =
+        settings.systemInstructions.length > 0
+          ? settings.systemInstructions.length
+          : 1 // Default instruction
 
       count += modelCount * temperatureCount * instructionCount
     }

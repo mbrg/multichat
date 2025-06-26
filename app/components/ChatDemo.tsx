@@ -108,37 +108,49 @@ const ChatDemo: React.FC = () => {
         setIsGenerating(false)
       }
     },
-    [
-      settings,
-      settingsLoading,
-      enabledProviders,
-      hasApiKey,
-    ]
+    [settings, settingsLoading, enabledProviders, hasApiKey]
   )
 
   const handleSelectPossibility = useCallback(
-    (_userMessage: Message, selectedPossibility: Message) => {
+    (userMessage: Message, selectedPossibility: Message) => {
       setMessages((prevMessages) => {
-        // Find the assistant message that contains this possibility
+        // In the new independent streaming system, find the most recent assistant message
+        // that has empty content (this is the placeholder for possibilities)
         const assistantMessageIndex = prevMessages.findIndex(
           (msg) =>
             msg.role === 'assistant' &&
-            msg.possibilities?.some((p) => p.id === selectedPossibility.id)
+            (!msg.content || msg.content === '') &&
+            !msg.isPossibility
         )
 
-        if (assistantMessageIndex === -1) return prevMessages
+        if (assistantMessageIndex === -1) {
+          console.error('Could not find assistant message to replace with selected possibility')
+          return prevMessages
+        }
 
         // Create new messages array
         const newMessages = [...prevMessages]
 
-        // Replace the assistant message with the selected possibility (without possibilities)
+        // Replace the empty assistant message with the selected possibility content
         const fixedAssistantMessage: Message = {
-          ...selectedPossibility,
-          possibilities: undefined, // Remove possibilities to fix the selection
+          id: newMessages[assistantMessageIndex].id, // Keep original ID
+          role: 'assistant',
+          content: selectedPossibility.content,
+          model: typeof selectedPossibility.model === 'string' 
+            ? selectedPossibility.model 
+            : (selectedPossibility.model as any)?.id || (selectedPossibility.model as any)?.name,
+          temperature: selectedPossibility.temperature,
+          probability: selectedPossibility.probability,
+          timestamp: newMessages[assistantMessageIndex].timestamp, // Keep original timestamp
+          systemInstruction: selectedPossibility.systemInstruction,
+          possibilities: undefined, // Remove possibilities after selection
           isPossibility: false,
         }
 
         newMessages[assistantMessageIndex] = fixedAssistantMessage
+        
+        // Stop generating since user made a selection
+        setIsGenerating(false)
 
         return newMessages
       })

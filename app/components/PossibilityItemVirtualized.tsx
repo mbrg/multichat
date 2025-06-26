@@ -4,7 +4,13 @@ import type { PossibilityResponse } from '@/types/api'
 import type { PossibilityMetadata } from '@/services/ai/PossibilityMetadataService'
 import { getProviderLogo } from '../utils/providerLogos'
 
-type PossibilityStatus = 'pending' | 'loading' | 'streaming' | 'complete' | 'error' | 'cancelled'
+type PossibilityStatus =
+  | 'pending'
+  | 'loading'
+  | 'streaming'
+  | 'complete'
+  | 'error'
+  | 'cancelled'
 
 interface PossibilityItemVirtualizedProps {
   metadata: PossibilityMetadata

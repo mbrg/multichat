@@ -32,7 +32,7 @@ const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
       return modelName
         .replace('claude-', 'c-')
         .replace(/-\d{8}$/, '') // Remove date suffix
-        .replace(/-\d{6}$/, '')  // Remove shorter date suffix
+        .replace(/-\d{6}$/, '') // Remove shorter date suffix
     }
     return modelName
   }

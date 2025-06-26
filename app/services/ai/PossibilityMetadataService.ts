@@ -54,7 +54,7 @@ export class PossibilityMetadataService {
           } else if (typeof parsed === 'object') {
             // Convert {openai: true, anthropic: true, google: false} to ['openai', 'anthropic']
             enabledProviders = Object.keys(parsed).filter(
-              key => parsed[key] === true
+              (key) => parsed[key] === true
             )
           }
         } else if (Array.isArray(settings.enabledProviders)) {
@@ -62,7 +62,10 @@ export class PossibilityMetadataService {
         } else if (typeof settings.enabledProviders === 'object') {
           // Convert {openai: true, anthropic: true, google: false} to ['openai', 'anthropic']
           enabledProviders = Object.keys(settings.enabledProviders).filter(
-            (key: string) => (settings.enabledProviders as unknown as Record<string, boolean>)[key] === true
+            (key: string) =>
+              (settings.enabledProviders as unknown as Record<string, boolean>)[
+                key
+              ] === true
           )
         }
       }
@@ -78,7 +81,6 @@ export class PossibilityMetadataService {
       temperatures: settings.temperatures?.map((t) => t.value) || [0.7],
     }
 
-
     // Generate permutations using existing logic
     const permutations =
       this.permutationGenerator.generatePermutations(permutationSettings)
@@ -86,7 +88,7 @@ export class PossibilityMetadataService {
     // Apply possibility multiplier to generate multiple instances of each permutation
     const multiplier = settings.possibilityMultiplier || 1
     const allMetadata: PossibilityMetadata[] = []
-    
+
     permutations.forEach((permutation, baseIndex) => {
       for (let instance = 0; instance < multiplier; instance++) {
         const uniqueId = `${permutation.id}_${instance}`
@@ -138,7 +140,7 @@ export class PossibilityMetadataService {
           } else if (typeof parsed === 'object') {
             // Convert {openai: true, anthropic: true, google: false} to ['openai', 'anthropic']
             enabledProviders = Object.keys(parsed).filter(
-              key => parsed[key] === true
+              (key) => parsed[key] === true
             )
           }
         } else if (Array.isArray(settings.enabledProviders)) {
@@ -146,7 +148,10 @@ export class PossibilityMetadataService {
         } else if (typeof settings.enabledProviders === 'object') {
           // Convert {openai: true, anthropic: true, google: false} to ['openai', 'anthropic']
           enabledProviders = Object.keys(settings.enabledProviders).filter(
-            (key: string) => (settings.enabledProviders as unknown as Record<string, boolean>)[key] === true
+            (key: string) =>
+              (settings.enabledProviders as unknown as Record<string, boolean>)[
+                key
+              ] === true
           )
         }
       }
@@ -241,25 +246,24 @@ export class PossibilityMetadataService {
     // Import from config to get model priority
     const { getModelById } = require('./config')
     const model = getModelById(permutation.model)
-    
+
     const isStandardTemperature = Math.abs(permutation.temperature - 0.7) < 0.1
     const isEarlyIndex = index < 8 // First 8 possibilities are always high priority
-    
+
     // Use model's configured priority as base
     const modelPriority = model?.priority || 'low'
-    
+
     // Boost priority for standard temperature or early index
     if (modelPriority === 'high' || isStandardTemperature || isEarlyIndex) {
       return 'high'
     }
-    
+
     if (modelPriority === 'medium' || isStandardTemperature) {
       return 'medium'
     }
 
     return 'low'
   }
-
 
   /**
    * Estimate loading time based on model and provider

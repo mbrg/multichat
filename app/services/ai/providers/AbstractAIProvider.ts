@@ -105,7 +105,9 @@ export abstract class AbstractAIProvider implements AIProvider {
     token?: string
     response?: ResponseWithLogprobs
   }> {
-    console.log(`[${this.name}] Starting streaming response for model: ${model.id}`)
+    console.log(
+      `[${this.name}] Starting streaming response for model: ${model.id}`
+    )
     try {
       // Common API key validation
       const apiKey = await this.getApiKey()
@@ -119,7 +121,9 @@ export abstract class AbstractAIProvider implements AIProvider {
         role: msg.role,
         content: msg.content,
       }))
-      console.log(`[${this.name}] Messages formatted: ${formattedMessages.length} messages`)
+      console.log(
+        `[${this.name}] Messages formatted: ${formattedMessages.length} messages`
+      )
 
       // Provider-specific model creation
       const providerModel = await this.createModel(model.id, apiKey)
@@ -163,23 +167,28 @@ export abstract class AbstractAIProvider implements AIProvider {
           console.log(`[${this.name}] Streamed ${tokenCount} tokens so far`)
         }
       }
-      console.log(`[${this.name}] Token stream completed, total tokens: ${tokenCount}`)
+      console.log(
+        `[${this.name}] Token stream completed, total tokens: ${tokenCount}`
+      )
 
       // Wait for final result with timeout
       console.log(`[${this.name}] Waiting for finishReason and usage`)
-      const finalResult = await Promise.race([
+      const finalResult = (await Promise.race([
         result.finishReason,
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout waiting for finishReason')), 5000)
-        )
-      ]) as any
-      
-      const finalUsage = await Promise.race([
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Timeout waiting for finishReason')),
+            5000
+          )
+        ),
+      ])) as any
+
+      const finalUsage = (await Promise.race([
         result.usage,
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Timeout waiting for usage')), 5000)
-        )
-      ]) as any
+        ),
+      ])) as any
 
       console.log(`[${this.name}] Final result:`, { finalResult, finalUsage })
 

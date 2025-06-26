@@ -9,7 +9,7 @@ import { useSettings } from '../hooks/useSettings'
 
 interface MessageWithIndependentPossibilitiesProps {
   message: Message
-  onSelectPossibility?: (possibility: Message) => void
+  onSelectPossibility?: (userMessage: Message, possibility: Message) => void
   onContinuePossibility?: (possibility: Message) => void
   className?: string
   showPossibilities?: boolean
@@ -31,12 +31,14 @@ const MessageWithIndependentPossibilities: React.FC<
 
   // Convert conversation messages to ChatMessage format for the possibilities system
   const convertToChatMessages = (messages: Message[]): ChatMessage[] => {
-    return messages.map((msg): ChatMessage => ({
-      id: msg.id,
-      role: msg.role,
-      content: msg.content,
-      timestamp: msg.timestamp,
-    }))
+    return messages.map(
+      (msg): ChatMessage => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp,
+      })
+    )
   }
 
   // Convert Message selection callback to handle VirtualizedPossibilitiesPanel response format
@@ -46,14 +48,19 @@ const MessageWithIndependentPossibilities: React.FC<
       id: response.id,
       role: 'assistant',
       content: response.content,
-      model: response.model,
+      model: typeof response.model === 'string' ? response.model : response.model?.id,
       temperature: response.temperature,
       probability: response.probability,
       timestamp: response.timestamp || new Date(),
       systemInstruction: response.systemInstruction,
       isPossibility: true,
     }
-    onSelectPossibility?.(messageResponse)
+    
+    // Find the last user message from the conversation to pass as the first parameter
+    const lastUserMessage = conversationMessages.filter(m => m.role === 'user').pop()
+    if (lastUserMessage) {
+      onSelectPossibility?.(lastUserMessage, messageResponse)
+    }
   }
 
   return (
@@ -72,7 +79,9 @@ const MessageWithIndependentPossibilities: React.FC<
           ) : (
             <Image
               src={getProviderLogo(
-                getProviderFromModel(message.model || 'openai'),
+                typeof message.model === 'string' 
+                  ? getProviderFromModel(message.model || 'openai')
+                  : (message.model as any)?.provider || 'openai',
                 'dark'
               )}
               alt="AI"
@@ -139,7 +148,9 @@ const MessageWithIndependentPossibilities: React.FC<
           {!isUser && showPossibilities && !message.content && settings && (
             <div className="mt-3">
               <VirtualizedPossibilitiesPanel
-                messages={convertToChatMessages(conversationMessages.filter(m => m.role === 'user'))}
+                messages={convertToChatMessages(
+                  conversationMessages.filter((m) => m.role === 'user')
+                )}
                 settings={settings}
                 isActive={true}
                 onSelectResponse={handleSelectResponse}
