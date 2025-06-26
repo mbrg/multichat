@@ -70,6 +70,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         disabled={disabled}
         isAuthenticated={isAuthenticated}
         messages={messages}
+        settingsLoading={settingsLoading}
+        apiKeysLoading={apiKeysLoading}
       />
 
       <ModalContainer

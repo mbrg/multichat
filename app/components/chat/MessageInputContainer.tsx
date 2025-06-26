@@ -15,6 +15,8 @@ export interface MessageInputContainerProps {
   disabled: boolean
   isAuthenticated: boolean
   messages: MessageType[]
+  settingsLoading: boolean
+  apiKeysLoading: boolean
 }
 
 export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
@@ -23,6 +25,8 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
   disabled,
   isAuthenticated,
   messages,
+  settingsLoading,
+  apiKeysLoading,
 }) => {
   /**
    * Determine the appropriate placeholder text based on current state
@@ -30,6 +34,11 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
   const getPlaceholder = (): string => {
     if (isLoading) {
       return 'Generating response...'
+    }
+
+    // Don't show specific disabled reasons while authentication state is still loading
+    if (settingsLoading || apiKeysLoading) {
+      return 'Type message...'
     }
 
     if (!disabled) {
@@ -63,7 +72,7 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       <div className="max-w-[800px] mx-auto">
         <MessageInput
           onSendMessage={onSendMessage}
-          disabled={isLoading || disabled}
+          disabled={isLoading || disabled || settingsLoading || apiKeysLoading}
           placeholder={getPlaceholder()}
           className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"
         />

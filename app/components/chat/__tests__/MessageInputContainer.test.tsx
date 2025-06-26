@@ -50,6 +50,8 @@ describe('MessageInputContainer', () => {
     disabled: false,
     isAuthenticated: true,
     messages: [],
+    settingsLoading: false,
+    apiKeysLoading: false,
   }
 
   describe('placeholder logic', () => {
@@ -59,6 +61,46 @@ describe('MessageInputContainer', () => {
       expect(
         screen.getByPlaceholderText('Generating response...')
       ).toBeInTheDocument()
+    })
+
+    it('should show default placeholder when settingsLoading is true', () => {
+      render(
+        <MessageInputContainer
+          {...defaultProps}
+          disabled={true}
+          isAuthenticated={false}
+          settingsLoading={true}
+        />
+      )
+
+      expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
+    })
+
+    it('should show default placeholder when apiKeysLoading is true', () => {
+      render(
+        <MessageInputContainer
+          {...defaultProps}
+          disabled={true}
+          isAuthenticated={false}
+          apiKeysLoading={true}
+        />
+      )
+
+      expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
+    })
+
+    it('should show default placeholder when both settings and API keys are loading', () => {
+      render(
+        <MessageInputContainer
+          {...defaultProps}
+          disabled={true}
+          isAuthenticated={false}
+          settingsLoading={true}
+          apiKeysLoading={true}
+        />
+      )
+
+      expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
     })
 
     it('should show default placeholder when not disabled and not loading', () => {
@@ -263,6 +305,30 @@ describe('MessageInputContainer', () => {
 
     it('should disable input when disabled prop is true', () => {
       render(<MessageInputContainer {...defaultProps} disabled={true} />)
+
+      expect(screen.getByTestId('message-input')).toBeDisabled()
+    })
+
+    it('should disable input when settingsLoading is true', () => {
+      render(<MessageInputContainer {...defaultProps} settingsLoading={true} />)
+
+      expect(screen.getByTestId('message-input')).toBeDisabled()
+    })
+
+    it('should disable input when apiKeysLoading is true', () => {
+      render(<MessageInputContainer {...defaultProps} apiKeysLoading={true} />)
+
+      expect(screen.getByTestId('message-input')).toBeDisabled()
+    })
+
+    it('should disable input when both settings and API keys are loading', () => {
+      render(
+        <MessageInputContainer
+          {...defaultProps}
+          settingsLoading={true}
+          apiKeysLoading={true}
+        />
+      )
 
       expect(screen.getByTestId('message-input')).toBeDisabled()
     })
