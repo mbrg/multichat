@@ -20,5 +20,8 @@
       "Bash(sed:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright"
+  ]
 }
