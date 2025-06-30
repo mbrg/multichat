@@ -32,4 +32,5 @@ export const metadata: Metadata = {
     description:
       'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
   },
+  viewport: 'width=device-width, initial-scale=1',
 }

@@ -55,23 +55,8 @@ const MessageWithIndependentPossibilities: React.FC<
   }
 
   // Convert Message selection callback to handle VirtualizedPossibilitiesPanel response format
-  const handleSelectResponse = (response: any) => {
-    // Convert PossibilityResponse back to Message format for compatibility
-    const messageResponse: Message = {
-      id: response.id,
-      role: 'assistant',
-      content: response.content,
-      model:
-        typeof response.model === 'string'
-          ? response.model
-          : response.model?.id,
-      temperature: response.temperature,
-      probability: response.probability,
-      timestamp: response.timestamp || new Date(),
-      systemInstruction:
-        response.systemInstruction?.name || response.systemInstruction,
-      isPossibility: true,
-    }
+  const handleSelectResponse = (response: Message) => {
+    const messageResponse = { ...response, isPossibility: true }
 
     // Find the last user message from the conversation to pass as the first parameter
     const lastUserMessage = conversationMessages
