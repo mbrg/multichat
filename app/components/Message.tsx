@@ -31,6 +31,8 @@ const Message: React.FC<ExtendedMessageProps> = ({
           !p.content.trim().endsWith('?'))
     )
 
+  const hasModelInfo = !isUser
+
   return (
     <div className={`flex gap-3 ${className}`}>
       {/* Avatar */}
@@ -61,6 +63,27 @@ const Message: React.FC<ExtendedMessageProps> = ({
 
       {/* Message Content */}
       <div className="flex-1">
+        {hasModelInfo && (
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold text-[#667eea]">
+            <span className="text-[#888]">{message.model || 'unknown'}</span>
+            {message.temperature !== undefined && (
+              <span className="text-[#ffa726]" title="Temperature">
+                T:{message.temperature.toFixed(1)}
+              </span>
+            )}
+            {message.systemInstruction && (
+              <span
+                className="bg-purple-900/30 text-purple-400 px-2 py-1 rounded text-xs font-normal"
+                title={`System: ${message.systemInstruction}`}
+              >
+                {message.systemInstruction}
+              </span>
+            )}
+            {message.probability !== undefined && message.probability !== null && (
+              <span title="Probability Score">P:{Math.round(message.probability * 100)}%</span>
+            )}
+          </div>
+        )}
         {/* Message Bubble */}
         <div
           onClick={() => {
@@ -74,27 +97,6 @@ const Message: React.FC<ExtendedMessageProps> = ({
               : 'bg-[#1a1a1a] border-[#2a2a2a]'
           } ${message.isPossibility ? 'border-dashed cursor-pointer hover:border-[#667eea]' : ''}`}
         >
-          {/* Model Info for AI messages */}
-          {!isUser &&
-            (message.model ||
-              message.probability ||
-              message.temperature !== undefined) && (
-              <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-[#667eea] text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
-                {message.model && (
-                  <span className="text-[#888]">{message.model}</span>
-                )}
-                {message.temperature !== undefined && (
-                  <span className="text-[#ffa726]" title="Temperature">
-                    T:{message.temperature?.toFixed(1)}
-                  </span>
-                )}
-                {message.probability && (
-                  <span title="Probability Score">
-                    P:{Math.round(message.probability * 100)}%
-                  </span>
-                )}
-              </div>
-            )}
 
           {message.content && (
             <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
@@ -184,27 +186,31 @@ const Message: React.FC<ExtendedMessageProps> = ({
                             </span>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            <span
-                              className="text-[#ffa726] font-medium min-w-[44px]"
-                              title="Temperature"
-                            >
-                              T:{possibility.temperature?.toFixed(1) || 'unk'}
-                            </span>
-                            <span
-                              className="text-[#667eea] font-medium min-w-[44px]"
-                              title="Probability Score"
-                            >
-                              {possibility.probability !== undefined &&
-                              possibility.probability !== null
-                                ? `P:${Math.round(possibility.probability * 100)}%`
-                                : 'P:unk'}
-                            </span>
-                            <span
-                              className="text-[#a78bfa] font-medium min-w-[60px] truncate"
-                              title="System Instruction"
-                            >
-                              {possibility.systemInstruction || 'default'}
-                            </span>
+                            {possibility.temperature !== undefined && (
+                              <span
+                                className="text-[#ffa726] font-medium min-w-[44px]"
+                                title="Temperature"
+                              >
+                                T:{possibility.temperature.toFixed(1)}
+                              </span>
+                            )}
+                            {possibility.systemInstruction && (
+                              <span
+                                className="text-[#a78bfa] font-medium min-w-[60px] truncate"
+                                title="System Instruction"
+                              >
+                                {possibility.systemInstruction}
+                              </span>
+                            )}
+                            {possibility.probability !== undefined &&
+                              possibility.probability !== null && (
+                                <span
+                                  className="text-[#667eea] font-medium min-w-[44px]"
+                                  title="Probability Score"
+                                >
+                                  P:{Math.round(possibility.probability * 100)}%
+                                </span>
+                              )}
                           </div>
                         </div>
                       </div>
