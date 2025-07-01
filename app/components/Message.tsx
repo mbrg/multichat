@@ -63,11 +63,16 @@ const Message: React.FC<ExtendedMessageProps> = ({
       <div className="flex-1">
         {/* Message Bubble */}
         <div
+          onClick={() => {
+            if (message.isPossibility) {
+              onSelectPossibility?.(message)
+            }
+          }}
           className={`border rounded-xl p-4 relative word-wrap break-word overflow-wrap break-word ${
             isUser
               ? 'bg-[#2a2a3a] border-[#3a3a4a]'
               : 'bg-[#1a1a1a] border-[#2a2a2a]'
-          }`}
+          } ${message.isPossibility ? 'border-dashed cursor-pointer hover:border-[#667eea]' : ''}`}
         >
           {/* Model Info for AI messages */}
           {!isUser &&

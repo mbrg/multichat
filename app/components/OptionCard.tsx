@@ -51,7 +51,7 @@ const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
       "
       onClick={handleClick}
     >
-      <div className="grid grid-cols-[24px_1fr_140px_auto] gap-3 items-start">
+      <div className="grid grid-cols-[24px_1fr_auto] md:grid-cols-[24px_1fr_140px_auto] gap-3 items-start">
         {/* Provider Logo */}
         <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-white p-1 overflow-hidden mt-0.5">
           {getModelIcon()}
@@ -70,12 +70,15 @@ const OptionCard: React.FC<OptionCardProps> = ({ response, onSelect }) => {
         </div>
 
         {/* Model Name */}
-        <div className="text-xs text-[#888] font-medium flex-shrink-0 mt-0.5">
+        <div className="text-xs text-[#888] font-medium flex-shrink-0 mt-0.5 hidden md:block">
           {getDisplayModelName(response.model.name)}
         </div>
 
         {/* Tags (Temperature, System Instructions, Probability) */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="md:hidden bg-[#2a2a3a] px-2 py-1 rounded text-[#888] font-medium text-xs">
+            {getDisplayModelName(response.model.name)}
+          </div>
           {response.temperature !== undefined && (
             <div
               className="bg-[#2a2a3a] px-2 py-1 rounded text-[#ffa726] font-bold text-xs"
