@@ -58,36 +58,14 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
       expect(KVStoreFactory.getCurrentInstanceType()).toContain('LocalKVStore')
     })
 
-    it('should attempt CloudKV when cloud config is present', async () => {
-      // Arrange: Development with cloud config
+    it('should still use local storage even when cloud config exists', async () => {
+      // Arrange: Development with cloud config present
       Object.assign(process.env, { NODE_ENV: 'development' })
-      process.env.KV_REST_API_URL = 'https://test-api.upstash.io'
       process.env.KV_REST_API_URL = 'https://test-api.upstash.io'
       process.env.KV_REST_API_TOKEN = 'test-token'
 
-      // Mock @upstash/redis to simulate cloud availability
-      vi.doMock('@upstash/redis', () => ({
-        Redis: {
-          fromEnv: vi.fn().mockReturnValue({
-            get: vi.fn().mockResolvedValue(null),
-            set: vi.fn().mockResolvedValue(undefined),
-            del: vi.fn().mockResolvedValue(undefined),
-          }),
-        },
-      }))
-
-      try {
-        // Act
-        const store = await KVStoreFactory.createInstance('auto')
-
-        // Assert
-        expect(store.getImplementationName()).toContain('CloudKVStore')
-      } catch (error) {
-        // If @upstash/redis is not available, that's expected in test environment
-        expect((error as Error).message).toContain(
-          'Failed to initialize cloud Redis store'
-        )
-      }
+      const store = await KVStoreFactory.createInstance('auto')
+      expect(store.getImplementationName()).toContain('LocalKVStore')
     })
   })
 
@@ -101,7 +79,7 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
 
       // Act & Assert
       await expect(KVStoreFactory.createInstance('auto')).rejects.toThrow(
-        'Upstash Redis configuration required (KV_REST_API_URL, KV_REST_API_TOKEN)'
+        'Cloud KV configuration required (Upstash or Redis)'
       )
     })
 
@@ -135,6 +113,27 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
           'Failed to initialize cloud Redis store'
         )
       }
+    })
+
+    it('should use Redis when Upstash is not configured', async () => {
+      // Arrange: Production with only REDIS_URL
+      Object.assign(process.env, { NODE_ENV: 'production' })
+      delete process.env.KV_REST_API_URL
+      delete process.env.KV_REST_API_TOKEN
+      process.env.REDIS_URL = 'redis://localhost:6379'
+
+      vi.doMock('redis', () => ({
+        createClient: vi.fn().mockReturnValue({
+          connect: vi.fn().mockResolvedValue(undefined),
+          on: vi.fn(),
+          get: vi.fn().mockResolvedValue(null),
+          set: vi.fn().mockResolvedValue(undefined),
+          del: vi.fn().mockResolvedValue(undefined),
+        }),
+      }))
+
+      const store = await KVStoreFactory.createInstance('auto')
+      expect(store.getImplementationName()).toContain('RedisKVStore')
     })
   })
 
@@ -193,9 +192,8 @@ describe('KV Integration Tests - Environment-Based Selection', () => {
         // Assert
         expect(store.getImplementationName()).toContain('CloudKVStore')
       } catch (error) {
-        // Expected if @upstash/redis is not available
         expect((error as Error).message).toContain(
-          'Failed to initialize cloud Redis store'
+          'Cloud KV configuration required (Upstash or Redis)'
         )
       }
     })

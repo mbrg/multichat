@@ -27,27 +27,13 @@ describe('KVStoreFactory', () => {
       expect(KVStoreFactory.getCurrentInstanceType()).toContain('LocalKVStore')
     })
 
-    it('should use cloud KV in development with cloud config', async () => {
-      // Mock environment with cloud config
+    it('should use local storage even with cloud config in development', async () => {
       vi.stubEnv('NODE_ENV', 'development')
-      vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
       vi.stubEnv('KV_REST_API_URL', 'https://api.upstash.io')
       vi.stubEnv('KV_REST_API_TOKEN', 'token123')
 
-      // Mock the @upstash/redis import
-      vi.doMock('@upstash/redis', () => ({
-        Redis: {
-          fromEnv: vi.fn().mockReturnValue({
-            get: vi.fn(),
-            set: vi.fn(),
-            del: vi.fn(),
-          }),
-        },
-      }))
-
       const store = await KVStoreFactory.createInstance('auto')
-
-      expect(store.getImplementationName()).toContain('CloudKVStore')
+      expect(store.getImplementationName()).toContain('LocalKVStore')
     })
 
     it('should use cloud KV in production with cloud config', async () => {
@@ -73,14 +59,35 @@ describe('KVStoreFactory', () => {
       expect(store.getImplementationName()).toContain('CloudKVStore')
     })
 
+    it('should use Redis when only REDIS_URL is provided', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('KV_REST_API_URL', undefined)
+      vi.stubEnv('KV_REST_API_TOKEN', undefined)
+      vi.stubEnv('REDIS_URL', 'redis://localhost:6379')
+
+      vi.doMock('redis', () => ({
+        createClient: vi.fn().mockReturnValue({
+          connect: vi.fn().mockResolvedValue(undefined),
+          on: vi.fn(),
+          get: vi.fn(),
+          set: vi.fn(),
+          del: vi.fn(),
+        }),
+      }))
+
+      const store = await KVStoreFactory.createInstance('auto')
+      expect(store.getImplementationName()).toContain('RedisKVStore')
+    })
+
     it('should throw error in production without cloud config', async () => {
       // Mock production environment without cloud config
       vi.stubEnv('NODE_ENV', 'production')
       vi.stubEnv('KV_REST_API_URL', undefined)
       vi.stubEnv('KV_REST_API_TOKEN', undefined)
+      vi.stubEnv('REDIS_URL', undefined)
 
       await expect(KVStoreFactory.createInstance('auto')).rejects.toThrow(
-        'Upstash Redis configuration required (KV_REST_API_URL, KV_REST_API_TOKEN)'
+        'Cloud KV configuration required (Upstash or Redis)'
       )
     })
   })
