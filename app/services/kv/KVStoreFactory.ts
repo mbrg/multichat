@@ -94,17 +94,13 @@ export class KVStoreFactory {
 
     // In development or test, always use local storage
     if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') {
-      console.log(
-        `[KVStoreFactory] Using local storage in ${env.NODE_ENV}`
-      )
+      console.log(`[KVStoreFactory] Using local storage in ${env.NODE_ENV}`)
       return 'local'
     }
 
     // Production requires cloud configuration
     if (!hasCloudConfig) {
-      throw new Error(
-        'Cloud KV configuration required (Upstash or Redis)'
-      )
+      throw new Error('Cloud KV configuration required (Upstash or Redis)')
     }
 
     console.log(`[KVStoreFactory] Using cloud KV storage`)
