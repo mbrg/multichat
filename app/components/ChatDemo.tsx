@@ -195,7 +195,7 @@ const ChatDemo: React.FC = () => {
       onContinuePossibility={handleContinuePossibility}
       isLoading={isGenerating}
       disabled={!isSystemReady() || hasActivePossibilities()}
-      className="h-screen"
+      className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
     />
