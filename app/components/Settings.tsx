@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import ApiKeysPanel from './ApiKeysPanel'
 import SystemInstructionsPanel from './SystemInstructionsPanel'
 import TemperaturesPanel from './TemperaturesPanel'
+import ModelsPanel from './ModelsPanel'
 import ErrorBoundary from './ErrorBoundary'
 import { CloudSettings } from '../utils/cloudSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
@@ -11,10 +12,18 @@ import { useApiKeys } from '../hooks/useApiKeys'
 interface SettingsProps {
   isOpen: boolean
   onClose: () => void
-  initialSection?: 'api-keys' | 'system-instructions' | 'temperatures'
+  initialSection?:
+    | 'api-keys'
+    | 'system-instructions'
+    | 'temperatures'
+    | 'models'
 }
 
-type SettingsSection = 'api-keys' | 'system-instructions' | 'temperatures'
+type SettingsSection =
+  | 'api-keys'
+  | 'system-instructions'
+  | 'temperatures'
+  | 'models'
 
 const Settings: React.FC<SettingsProps> = ({
   isOpen,
@@ -35,6 +44,7 @@ const Settings: React.FC<SettingsProps> = ({
       label: 'System Instructions',
       icon: '📝',
     },
+    { id: 'models' as const, label: 'Models', icon: '🧠' },
     { id: 'temperatures' as const, label: 'Temperatures', icon: '🌡️' },
   ]
 
@@ -91,6 +101,7 @@ const Settings: React.FC<SettingsProps> = ({
             {activeSection === 'system-instructions' && (
               <SystemInstructionsPanel />
             )}
+            {activeSection === 'models' && <ModelsPanel />}
             {activeSection === 'temperatures' && <TemperaturesPanel />}
           </ErrorBoundary>
         </div>

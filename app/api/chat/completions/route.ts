@@ -20,6 +20,7 @@ const requestSchema = z.object({
   settings: z.object({
     systemPrompt: z.string().optional(),
     enabledProviders: z.array(z.string()),
+    enabledModels: z.array(z.string()).optional(),
     systemInstructions: z.array(
       z.object({
         id: z.string(),

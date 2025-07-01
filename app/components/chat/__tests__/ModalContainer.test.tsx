@@ -43,6 +43,7 @@ describe('ModalContainer', () => {
       | 'api-keys'
       | 'system-instructions'
       | 'temperatures'
+      | 'models'
       | undefined,
     onCloseSettings: vi.fn(),
     showAuthPopup: false,
@@ -122,8 +123,8 @@ describe('ModalContainer', () => {
 
     it('should handle all valid settingsSection values', () => {
       const sections: Array<
-        'api-keys' | 'system-instructions' | 'temperatures'
-      > = ['api-keys', 'system-instructions', 'temperatures']
+        'api-keys' | 'system-instructions' | 'temperatures' | 'models'
+      > = ['api-keys', 'system-instructions', 'temperatures', 'models']
 
       sections.forEach((section) => {
         const { rerender } = render(
