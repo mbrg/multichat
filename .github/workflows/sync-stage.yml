@@ -52,5 +52,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 Stage updated from \`${{ github.head_ref }}\` at ${timestamp} • [Re-run](${runUrl})`
+              body: `🚀 Stage updated from \`${{ github.head_ref }}\` at ${timestamp} • [Stage](https://stage.multichat.mbgsec.com) • [Re-run](${runUrl})`
             })
