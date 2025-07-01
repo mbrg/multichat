@@ -10,6 +10,13 @@ export interface Temperature {
   value: number
 }
 
+export interface PossibilityDefaults {
+  maxInitial: number
+  tokensPerPossibility: number
+  tokensReasoning: number
+  tokensContinuation: number
+}
+
 export interface UserSettings {
   systemPrompt?: string
   enabledProviders?: string // JSON stringified EnabledProviders
@@ -17,5 +24,6 @@ export interface UserSettings {
   temperatures?: Temperature[]
   enabledModels?: string[]
   possibilityMultiplier?: number // How many instances of each permutation to generate (default 1)
+  possibilityDefaults?: PossibilityDefaults
   [key: string]: any // Allow for future settings
 }

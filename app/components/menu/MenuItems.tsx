@@ -9,7 +9,12 @@ interface MenuItemsProps {
   onSignOut: (e: React.MouseEvent) => void
   onSettingsClick: (
     e: React.MouseEvent,
-    section?: 'api-keys' | 'system-instructions' | 'temperatures' | 'models'
+    section?:
+      | 'api-keys'
+      | 'system-instructions'
+      | 'temperatures'
+      | 'models'
+      | 'possibility-defaults'
   ) => void
 }
 
@@ -102,6 +107,16 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
             strokeWidth={2}
             d="M13 10V3L4 14h7v7l9-11h-7z"
           />
+        </svg>
+      ),
+    },
+    {
+      section: 'possibility-defaults' as const,
+      label: 'Possibilities',
+      description: 'Generation limits',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
       ),
     },

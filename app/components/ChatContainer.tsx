@@ -24,7 +24,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
   const [settingsSection, setSettingsSection] = useState<
-    'api-keys' | 'system-instructions' | 'temperatures' | 'models' | undefined
+    | 'api-keys'
+    | 'system-instructions'
+    | 'temperatures'
+    | 'models'
+    | 'possibility-defaults'
+    | undefined
   >()
 
   // Auth state
@@ -34,7 +39,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   // Event handlers
   const handleOpenSettings = (
-    section?: 'api-keys' | 'system-instructions' | 'temperatures' | 'models'
+    section?:
+      | 'api-keys'
+      | 'system-instructions'
+      | 'temperatures'
+      | 'models'
+      | 'possibility-defaults'
   ) => {
     setSettingsSection(section)
     setShowSettings(true)

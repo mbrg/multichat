@@ -11,7 +11,12 @@ interface MenuDropdownProps {
   onSignOut: (e: React.MouseEvent) => void
   onSettingsClick: (
     e: React.MouseEvent,
-    section?: 'api-keys' | 'system-instructions' | 'temperatures' | 'models'
+    section?:
+      | 'api-keys'
+      | 'system-instructions'
+      | 'temperatures'
+      | 'models'
+      | 'possibility-defaults'
   ) => void
 }
 
