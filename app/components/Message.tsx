@@ -68,7 +68,7 @@ const Message: React.FC<ExtendedMessageProps> = ({
               onSelectPossibility?.(message)
             }
           }}
-          className={`border rounded-xl p-4 relative word-wrap break-word overflow-wrap break-word ${
+          className={`border rounded-xl p-4 md:pt-6 relative word-wrap break-word overflow-wrap break-word ${
             isUser
               ? 'bg-[#2a2a3a] border-[#3a3a4a]'
               : 'bg-[#1a1a1a] border-[#2a2a2a]'
@@ -79,7 +79,7 @@ const Message: React.FC<ExtendedMessageProps> = ({
             (message.model ||
               message.probability ||
               message.temperature !== undefined) && (
-              <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-[#667eea] text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
+              <div className="md:absolute md:-top-2 md:right-4 mb-2 md:mb-0 bg-[#2a2a3a] px-3 py-1 rounded text-[#667eea] text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
                 {message.model && (
                   <span className="text-[#888]">{message.model}</span>
                 )}
