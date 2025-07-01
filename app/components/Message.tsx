@@ -67,7 +67,16 @@ const Message: React.FC<ExtendedMessageProps> = ({
             isUser
               ? 'bg-[#2a2a3a] border-[#3a3a4a]'
               : 'bg-[#1a1a1a] border-[#2a2a2a]'
+          } ${
+            message.isPossibility
+              ? 'border-dashed border-[#444] cursor-pointer hover:border-[#667eea]'
+              : ''
           }`}
+          onClick={() => {
+            if (message.isPossibility) {
+              onSelectPossibility?.(message)
+            }
+          }}
         >
           {/* Model Info for AI messages */}
           {!isUser &&

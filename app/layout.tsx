@@ -1,8 +1,8 @@
 import './globals.css'
-import { metadata } from './metadata'
+import { metadata, viewport } from './metadata'
 import AuthProvider from './components/AuthProvider'
 
-export { metadata }
+export { metadata, viewport }
 
 export default function RootLayout({
   children,

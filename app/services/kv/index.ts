@@ -7,6 +7,7 @@
 
 export type { IKVStore } from './IKVStore'
 export { CloudKVStore } from './CloudKVStore'
+export { RedisKVStore } from './RedisKVStore'
 export {
   KVStoreFactory,
   type KVStoreType,

@@ -21,6 +21,9 @@
     "paths": {
       "@/*": [
         "./app/*"
+      ],
+      "redis": [
+        "./app/__mocks__/redis.ts"
       ]
     },
     "types": [

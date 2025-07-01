@@ -3,15 +3,14 @@ import { useSimplePossibilities } from '@/hooks/useSimplePossibilities'
 import type { ChatMessage, PossibilityResponse } from '@/types/api'
 import type { UserSettings } from '@/types/settings'
 import type { PossibilityMetadata } from '@/services/ai/PossibilityMetadataService'
-import { getModelById } from '@/services/ai/config'
-import OptionCard from './OptionCard'
-import type { ResponseOption } from '@/types'
+import Message from './Message'
+import type { Message as ChatMessageType } from '@/types/chat'
 
 interface VirtualizedPossibilitiesPanelProps {
   messages: ChatMessage[]
   settings: UserSettings
   isActive?: boolean
-  onSelectResponse?: (response: ResponseOption) => void
+  onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
 }
@@ -69,86 +68,49 @@ const VirtualizedPossibilitiesPanel: React.FC<
 
   return (
     <>
-      {/* Header with statistics - outside the panel */}
+      {/* Header with statistics */}
       {isActive && (
-        <div className="px-4 py-1 text-xs text-[#888] flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span>
-              {possibilities.length > 0
-                ? 'Possibilities'
-                : 'Preparing possibilities...'}
-            </span>
-            <div className="flex items-center gap-2 text-[#666]">
-              <span className="text-[#4ade80]">
-                ✓ {possibilities.filter((p) => p.isComplete).length}
-              </span>
-              <span className="text-[#fbbf24]">
-                ⟳ {possibilities.filter((p) => !p.isComplete).length}
-              </span>
-            </div>
-          </div>
-
-          {/* Loading indicator */}
-          {possibilities.some((p) => !p.isComplete) && (
-            <div className="flex items-center gap-1">
-              <div className="w-1 h-1 bg-[#667eea] rounded-full animate-bounce"></div>
-              <div className="w-1 h-1 bg-[#667eea] rounded-full animate-bounce delay-100"></div>
-              <div className="w-1 h-1 bg-[#667eea] rounded-full animate-bounce delay-200"></div>
-            </div>
-          )}
+        <div className="px-4 text-xs text-[#888] mb-1">
+          Possibilities {possibilities.length} of{' '}
+          {possibilities.length + availableMetadata.length}
         </div>
       )}
 
-      {/* Panel with possibilities */}
-      <div
-        className={`
-          bg-[#0f0f0f] border-t border-[#2a2a2a] 
-          flex flex-col transition-all duration-300 ease-out overflow-hidden
-          ${isActive ? 'max-h-[45vh]' : 'max-h-0'}
-        `}
-      >
-        {/* Scrollable area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
-          <div className="px-4 py-2">
-            {/* Show streaming possibilities */}
-            <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
-              {possibilities.map((possibility) => {
-                // Get model config for alias
-                const modelConfig = getModelById(possibility.metadata.model)
+      {/* Possibility messages */}
+      <div className="px-4 py-2">
+        <div
+          className="border border-[#2a2a2a] rounded-lg p-2 bg-[#0f0f0f] flex flex-col gap-2 max-h-[45vh] overflow-y-auto"
+          data-testid="virtualized-possibilities"
+        >
+          {possibilities.map((possibility) => {
+            const messageData: ChatMessageType = {
+              id: possibility.id,
+              role: 'assistant',
+              content: possibility.content,
+              model: possibility.metadata.model,
+              probability: possibility.probability,
+              temperature: possibility.metadata.temperature,
+              timestamp: new Date(),
+              systemInstruction: possibility.metadata.systemInstruction
+                ? possibility.metadata.systemInstruction.name
+                : undefined,
+              isPossibility: true,
+            }
 
-                // Convert to ResponseOption format for OptionCard
-                const responseOption: ResponseOption & {
-                  systemInstruction?: { name: string }
-                } = {
-                  id: possibility.id,
-                  model: {
-                    id: possibility.metadata.model,
-                    name: modelConfig?.alias || possibility.metadata.model,
-                    provider: possibility.metadata.provider,
-                    icon: '', // Will be handled by OptionCard
-                    maxTokens: 0,
-                    supportsLogprobs: false,
-                  },
-                  content: possibility.content,
-                  probability: possibility.probability,
-                  temperature: possibility.metadata.temperature,
-                  isStreaming: !possibility.isComplete,
-                  timestamp: new Date(),
-                  systemInstruction: possibility.metadata.systemInstruction
-                    ? { name: possibility.metadata.systemInstruction.name }
-                    : undefined,
-                }
-
-                return (
-                  <OptionCard
-                    key={possibility.id}
-                    response={responseOption}
-                    onSelect={onSelectResponse}
-                  />
-                )
-              })}
+            return (
+              <Message
+                key={possibility.id}
+                message={messageData}
+                onSelectPossibility={() => onSelectResponse?.(messageData)}
+                className="max-w-none"
+              />
+            )
+          })}
+          {possibilities.some((p) => !p.isComplete) && (
+            <div className="text-center text-xs text-[#888] py-2">
+              Generating more possibilities...
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>
