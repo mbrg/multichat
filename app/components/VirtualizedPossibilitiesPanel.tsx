@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from 'react'
 import { useSimplePossibilities } from '@/hooks/useSimplePossibilities'
-import type { ChatMessage, PossibilityResponse } from '@/types/api'
+import type { ChatMessage } from '@/types/api'
 import type { UserSettings } from '@/types/settings'
 import type { PossibilityMetadata } from '@/services/ai/PossibilityMetadataService'
 import { getModelById } from '@/services/ai/config'
-import OptionCard from './OptionCard'
-import type { ResponseOption } from '@/types'
+import Message from './Message'
+import type { Message as ChatMessageType } from '../types/chat'
 
 interface VirtualizedPossibilitiesPanelProps {
   messages: ChatMessage[]
   settings: UserSettings
   isActive?: boolean
-  onSelectResponse?: (response: ResponseOption) => void
+  onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
 }
@@ -26,8 +26,10 @@ const VirtualizedPossibilitiesPanel: React.FC<
   enableVirtualScrolling = true,
   maxTokens,
 }) => {
-  const { possibilities, availableMetadata, loadPossibility } =
-    useSimplePossibilities(messages, settings)
+  const { possibilities, loadPossibility } = useSimplePossibilities(
+    messages,
+    settings
+  )
 
   // Track if we've loaded initial possibilities for this conversation
   const loadedConversationRef = useRef<string>('')
@@ -74,9 +76,8 @@ const VirtualizedPossibilitiesPanel: React.FC<
         <div className="px-4 py-1 text-xs text-[#888] flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span>
-              {possibilities.length > 0
-                ? 'Possibilities'
-                : 'Preparing possibilities...'}
+              {possibilities.length} total /{' '}
+              {possibilities.filter((p) => !p.isComplete).length} pending
             </span>
             <div className="flex items-center gap-2 text-[#666]">
               <span className="text-[#4ade80]">
@@ -113,37 +114,27 @@ const VirtualizedPossibilitiesPanel: React.FC<
             {/* Show streaming possibilities */}
             <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
               {possibilities.map((possibility) => {
-                // Get model config for alias
                 const modelConfig = getModelById(possibility.metadata.model)
 
-                // Convert to ResponseOption format for OptionCard
-                const responseOption: ResponseOption & {
-                  systemInstruction?: { name: string }
-                } = {
+                const msg: ChatMessageType = {
                   id: possibility.id,
-                  model: {
-                    id: possibility.metadata.model,
-                    name: modelConfig?.alias || possibility.metadata.model,
-                    provider: possibility.metadata.provider,
-                    icon: '', // Will be handled by OptionCard
-                    maxTokens: 0,
-                    supportsLogprobs: false,
-                  },
+                  role: 'assistant',
                   content: possibility.content,
+                  model: modelConfig?.alias || possibility.metadata.model,
                   probability: possibility.probability,
                   temperature: possibility.metadata.temperature,
-                  isStreaming: !possibility.isComplete,
                   timestamp: new Date(),
-                  systemInstruction: possibility.metadata.systemInstruction
-                    ? { name: possibility.metadata.systemInstruction.name }
-                    : undefined,
+                  systemInstruction:
+                    possibility.metadata.systemInstruction?.name,
+                  isPossibility: true,
                 }
 
                 return (
-                  <OptionCard
+                  <Message
                     key={possibility.id}
-                    response={responseOption}
-                    onSelect={onSelectResponse}
+                    message={msg}
+                    onSelectPossibility={onSelectResponse}
+                    className="max-w-[800px] w-full"
                   />
                 )
               })}

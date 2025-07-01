@@ -231,4 +231,23 @@ describe('Message - Possibilities', () => {
     const possibilityElement = screen.getByText('Alternative response')
     expect(() => fireEvent.click(possibilityElement)).not.toThrow()
   })
+
+  it('applies dashed border for possibility messages', () => {
+    const message = createMockMessage({
+      content: 'Possible answer',
+      isPossibility: true,
+    })
+
+    render(
+      <Message
+        message={message}
+        onSelectPossibility={mockOnSelectPossibility}
+      />
+    )
+
+    const bubble = screen
+      .getByText('Possible answer')
+      .closest('div.border') as HTMLElement
+    expect(bubble).toHaveClass('border-dashed')
+  })
 })
