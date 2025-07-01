@@ -4,6 +4,8 @@ import { useSession } from 'next-auth/react'
 import ApiKeysPanel from './ApiKeysPanel'
 import SystemInstructionsPanel from './SystemInstructionsPanel'
 import TemperaturesPanel from './TemperaturesPanel'
+import ModelsPanel from './ModelsPanel'
+import GenerationOptionsPanel from './GenerationOptionsPanel'
 import ErrorBoundary from './ErrorBoundary'
 import { CloudSettings } from '../utils/cloudSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
@@ -11,10 +13,20 @@ import { useApiKeys } from '../hooks/useApiKeys'
 interface SettingsProps {
   isOpen: boolean
   onClose: () => void
-  initialSection?: 'api-keys' | 'system-instructions' | 'temperatures'
+  initialSection?:
+    | 'api-keys'
+    | 'system-instructions'
+    | 'temperatures'
+    | 'models'
+    | 'generation'
 }
 
-type SettingsSection = 'api-keys' | 'system-instructions' | 'temperatures'
+type SettingsSection =
+  | 'api-keys'
+  | 'system-instructions'
+  | 'temperatures'
+  | 'models'
+  | 'generation'
 
 const Settings: React.FC<SettingsProps> = ({
   isOpen,
@@ -35,7 +47,9 @@ const Settings: React.FC<SettingsProps> = ({
       label: 'System Instructions',
       icon: '📝',
     },
+    { id: 'models' as const, label: 'Models', icon: '🧠' },
     { id: 'temperatures' as const, label: 'Temperatures', icon: '🌡️' },
+    { id: 'generation' as const, label: 'Generation', icon: '⚙️' },
   ]
 
   // Update active section when initialSection changes
@@ -91,7 +105,9 @@ const Settings: React.FC<SettingsProps> = ({
             {activeSection === 'system-instructions' && (
               <SystemInstructionsPanel />
             )}
+            {activeSection === 'models' && <ModelsPanel />}
             {activeSection === 'temperatures' && <TemperaturesPanel />}
+            {activeSection === 'generation' && <GenerationOptionsPanel />}
           </ErrorBoundary>
         </div>
       </div>

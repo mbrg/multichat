@@ -8,6 +8,10 @@ export const TOKEN_LIMITS = {
   CONTINUATION_DEFAULT: 1000, // Additional tokens when continuing from a possibility
 } as const
 
+export const GENERATION_CONFIG = {
+  MAX_INITIAL_POSSIBILITIES: 12,
+} as const
+
 export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
   openai: [
     {

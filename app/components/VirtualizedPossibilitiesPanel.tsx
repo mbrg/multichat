@@ -3,7 +3,7 @@ import { useSimplePossibilities } from '@/hooks/useSimplePossibilities'
 import type { ChatMessage } from '@/types/api'
 import type { UserSettings } from '@/types/settings'
 import type { PossibilityMetadata } from '@/services/ai/PossibilityMetadataService'
-import { getModelById } from '@/services/ai/config'
+import { getModelById, GENERATION_CONFIG } from '@/services/ai/config'
 import Message from './Message'
 import type { Message as ChatMessageType } from '../types/chat'
 
@@ -56,12 +56,16 @@ const VirtualizedPossibilitiesPanel: React.FC<
           settings
         )
 
+      const limit =
+        settings.maxInitialPossibilities ??
+        GENERATION_CONFIG.MAX_INITIAL_POSSIBILITIES
+
       const highPriority = allMetadata
         .filter(
           (m: PossibilityMetadata) =>
             m.priority === 'high' || m.priority === 'medium'
         )
-        .slice(0, 12)
+        .slice(0, limit)
 
       highPriority.forEach((meta: PossibilityMetadata) =>
         loadPossibility(meta.id)

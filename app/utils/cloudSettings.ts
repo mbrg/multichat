@@ -103,6 +103,16 @@ export class CloudSettings {
     await this.updateSettings({ enabledProviders: providers })
   }
 
+  // Model preferences
+  static async getEnabledModels(): Promise<string[] | undefined> {
+    const settings = await this.getSettings()
+    return settings.enabledModels
+  }
+
+  static async setEnabledModels(models: string[]): Promise<void> {
+    await this.updateSettings({ enabledModels: models })
+  }
+
   // Reset all settings to defaults
   static async resetToDefaults(): Promise<void> {
     const defaultInstructions: SystemInstruction[] = [
