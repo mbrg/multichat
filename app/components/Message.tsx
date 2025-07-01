@@ -78,7 +78,8 @@ const Message: React.FC<ExtendedMessageProps> = ({
           {!isUser &&
             (message.model ||
               message.probability ||
-              message.temperature !== undefined) && (
+              message.temperature !== undefined ||
+              message.systemInstruction) && (
               <div className="absolute -top-2 right-4 bg-[#2a2a3a] px-3 py-1 rounded text-[#667eea] text-xs font-bold border border-[#3a3a4a] flex items-center gap-2">
                 {message.model && (
                   <span className="text-[#888]">{message.model}</span>
@@ -86,6 +87,14 @@ const Message: React.FC<ExtendedMessageProps> = ({
                 {message.temperature !== undefined && (
                   <span className="text-[#ffa726]" title="Temperature">
                     T:{message.temperature?.toFixed(1)}
+                  </span>
+                )}
+                {message.systemInstruction && (
+                  <span
+                    className="bg-purple-900/30 text-purple-400 px-2 py-1 rounded"
+                    title={`System: ${message.systemInstruction}`}
+                  >
+                    {message.systemInstruction}
                   </span>
                 )}
                 {message.probability && (

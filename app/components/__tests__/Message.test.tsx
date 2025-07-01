@@ -75,6 +75,18 @@ describe('Message', () => {
     expect(screen.getByText('P:85%')).toBeInTheDocument()
   })
 
+  it('shows system instruction tag when provided', () => {
+    const message = createMockMessage({
+      role: 'assistant',
+      systemInstruction: 'alpha',
+    })
+
+    render(<Message message={message} />)
+
+    expect(screen.getByText('alpha')).toBeInTheDocument()
+    expect(screen.getByTitle('System: alpha')).toBeInTheDocument()
+  })
+
   it('does not display probability for user messages', () => {
     const message = createMockMessage({
       role: 'user',
