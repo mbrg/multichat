@@ -10,7 +10,7 @@ import Menu from '../Menu'
 
 export interface ChatHeaderProps {
   onOpenSettings: (
-    section?: 'api-keys' | 'system-instructions' | 'temperatures'
+    section?: 'api-keys' | 'system-instructions' | 'temperatures' | 'models'
   ) => void
 }
 

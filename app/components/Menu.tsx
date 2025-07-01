@@ -7,7 +7,7 @@ import { MenuDropdown } from './menu/MenuDropdown'
 
 interface MenuProps {
   onOpenSettings: (
-    section?: 'api-keys' | 'system-instructions' | 'temperatures'
+    section?: 'api-keys' | 'system-instructions' | 'temperatures' | 'models'
   ) => void
   className?: string
 }
@@ -40,7 +40,7 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
 
   const handleSettingsClick = (
     e: React.MouseEvent,
-    section?: 'api-keys' | 'system-instructions' | 'temperatures'
+    section?: 'api-keys' | 'system-instructions' | 'temperatures' | 'models'
   ) => {
     e.preventDefault()
     e.stopPropagation()
