@@ -79,9 +79,12 @@ const Message: React.FC<ExtendedMessageProps> = ({
                 {message.systemInstruction}
               </span>
             )}
-            {message.probability !== undefined && message.probability !== null && (
-              <span title="Probability Score">P:{Math.round(message.probability * 100)}%</span>
-            )}
+            {message.probability !== undefined &&
+              message.probability !== null && (
+                <span title="Probability Score">
+                  P:{Math.round(message.probability * 100)}%
+                </span>
+              )}
           </div>
         )}
         {/* Message Bubble */}
@@ -97,7 +100,6 @@ const Message: React.FC<ExtendedMessageProps> = ({
               : 'bg-[#1a1a1a] border-[#2a2a2a]'
           } ${message.isPossibility ? 'border-dashed cursor-pointer hover:border-[#667eea]' : ''}`}
         >
-
           {message.content && (
             <div className="text-sm leading-relaxed text-[#e0e0e0] whitespace-pre-wrap break-words">
               {message.content}
