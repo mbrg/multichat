@@ -15,6 +15,7 @@ export interface UserSettings {
   enabledProviders?: string // JSON stringified EnabledProviders
   systemInstructions?: SystemInstruction[]
   temperatures?: Temperature[]
+  enabledModels?: string[]
   possibilityMultiplier?: number // How many instances of each permutation to generate (default 1)
   [key: string]: any // Allow for future settings
 }
