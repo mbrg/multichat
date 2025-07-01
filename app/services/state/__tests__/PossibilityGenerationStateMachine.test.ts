@@ -129,7 +129,10 @@ describe('PossibilityGenerationStateMachine', () => {
 
       expect(result).toBe(true)
       expect(stateMachine.getState()).toBe('streaming')
-      expect(stateMachine.getContext().lastActivity).toBeGreaterThan(
+      // Some environments may return identical millisecond timestamps
+      // when events occur in quick succession. Allow equality so this
+      // check doesn't fail due to clock resolution.
+      expect(stateMachine.getContext().lastActivity).toBeGreaterThanOrEqual(
         initialActivity!
       )
     })
