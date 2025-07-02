@@ -17,6 +17,7 @@ export interface ModalContainerProps {
     | 'system-instructions'
     | 'temperatures'
     | 'models'
+    | 'possibility-defaults'
   onCloseSettings: () => void
 
   // Auth popup

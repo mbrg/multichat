@@ -3,7 +3,11 @@ import { useSimplePossibilities } from '@/hooks/useSimplePossibilities'
 import type { ChatMessage } from '@/types/api'
 import type { UserSettings } from '@/types/settings'
 import type { PossibilityMetadata } from '@/services/ai/PossibilityMetadataService'
-import { getModelById } from '@/services/ai/config'
+import {
+  getModelById,
+  TOKEN_LIMITS,
+  DEFAULT_INITIAL_POSSIBILITIES,
+} from '@/services/ai/config'
 import Message from './Message'
 import type { Message as ChatMessageType } from '../types/chat'
 
@@ -53,7 +57,12 @@ const VirtualizedPossibilitiesPanel: React.FC<
       // loadPossibility will handle duplicate prevention internally
       const allMetadata =
         new (require('@/services/ai/PossibilityMetadataService').PossibilityMetadataService)().generatePrioritizedMetadata(
-          settings
+          settings,
+          {
+            maxTokens:
+              settings.possibilityDefaults?.tokensPerPossibility ??
+              TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+          }
         )
 
       const highPriority = allMetadata
@@ -61,7 +70,11 @@ const VirtualizedPossibilitiesPanel: React.FC<
           (m: PossibilityMetadata) =>
             m.priority === 'high' || m.priority === 'medium'
         )
-        .slice(0, 12)
+        .slice(
+          0,
+          settings.possibilityDefaults?.maxInitial ??
+            DEFAULT_INITIAL_POSSIBILITIES
+        )
 
       highPriority.forEach((meta: PossibilityMetadata) =>
         loadPossibility(meta.id)

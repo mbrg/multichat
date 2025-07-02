@@ -1,7 +1,16 @@
-import { SystemInstruction, Temperature, UserSettings } from '../types/settings'
+import {
+  SystemInstruction,
+  Temperature,
+  UserSettings,
+  PossibilityDefaults,
+} from '../types/settings'
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../constants/defaults'
+import {
+  TOKEN_LIMITS,
+  DEFAULT_INITIAL_POSSIBILITIES,
+} from '../services/ai/config'
 
-export type { SystemInstruction, Temperature, UserSettings }
+export type { SystemInstruction, Temperature, UserSettings, PossibilityDefaults }
 
 export class CloudSettings {
   static async getSettings(): Promise<UserSettings> {
@@ -113,6 +122,25 @@ export class CloudSettings {
     await this.updateSettings({ enabledModels: models })
   }
 
+  // Possibility defaults
+  static async getPossibilityDefaults(): Promise<PossibilityDefaults> {
+    const settings = await this.getSettings()
+    return (
+      settings.possibilityDefaults || {
+        maxInitial: DEFAULT_INITIAL_POSSIBILITIES,
+        tokensPerPossibility: TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+        tokensReasoning: TOKEN_LIMITS.POSSIBILITY_REASONING,
+        tokensContinuation: TOKEN_LIMITS.CONTINUATION_DEFAULT,
+      }
+    )
+  }
+
+  static async setPossibilityDefaults(
+    defaults: PossibilityDefaults
+  ): Promise<void> {
+    await this.updateSettings({ possibilityDefaults: defaults })
+  }
+
   // Reset all settings to defaults
   static async resetToDefaults(): Promise<void> {
     const defaultInstructions: SystemInstruction[] = [
@@ -132,9 +160,17 @@ export class CloudSettings {
       },
     ]
 
+    const defaultPossibilityDefaults: PossibilityDefaults = {
+      maxInitial: DEFAULT_INITIAL_POSSIBILITIES,
+      tokensPerPossibility: TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+      tokensReasoning: TOKEN_LIMITS.POSSIBILITY_REASONING,
+      tokensContinuation: TOKEN_LIMITS.CONTINUATION_DEFAULT,
+    }
+
     await this.updateSettings({
       systemInstructions: defaultInstructions,
       temperatures: defaultTemperatures,
+      possibilityDefaults: defaultPossibilityDefaults,
     })
   }
 }

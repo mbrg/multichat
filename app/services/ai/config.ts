@@ -8,6 +8,9 @@ export const TOKEN_LIMITS = {
   CONTINUATION_DEFAULT: 1000, // Additional tokens when continuing from a possibility
 } as const
 
+// Default number of possibilities to load initially
+export const DEFAULT_INITIAL_POSSIBILITIES = 12
+
 export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
   openai: [
     {

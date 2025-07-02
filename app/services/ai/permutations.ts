@@ -34,9 +34,12 @@ export class PermutationGenerator {
         // For each temperature
         for (const temperature of settings.temperatures) {
           // For each system instruction - ensure we always have at least one
+          const enabledInstructions = settings.systemInstructions.filter(
+            (inst) => inst.enabled
+          )
           const instructions: SystemInstruction[] =
-            settings.systemInstructions.length > 0
-              ? settings.systemInstructions
+            enabledInstructions.length > 0
+              ? enabledInstructions
               : [DEFAULT_SYSTEM_INSTRUCTION]
 
           for (const instruction of instructions) {
@@ -116,10 +119,11 @@ export class PermutationGenerator {
         settings.enabledModels
       ).length
       const temperatureCount = settings.temperatures.length
+      const enabledInstructions = settings.systemInstructions.filter(
+        (inst) => inst.enabled
+      )
       const instructionCount =
-        settings.systemInstructions.length > 0
-          ? settings.systemInstructions.length
-          : 1 // Default instruction
+        enabledInstructions.length > 0 ? enabledInstructions.length : 1
 
       count += modelCount * temperatureCount * instructionCount
     }

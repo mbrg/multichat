@@ -204,7 +204,10 @@ const MessageWithIndependentPossibilities: React.FC<
                   isActive={true}
                   onSelectResponse={handleSelectResponse}
                   enableVirtualScrolling={true}
-                  maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
+                  maxTokens={
+                    settings.possibilityDefaults?.tokensPerPossibility ??
+                    TOKEN_LIMITS.POSSIBILITY_DEFAULT
+                  }
                 />
               </div>
             )}

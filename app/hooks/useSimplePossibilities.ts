@@ -111,7 +111,11 @@ export function useSimplePossibilities(
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ messages, permutation: meta }),
+            body: JSON.stringify({
+              messages,
+              permutation: meta,
+              options: { maxTokens: meta.estimatedTokens },
+            }),
             signal: abortController.signal,
           })
 
