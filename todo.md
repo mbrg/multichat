@@ -1,5 +1,0 @@
-- attachment doesn't work
-- once you set up your first API key the warning doesnt go aware before a refresh
-- possibilities are generating more tokens than visible in the xp and then not generating more when a possibility is chosen
-- user selection of models
-- user selection of token restriction on generation

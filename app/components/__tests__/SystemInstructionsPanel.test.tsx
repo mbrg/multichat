@@ -232,7 +232,12 @@ describe('SystemInstructionsPanel', () => {
     it('hides add button when limit reached', async () => {
       const many = Array.from(
         { length: SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS },
-        (_, i) => ({ id: `${i}`, name: `inst${i}`, content: 'c', enabled: true })
+        (_, i) => ({
+          id: `${i}`,
+          name: `inst${i}`,
+          content: 'c',
+          enabled: true,
+        })
       )
       mockCloudSettings.getSystemInstructions.mockResolvedValueOnce(many)
 
