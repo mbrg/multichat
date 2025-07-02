@@ -40,7 +40,9 @@ const SystemInstructionsPanel: React.FC = () => {
   }
 
   const handleAddSystemInstruction = async (name: string, content: string) => {
-    if (systemInstructions.length >= SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS) {
+    if (
+      systemInstructions.length >= SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS
+    ) {
       throw new Error(
         `Maximum of ${SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS} system instructions allowed`
       )
@@ -142,7 +144,8 @@ const SystemInstructionsPanel: React.FC = () => {
           System Instructions ({systemInstructions.length}/
           {SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS})
         </h3>
-        {systemInstructions.length < SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS &&
+        {systemInstructions.length <
+          SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS &&
           !showAddForm &&
           !editingInstruction && (
             <button
