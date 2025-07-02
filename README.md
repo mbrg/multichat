@@ -91,3 +91,18 @@ export default tseslint.config({
   },
 })
 ```
+
+## Possibility Generation Defaults
+
+The application uses several configuration values to control how possibilities are generated:
+
+- **Initial possibilities loaded**: `maxInitialPossibilities` (default `12`)
+- **Tokens per possibility**: `possibilityTokens` (default `100`)
+- **Tokens for reasoning models**: `reasoningTokens` (default `1500`)
+- **Tokens for continued generation**: `continuationTokens` (default `1000`)
+- **Possibility multiplier**: `possibilityMultiplier` (default `1`)
+- **Early high-priority cutoff**: first `8` possibilities
+- **Concurrent generation limit**: `6` active requests
+- **Retry attempts**: `3` automatic retries on failure
+
+You can customize the token limits and max initial possibilities in the **Generation** section of the settings menu.
