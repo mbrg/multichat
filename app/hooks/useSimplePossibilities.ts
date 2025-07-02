@@ -5,6 +5,7 @@ import {
   PossibilityMetadataService,
   PossibilityMetadata,
 } from '../services/ai/PossibilityMetadataService'
+import { getDefaultTokenLimit } from '../services/ai/config'
 
 // Connection pooling to prevent resource overload
 const MAX_CONCURRENT_CONNECTIONS = 6
@@ -106,12 +107,21 @@ export function useSimplePossibilities(
           setIsLoading(true)
 
           // Use existing API - it already works
+          const maxTokens = getDefaultTokenLimit(meta.model, {
+            possibilityTokens: settings.possibilityTokens,
+            reasoningTokens: settings.reasoningTokens,
+          })
+
           const response = await fetch(`/api/possibility/${possibilityId}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ messages, permutation: meta }),
+            body: JSON.stringify({
+              messages,
+              permutation: meta,
+              options: { maxTokens },
+            }),
             signal: abortController.signal,
           })
 

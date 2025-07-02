@@ -35,7 +35,7 @@ export const AI_DEFAULTS = {
 export const SYSTEM_INSTRUCTION_LIMITS = {
   MAX_CONTENT_CHARS: 6000,
   MAX_NAME_CHARS: 20,
-  MAX_INSTRUCTIONS: 3,
+  MAX_INSTRUCTIONS: 10,
 } as const
 
 /**

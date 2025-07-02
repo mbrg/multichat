@@ -14,6 +14,7 @@ import {
   PossibilityMetadataService,
   PossibilityMetadata,
 } from './PossibilityMetadataService'
+import { getDefaultTokenLimit } from './config'
 import { ConnectionPoolService } from '../ConnectionPoolService'
 import { LoggingService } from '../LoggingService'
 import { NetworkError, TimeoutError } from '../../types/errors'
@@ -92,7 +93,7 @@ export class SimplePossibilitiesService {
 
       // Queue all possibilities with priority-based ordering
       const queuePromises = metadata.map((meta) =>
-        this.enqueuePossibility(meta, messages, events)
+        this.enqueuePossibility(meta, messages, settings, events)
       )
 
       // Wait for all possibilities to complete
@@ -144,30 +145,39 @@ export class SimplePossibilitiesService {
   private async enqueuePossibility(
     metadata: PossibilityMetadata,
     messages: ChatMessage[],
+    settings: UserSettings,
     events: SimplePossibilitiesEvents
   ): Promise<void> {
     return this.connectionPool.enqueue({
       id: metadata.id,
       priority: metadata.priority,
-      execute: () => this.generateSinglePossibility(metadata, messages, events),
+      execute: () =>
+        this.generateSinglePossibility(metadata, messages, settings, events),
     })
   }
 
   private async generateSinglePossibility(
     metadata: PossibilityMetadata,
     messages: ChatMessage[],
+    settings: UserSettings,
     events: SimplePossibilitiesEvents
   ): Promise<void> {
     const abortController = new AbortController()
     this.activeRequests.set(metadata.id, abortController)
 
     try {
+      const maxTokens = getDefaultTokenLimit(metadata.model, {
+        possibilityTokens: settings.possibilityTokens,
+        reasoningTokens: settings.reasoningTokens,
+      })
+
       const response = await this.fetchFn(`/api/possibility/${metadata.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages,
-          metadata,
+          permutation: this.metadataService.metadataToPermutation(metadata),
+          options: { maxTokens },
         }),
         signal: abortController.signal,
       })
