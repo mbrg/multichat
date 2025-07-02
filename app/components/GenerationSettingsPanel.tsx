@@ -70,7 +70,7 @@ const GenerationSettingsPanel: React.FC = () => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm mb-1">
-            Default tokens per possibility
+            Tokens per possibility
           </label>
           <input
             type="number"
@@ -83,7 +83,7 @@ const GenerationSettingsPanel: React.FC = () => {
         </div>
         <div>
           <label className="block text-sm mb-1">
-            Tokens for reasoning models
+            Tokens per reasoning possibility
           </label>
           <input
             type="number"
@@ -109,7 +109,7 @@ const GenerationSettingsPanel: React.FC = () => {
         </div>
         <div>
           <label className="block text-sm mb-1">
-            Initial possibilities to load
+            Possibilities to load
           </label>
           <input
             type="number"
