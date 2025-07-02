@@ -232,6 +232,18 @@ describe('AI Configuration User Flows', () => {
       expect(googleModels).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
+            id: 'gemini-2.5-pro-exp-03-25',
+            name: 'Gemini 2.5 Pro (Exp)',
+          }),
+          expect.objectContaining({
+            id: 'gemini-2.5-pro-preview-05-06',
+            name: 'Gemini 2.5 Pro (Preview)',
+          }),
+          expect.objectContaining({
+            id: 'gemini-2.5-flash-preview-04-17',
+            name: 'Gemini 2.5 Flash (Preview)',
+          }),
+          expect.objectContaining({
             id: 'gemini-2.0-flash-exp',
             name: 'Gemini 2.0 Flash',
           }),

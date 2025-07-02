@@ -332,6 +332,7 @@ export class PossibilityMetadataService {
     // Larger models generally take longer
     if (modelId.includes('gpt-4o') && !modelId.includes('mini')) return 1.5
     if (modelId.includes('claude-3-5-sonnet')) return 1.4
+    if (modelId.includes('gemini-2.5-pro')) return 1.4
     if (modelId.includes('gemini-1.5-pro')) return 1.3
     if (
       modelId.includes('mini') ||
