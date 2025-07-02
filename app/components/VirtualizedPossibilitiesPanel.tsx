@@ -75,9 +75,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
       {isActive && (
         <div className="px-4 py-1 text-xs text-[#888] flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span>
-              {possibilities.length} possibilities
-            </span>
+            <span>{possibilities.length} possibilities</span>
             <div className="flex items-center gap-2 text-[#666]">
               <span className="text-[#4ade80]">
                 ✓ {possibilities.filter((p) => p.isComplete).length}

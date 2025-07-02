@@ -220,7 +220,7 @@ async function executeSinglePossibility(
             fullContent = event.response.content // Ensure we have complete content
           }
         }
-  } catch (streamError) {
+      } catch (streamError) {
         const context = await getServerLogContext()
         log.warn(
           `Streaming failed for ${permutation.id}, falling back to non-streaming`,
