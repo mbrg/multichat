@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../../lib/auth'
+import { log } from '@/services/LoggingService'
+import { getServerLogContext } from '../../../lib/logging'
 import { PermutationGenerator } from '@/services/ai/permutations'
 import { PossibilityExecutor } from '@/services/ai/executor'
 import { TOKEN_LIMITS } from '@/services/ai/config'
@@ -67,8 +69,8 @@ export async function POST(request: NextRequest) {
             validatedData.settings
           )
 
-          // Log permutation count
-          console.log(`Generating ${permutations.length} possibilities`)
+          const context = await getServerLogContext()
+          log.info(`Generating ${permutations.length} possibilities`, context)
 
           // Execute possibilities with streaming
           const executor = new PossibilityExecutor()
@@ -119,7 +121,8 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Chat completions error:', error)
+    const context = await getServerLogContext()
+    log.error('Chat completions error', error as Error, context)
 
     if (error instanceof z.ZodError) {
       return Response.json(
@@ -201,8 +204,10 @@ async function handleNonStreamingRequest(data: ChatCompletionRequest) {
               !completedPossibility.content ||
               completedPossibility.content.trim() === ''
             ) {
-              console.warn(
-                `Filtering empty possibility: ${completedPossibility.id} from ${completedPossibility.provider}/${completedPossibility.model}`
+              const context = await getServerLogContext()
+              log.warn(
+                `Filtering empty possibility: ${completedPossibility.id} from ${completedPossibility.provider}/${completedPossibility.model}`,
+                context
               )
             } else {
               possibilities.push(completedPossibility)
@@ -214,7 +219,8 @@ async function handleNonStreamingRequest(data: ChatCompletionRequest) {
 
     return Response.json({ possibilities })
   } catch (error) {
-    console.error('Non-streaming completion error:', error)
+    const context = await getServerLogContext()
+    log.error('Non-streaming completion error', error as Error, context)
     return Response.json(
       { error: 'Failed to generate possibilities' },
       { status: 500 }

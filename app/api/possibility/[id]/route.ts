@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../../lib/auth'
+import { log } from '@/services/LoggingService'
+import { getServerLogContext } from '../../../lib/logging'
 import { AIService } from '@/services/ai'
 import { getAllModels, TOKEN_LIMITS } from '@/services/ai/config'
 import type { ChatMessage, StreamEvent, Permutation } from '@/types/api'
@@ -125,7 +127,8 @@ export async function POST(
       },
     })
   } catch (error) {
-    console.error('Individual possibility error:', error)
+    const context = await getServerLogContext()
+    log.error('Individual possibility error', error as Error, context)
 
     if (error instanceof z.ZodError) {
       return Response.json(
@@ -218,9 +221,10 @@ async function executeSinglePossibility(
           }
         }
       } catch (streamError) {
-        console.warn(
-          `Streaming failed for ${permutation.id}, falling back to non-streaming:`,
-          streamError
+        const context = await getServerLogContext()
+        log.warn(
+          `Streaming failed for ${permutation.id}, falling back to non-streaming`,
+          context
         )
 
         // Fallback to non-streaming approach
@@ -343,7 +347,8 @@ async function handleNonStreamingPossibility(data: any, possibilityId: string) {
 
     return Response.json({ possibility })
   } catch (error) {
-    console.error('Non-streaming possibility error:', error)
+    const context = await getServerLogContext()
+    log.error('Non-streaming possibility error', error as Error, context)
     return Response.json(
       { error: 'Failed to generate possibility' },
       { status: 500 }

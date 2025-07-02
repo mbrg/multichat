@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../lib/auth'
+import { log } from '@/services/LoggingService'
+import { getServerLogContext } from '../../lib/logging'
 import {
   AI_PROVIDER_LIST,
   type AIProviderType,
@@ -42,7 +44,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ status })
   } catch (error) {
-    console.error('Failed to get API key status:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to get API key status', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to get API key status' },
       { status: 500 }
@@ -106,7 +109,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ status })
   } catch (error) {
-    console.error('Failed to set API key:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to set API key', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to set API key' },
       { status: 500 }
@@ -144,7 +148,8 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Failed to delete API key:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to delete API key', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to delete API key' },
       { status: 500 }
