@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { getAllModels } from '@/services/ai/config'
 import { CloudSettings } from '@/utils/cloudSettings'
@@ -15,17 +15,7 @@ const ModelsPanel: React.FC = () => {
 
   const allModels = getAllModels()
 
-  useEffect(() => {
-    if (status !== 'loading') {
-      if (session?.user) {
-        load()
-      } else {
-        setIsLoading(false)
-      }
-    }
-  }, [status, session])
-
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setIsLoading(true)
       const saved = await CloudSettings.getEnabledModels()
@@ -36,7 +26,17 @@ const ModelsPanel: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [allModels])
+
+  useEffect(() => {
+    if (status !== 'loading') {
+      if (session?.user) {
+        load()
+      } else {
+        setIsLoading(false)
+      }
+    }
+  }, [status, session, load])
 
   const toggle = async (id: string) => {
     const newModels = enabledModels.includes(id)
