@@ -226,7 +226,7 @@ export function useSimplePossibilities(
         connectionQueue.push(executeRequest)
       }
     },
-    [messages, metadata, settings.possibilityTokens, settings.reasoningTokens]
+    [messages, metadata]
   )
 
   return {

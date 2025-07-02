@@ -99,9 +99,7 @@ const MessageWithIndependentPossibilities: React.FC<
             <Image
               src={getProviderLogo(
                 typeof message.model === 'string'
-                  ? message.model
-                    ? getProviderFromModel(message.model)
-                    : 'openai'
+                  ? getProviderFromModel(message.model || 'openai')
                   : (message.model as any)?.provider || 'openai',
                 'light'
               )}
