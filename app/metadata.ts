@@ -1,7 +1,19 @@
 import type { Metadata } from 'next'
 
+const baseTitle = 'multichat - Multi-Model AI Chat Interface'
+
+const env = process.env.VERCEL_ENV
+let prefix = ''
+if (!env) {
+  prefix = '[local] '
+} else if (env === 'development') {
+  prefix = '[dev] '
+} else if (env === 'preview') {
+  prefix = '[preview] '
+}
+
 export const metadata: Metadata = {
-  title: 'multichat - Multi-Model AI Chat Interface',
+  title: `${prefix}${baseTitle}`,
   description:
     'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
   keywords: [
@@ -21,14 +33,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://multichat.vercel.app',
-    title: 'multichat - Multi-Model AI Chat Interface',
+    title: `${prefix}${baseTitle}`,
     description:
       'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
     siteName: 'multichat',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'multichat - Multi-Model AI Chat Interface',
+    title: `${prefix}${baseTitle}`,
     description:
       'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
   },
