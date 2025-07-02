@@ -175,6 +175,7 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
         'image/webp',
         'image/gif',
       ],
+      isReasoningModel: true,
     },
     {
       id: 'gemini-1.5-flash',
