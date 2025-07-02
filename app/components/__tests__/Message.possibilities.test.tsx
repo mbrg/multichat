@@ -52,8 +52,13 @@ describe('Message - Possibilities', () => {
 
   it('renders possibilities panel when possibilities exist', () => {
     const possibilities = [
-      createMockPossibility('p1', 'Alternative response 1', 'claude-3', 0.75),
-      createMockPossibility('p2', 'Alternative response 2', 'gpt-3.5', 0.65),
+      createMockPossibility(
+        'p1',
+        'Alternative response 1',
+        'claude-3-opus-20240229',
+        0.75
+      ),
+      createMockPossibility('p2', 'Alternative response 2', 'gpt-4o', 0.65),
     ]
 
     const message = createMockMessage({ possibilities })
@@ -72,7 +77,12 @@ describe('Message - Possibilities', () => {
 
   it('displays possibility metadata correctly', () => {
     const possibilities = [
-      createMockPossibility('p1', 'Alternative response', 'claude-3', 0.75),
+      createMockPossibility(
+        'p1',
+        'Alternative response',
+        'claude-3-opus-20240229',
+        0.75
+      ),
     ]
 
     const message = createMockMessage({ possibilities })
@@ -83,7 +93,7 @@ describe('Message - Possibilities', () => {
       />
     )
 
-    expect(screen.getByText('c-3')).toBeInTheDocument()
+    expect(screen.getByText('c-3-opus')).toBeInTheDocument()
     expect(screen.getByText('P:75%')).toBeInTheDocument()
   })
 
@@ -91,7 +101,7 @@ describe('Message - Possibilities', () => {
     const possibility = createMockPossibility(
       'p1',
       'Alternative response',
-      'claude-3',
+      'claude-3-opus-20240229',
       0.75
     )
     const possibilities = [possibility]
@@ -112,9 +122,9 @@ describe('Message - Possibilities', () => {
 
   it('renders multiple possibilities with correct styling', () => {
     const possibilities = [
-      createMockPossibility('p1', 'First alternative', 'claude-3', 0.75),
-      createMockPossibility('p2', 'Second alternative', 'gpt-3.5', 0.65),
-      createMockPossibility('p3', 'Third alternative', 'gemini', 0.55),
+      createMockPossibility('p1', 'First alternative', 'claude-3-opus-20240229', 0.75),
+      createMockPossibility('p2', 'Second alternative', 'gpt-4o', 0.65),
+      createMockPossibility('p3', 'Third alternative', 'gemini-1.5-pro', 0.55),
     ]
 
     const message = createMockMessage({ possibilities })
@@ -147,7 +157,7 @@ describe('Message - Possibilities', () => {
 
   it('applies hover styles to possibilities', () => {
     const possibilities = [
-      createMockPossibility('p1', 'Alternative response', 'claude-3', 0.75),
+      createMockPossibility('p1', 'Alternative response', 'claude-3-opus-20240229', 0.75),
     ]
 
     const message = createMockMessage({ possibilities })
@@ -184,7 +194,7 @@ describe('Message - Possibilities', () => {
 
   it('does not render possibilities panel for user messages', () => {
     const possibilities = [
-      createMockPossibility('p1', 'Alternative response', 'claude-3', 0.75),
+      createMockPossibility('p1', 'Alternative response', 'claude-3-opus-20240229', 0.75),
     ]
 
     const message = createMockMessage({
@@ -219,7 +229,7 @@ describe('Message - Possibilities', () => {
 
   it('works without onSelectPossibility callback', () => {
     const possibilities = [
-      createMockPossibility('p1', 'Alternative response', 'claude-3', 0.75),
+      createMockPossibility('p1', 'Alternative response', 'claude-3-opus-20240229', 0.75),
     ]
 
     const message = createMockMessage({ possibilities })

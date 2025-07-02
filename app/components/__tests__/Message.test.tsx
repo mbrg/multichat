@@ -89,12 +89,12 @@ describe('Message', () => {
   it('displays model name for assistant messages', () => {
     const message = createMockMessage({
       role: 'assistant',
-      model: 'claude-3',
+      model: 'claude-3-opus-20240229',
     })
 
     render(<Message message={message} />)
 
-    expect(screen.getByText('claude-3')).toBeInTheDocument()
+    expect(screen.getByText('claude-3-opus-20240229')).toBeInTheDocument()
     expect(screen.getByAltText('AI')).toBeInTheDocument() // OpenAI logo avatar
   })
 
@@ -172,8 +172,8 @@ describe('Message', () => {
     // Check for assistant message styling - check if the message content has the dark theme
     expect(container.querySelector('.flex-1')).toBeInTheDocument()
     expect(container.querySelector('.rounded-xl')).toBeInTheDocument()
-    // Also verify that it's an assistant message by checking the avatar text
-    expect(screen.getByAltText('AI')).toBeInTheDocument()
+    // Also verify that it's an assistant message by checking the avatar letter
+    expect(screen.getByText('A')).toBeInTheDocument()
   })
 
   it('applies custom className when provided', () => {
@@ -194,7 +194,7 @@ describe('Message', () => {
 
     render(<Message message={message} />)
 
-    expect(screen.getByAltText('AI')).toBeInTheDocument() // Default assistant avatar
+    expect(screen.getByText('A')).toBeInTheDocument() // Default assistant avatar
   })
 
   it('handles empty content gracefully', () => {
@@ -219,7 +219,7 @@ describe('Message', () => {
   })
 
   it('displays correct avatar for different models', () => {
-    const models = ['gpt-4', 'claude-3', 'gemini-pro']
+    const models = ['gpt-4', 'claude-3-opus-20240229', 'gemini-1.5-pro']
 
     models.forEach((model) => {
       const message = createMockMessage({
