@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import SystemInstructionsPanel from '../SystemInstructionsPanel'
 import { CloudSettings } from '../../utils/cloudSettings'
 import { SystemInstruction } from '../../types/settings'
+import { SYSTEM_INSTRUCTION_LIMITS } from '../../constants/defaults'
 
 // Mock dependencies
 vi.mock('next-auth/react')
@@ -226,6 +227,22 @@ describe('SystemInstructionsPanel', () => {
       await waitFor(() => {
         expect(mockCloudSettings.setSystemInstructions).toHaveBeenCalled()
       })
+    })
+
+    it('hides add button when limit reached', async () => {
+      const many = Array.from(
+        { length: SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS },
+        (_, i) => ({ id: `${i}`, name: `inst${i}`, content: 'c', enabled: true })
+      )
+      mockCloudSettings.getSystemInstructions.mockResolvedValueOnce(many)
+
+      render(<SystemInstructionsPanel />)
+
+      await waitFor(() => {
+        expect(screen.getByText('inst0')).toBeInTheDocument()
+      })
+
+      expect(screen.queryByText('+ Add Instruction')).not.toBeInTheDocument()
     })
   })
 

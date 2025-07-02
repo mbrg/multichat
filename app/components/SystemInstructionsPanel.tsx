@@ -5,6 +5,7 @@ import { CloudSettings } from '../utils/cloudSettings'
 import { SystemInstruction } from '../types/settings'
 import SystemInstructionCard from './SystemInstructionCard'
 import SystemInstructionForm from './forms/SystemInstructionForm'
+import { SYSTEM_INSTRUCTION_LIMITS } from '../constants/defaults'
 
 const SystemInstructionsPanel: React.FC = () => {
   const { data: session, status } = useSession()
@@ -39,8 +40,10 @@ const SystemInstructionsPanel: React.FC = () => {
   }
 
   const handleAddSystemInstruction = async (name: string, content: string) => {
-    if (systemInstructions.length >= 3) {
-      throw new Error('Maximum of 3 system instructions allowed')
+    if (systemInstructions.length >= SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS) {
+      throw new Error(
+        `Maximum of ${SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS} system instructions allowed`
+      )
     }
 
     const newInstruction: SystemInstruction = {
@@ -136,9 +139,10 @@ const SystemInstructionsPanel: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-[#e0e0e0]">
-          System Instructions ({systemInstructions.length}/3)
+          System Instructions ({systemInstructions.length}/
+          {SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS})
         </h3>
-        {systemInstructions.length < 3 &&
+        {systemInstructions.length < SYSTEM_INSTRUCTION_LIMITS.MAX_INSTRUCTIONS &&
           !showAddForm &&
           !editingInstruction && (
             <button
