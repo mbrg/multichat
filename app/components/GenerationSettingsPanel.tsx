@@ -19,8 +19,9 @@ const GenerationSettingsPanel: React.FC = () => {
     continuationTokens: TOKEN_LIMITS.CONTINUATION_DEFAULT,
     maxInitialPossibilities: 12,
   })
-  const [initialValues, setInitialValues] =
-    useState<GenerationDefaults | null>(null)
+  const [initialValues, setInitialValues] = useState<GenerationDefaults | null>(
+    null
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -86,9 +87,7 @@ const GenerationSettingsPanel: React.FC = () => {
       </div>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm mb-1">
-            Tokens per possibility
-          </label>
+          <label className="block text-sm mb-1">Tokens per possibility</label>
           <input
             type="number"
             inputMode="numeric"
@@ -131,9 +130,7 @@ const GenerationSettingsPanel: React.FC = () => {
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">
-            Possibilities to load
-          </label>
+          <label className="block text-sm mb-1">Possibilities to load</label>
           <input
             type="number"
             inputMode="numeric"
