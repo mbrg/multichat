@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '../../lib/auth'
 import { UserSettings } from '../../types/settings'
 import { SettingsService } from '../../services/EncryptedDataService'
+import { log } from '@/services/LoggingService'
+import { getServerLogContext } from '../../lib/logging'
 
 // GET /api/settings - Get all user settings
 export async function GET(request: NextRequest) {
@@ -15,7 +17,8 @@ export async function GET(request: NextRequest) {
     const settings = await SettingsService.getData(session.user.id)
     return NextResponse.json(settings)
   } catch (error) {
-    console.error('Failed to get settings:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to get settings', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to get settings' },
       { status: 500 }
@@ -58,7 +61,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(updatedSettings)
   } catch (error) {
-    console.error('Failed to update settings:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to update settings', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to update settings' },
       { status: 500 }
@@ -90,7 +94,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: true })
     }
   } catch (error) {
-    console.error('Failed to delete settings:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to delete settings', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to delete settings' },
       { status: 500 }

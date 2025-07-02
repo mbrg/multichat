@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../../lib/auth'
+import { log } from '@/services/LoggingService'
+import { getServerLogContext } from '../../../lib/logging'
 import { OpenAIProvider } from '../../../services/ai/providers/openai'
 import { AnthropicProvider } from '../../../services/ai/providers/anthropic'
 import { GoogleProvider } from '../../../services/ai/providers/google'
@@ -57,9 +59,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the API key
-    console.log(`[Validation] Starting validation for ${provider}`)
+    const context = await getServerLogContext()
+    log.info(`[Validation] Starting validation for ${provider}`, context)
     const isValid = await providerInstance.validateApiKey()
-    console.log(`[Validation] ${provider} validation result: ${isValid}`)
+    log.info(`[Validation] ${provider} validation result: ${isValid}`, context)
 
     return NextResponse.json({
       provider,
@@ -69,7 +72,8 @@ export async function POST(request: NextRequest) {
         : 'API key is invalid or missing. Please check your key and try again.',
     })
   } catch (error) {
-    console.error('Failed to validate API key:', error)
+    const context = await getServerLogContext()
+    log.error('Failed to validate API key', error as Error, context)
     return NextResponse.json(
       { error: 'Failed to validate API key' },
       { status: 500 }
