@@ -17,5 +17,10 @@ export interface UserSettings {
   temperatures?: Temperature[]
   enabledModels?: string[]
   possibilityMultiplier?: number // How many instances of each permutation to generate (default 1)
+  /** Generation default settings */
+  possibilityTokens?: number // Tokens for standard possibility generation
+  reasoningTokens?: number // Tokens when using reasoning models
+  continuationTokens?: number // Tokens for continued generation
+  maxInitialPossibilities?: number // How many possibilities load initially
   [key: string]: any // Allow for future settings
 }

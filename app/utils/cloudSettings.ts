@@ -1,5 +1,6 @@
 import { SystemInstruction, Temperature, UserSettings } from '../types/settings'
 import { DEFAULT_SYSTEM_INSTRUCTION } from '../constants/defaults'
+import { TOKEN_LIMITS } from '../services/ai/config'
 
 export type { SystemInstruction, Temperature, UserSettings }
 
@@ -111,6 +112,29 @@ export class CloudSettings {
 
   static async setEnabledModels(models: string[]): Promise<void> {
     await this.updateSettings({ enabledModels: models })
+  }
+
+  // Generation settings
+  static async getGenerationDefaults() {
+    const settings = await this.getSettings()
+    return {
+      possibilityTokens:
+        settings.possibilityTokens ?? TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+      reasoningTokens:
+        settings.reasoningTokens ?? TOKEN_LIMITS.POSSIBILITY_REASONING,
+      continuationTokens:
+        settings.continuationTokens ?? TOKEN_LIMITS.CONTINUATION_DEFAULT,
+      maxInitialPossibilities: settings.maxInitialPossibilities ?? 12,
+    }
+  }
+
+  static async setGenerationDefaults(defaults: {
+    possibilityTokens: number
+    reasoningTokens: number
+    continuationTokens: number
+    maxInitialPossibilities: number
+  }): Promise<void> {
+    await this.updateSettings(defaults)
   }
 
   // Reset all settings to defaults

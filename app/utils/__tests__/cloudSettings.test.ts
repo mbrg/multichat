@@ -220,5 +220,51 @@ describe('CloudSettings', () => {
         })
       })
     })
+
+    describe('generation defaults', () => {
+      it('should return defaults when none saved', async () => {
+        mockFetch.mockResolvedValue(
+          new Response(JSON.stringify({}), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        )
+
+        const defaults = await CloudSettings.getGenerationDefaults()
+        expect(defaults).toEqual({
+          possibilityTokens: 100,
+          reasoningTokens: 1500,
+          continuationTokens: 1000,
+          maxInitialPossibilities: 12,
+        })
+      })
+
+      it('should update generation defaults', async () => {
+        mockFetch.mockResolvedValue(
+          new Response(JSON.stringify({}), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        )
+
+        await CloudSettings.setGenerationDefaults({
+          possibilityTokens: 50,
+          reasoningTokens: 900,
+          continuationTokens: 800,
+          maxInitialPossibilities: 5,
+        })
+
+        expect(mockFetch).toHaveBeenCalledWith('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            possibilityTokens: 50,
+            reasoningTokens: 900,
+            continuationTokens: 800,
+            maxInitialPossibilities: 5,
+          }),
+        })
+      })
+    })
   })
 })
