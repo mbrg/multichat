@@ -207,6 +207,17 @@ describe('Message', () => {
     }).not.toThrow()
   })
 
+  it('displays error message when provided', () => {
+    const message = createMockMessage({
+      role: 'assistant',
+      error: 'Invalid API key',
+    })
+
+    render(<Message message={message} />)
+
+    expect(screen.getByText('Invalid API key')).toBeInTheDocument()
+  })
+
   it('displays correct avatar for different models', () => {
     const models = ['gpt-4', 'claude-3', 'gemini-pro']
 
