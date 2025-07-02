@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     'Google',
     'Mistral',
   ],
-  authors: [{ name: 'multichat Team' }],
+  authors: [{ name: 'mbrg' }],
   creator: 'multichat',
   publisher: 'multichat',
   robots: 'index, follow',
@@ -35,14 +35,14 @@ export const metadata: Metadata = {
     url: 'https://multichat.vercel.app',
     title: `${prefix}${baseTitle}`,
     description:
-      'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
+      'An AI assistant that shows multiple response possibilities from various AI models simultaneously.',
     siteName: 'multichat',
   },
   twitter: {
     card: 'summary_large_image',
     title: `${prefix}${baseTitle}`,
     description:
-      'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
+      'An AI assistant that shows multiple response possibilities from various AI models simultaneously.',
   },
 }
 
