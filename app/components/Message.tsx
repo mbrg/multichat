@@ -49,7 +49,7 @@ const Message: React.FC<ExtendedMessageProps> = ({
           ) : (
             <Image
               src={getProviderLogo(
-                message.model ? getProviderFromModel(message.model) : 'openai',
+                getProviderFromModel(message.model || 'openai'),
                 'light'
               )}
               alt="AI"
@@ -169,9 +169,9 @@ const Message: React.FC<ExtendedMessageProps> = ({
                           <div className="flex items-center gap-1 shrink-0 w-[16px]">
                             <Image
                               src={getProviderLogo(
-                                possibility.model
-                                  ? getProviderFromModel(possibility.model)
-                                  : 'openai',
+                                getProviderFromModel(
+                                  possibility.model || 'openai'
+                                ),
                                 'dark'
                               )}
                               alt="Provider"

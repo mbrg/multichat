@@ -89,12 +89,12 @@ describe('Message', () => {
   it('displays model name for assistant messages', () => {
     const message = createMockMessage({
       role: 'assistant',
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3',
     })
 
     render(<Message message={message} />)
 
-    expect(screen.getByText('claude-3-opus-20240229')).toBeInTheDocument()
+    expect(screen.getByText('claude-3')).toBeInTheDocument()
     expect(screen.getByAltText('AI')).toBeInTheDocument() // OpenAI logo avatar
   })
 
@@ -219,7 +219,7 @@ describe('Message', () => {
   })
 
   it('displays correct avatar for different models', () => {
-    const models = ['gpt-4', 'claude-3-opus-20240229', 'gemini-1.5-pro']
+    const models = ['gpt-4', 'claude-3', 'gemini-pro']
 
     models.forEach((model) => {
       const message = createMockMessage({
