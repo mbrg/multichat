@@ -10,6 +10,7 @@ export interface ChatCompletionRequest {
   settings: {
     systemPrompt?: string
     enabledProviders: string[]
+    enabledModels?: string[]
     systemInstructions: SystemInstruction[]
     temperatures: number[]
   }

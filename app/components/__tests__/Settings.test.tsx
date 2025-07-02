@@ -13,6 +13,10 @@ vi.mock('../TemperaturesPanel', () => ({
   default: () => <div data-testid="temperatures-panel">Temperatures Panel</div>,
 }))
 
+vi.mock('../ModelsPanel', () => ({
+  default: () => <div data-testid="models-panel">Models Panel</div>,
+}))
+
 // Mock CloudSettings
 const mockSystemInstructions = [
   {
@@ -283,5 +287,31 @@ describe('Settings Component', () => {
     // Check for presence of temperatures header and panel
     expect(screen.getByText('Temperatures')).toBeInTheDocument()
     expect(screen.getByTestId('temperatures-panel')).toBeInTheDocument()
+  })
+
+  it('opens to models section when specified', async () => {
+    await act(async () => {
+      render(
+        <Settings isOpen={true} onClose={() => {}} initialSection="models" />
+      )
+    })
+
+    expect(screen.getByText('Models')).toBeInTheDocument()
+    expect(screen.getByTestId('models-panel')).toBeInTheDocument()
+  })
+
+  it('opens to generation section when specified', async () => {
+    await act(async () => {
+      render(
+        <Settings
+          isOpen={true}
+          onClose={() => {}}
+          initialSection="generation"
+        />
+      )
+    })
+
+    expect(screen.getByText('Generation')).toBeInTheDocument()
+    expect(screen.getByText(/Adjust how many suggestions/i)).toBeInTheDocument()
   })
 })

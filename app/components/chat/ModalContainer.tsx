@@ -12,7 +12,12 @@ import AuthPopup from '../AuthPopup'
 export interface ModalContainerProps {
   // Settings modal
   showSettings: boolean
-  settingsSection?: 'api-keys' | 'system-instructions' | 'temperatures'
+  settingsSection?:
+    | 'api-keys'
+    | 'system-instructions'
+    | 'temperatures'
+    | 'models'
+    | 'generation'
   onCloseSettings: () => void
 
   // Auth popup

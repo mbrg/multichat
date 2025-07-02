@@ -26,17 +26,20 @@ export class PermutationGenerator {
 
     // For each enabled provider
     for (const provider of settings.enabledProviders) {
-      // Get models for this provider
-      const models = this.getModelsForProvider(provider)
+      // Get models for this provider, filtered by enabled models if provided
+      const models = this.getModelsForProvider(provider, settings.enabledModels)
 
       // For each model
       for (const model of models) {
         // For each temperature
         for (const temperature of settings.temperatures) {
           // For each system instruction - ensure we always have at least one
+          const enabledInstructions = settings.systemInstructions.filter(
+            (inst) => inst.enabled
+          )
           const instructions: SystemInstruction[] =
-            settings.systemInstructions.length > 0
-              ? settings.systemInstructions
+            enabledInstructions.length > 0
+              ? enabledInstructions
               : [DEFAULT_SYSTEM_INSTRUCTION]
 
           for (const instruction of instructions) {
@@ -64,8 +67,11 @@ export class PermutationGenerator {
   /**
    * Get available models for a provider
    */
-  private getModelsForProvider(provider: string) {
-    return getAllModels().filter((model) => model.provider === provider)
+  private getModelsForProvider(provider: string, enabled?: string[]) {
+    return getAllModels().filter(
+      (model) =>
+        model.provider === provider && (!enabled || enabled.includes(model.id))
+    )
   }
 
   /**
@@ -108,12 +114,16 @@ export class PermutationGenerator {
     }
 
     for (const provider of settings.enabledProviders) {
-      const modelCount = this.getModelsForProvider(provider).length
+      const modelCount = this.getModelsForProvider(
+        provider,
+        settings.enabledModels
+      ).length
       const temperatureCount = settings.temperatures.length
+      const enabledInstructions = settings.systemInstructions.filter(
+        (inst) => inst.enabled
+      )
       const instructionCount =
-        settings.systemInstructions.length > 0
-          ? settings.systemInstructions.length
-          : 1 // Default instruction
+        enabledInstructions.length > 0 ? enabledInstructions.length : 1
 
       count += modelCount * temperatureCount * instructionCount
     }

@@ -146,6 +146,17 @@ export class ChatService {
         'at least one provider must be enabled'
       )
     }
+
+    if (settings.enabledModels) {
+      const enabledModels = this.extractEnabledModels(settings)
+      if (enabledModels.length === 0) {
+        throw new ValidationError(
+          'enabledModels',
+          enabledModels,
+          'at least one model must be selected'
+        )
+      }
+    }
   }
 
   private extractEnabledProviders(settings: UserSettings): string[] {
@@ -165,24 +176,34 @@ export class ChatService {
     }
   }
 
+  private extractEnabledModels(settings: UserSettings): string[] {
+    if (Array.isArray(settings.enabledModels)) {
+      return settings.enabledModels
+    }
+    return []
+  }
+
   private buildChatRequest(
     messages: ChatMessage[],
     settings: UserSettings
   ): ChatCompletionRequest {
     const enabledProviders = this.extractEnabledProviders(settings)
+    const enabledModels = this.extractEnabledModels(settings)
 
     return {
       messages,
       settings: {
         systemPrompt: settings.systemPrompt,
         enabledProviders,
+        enabledModels: enabledModels.length > 0 ? enabledModels : undefined,
         systemInstructions: settings.systemInstructions || [],
         temperatures: settings.temperatures?.map((t) => t.value) || [
           0.3, 0.7, 1.0,
         ],
       },
       options: {
-        maxTokens: TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+        maxTokens:
+          settings.maxPossibilityTokens ?? TOKEN_LIMITS.POSSIBILITY_DEFAULT,
         stream: true,
         mode: 'possibilities',
       },

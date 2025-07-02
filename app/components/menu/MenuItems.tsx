@@ -9,7 +9,12 @@ interface MenuItemsProps {
   onSignOut: (e: React.MouseEvent) => void
   onSettingsClick: (
     e: React.MouseEvent,
-    section?: 'api-keys' | 'system-instructions' | 'temperatures'
+    section?:
+      | 'api-keys'
+      | 'system-instructions'
+      | 'temperatures'
+      | 'models'
+      | 'generation'
   ) => void
 }
 
@@ -66,6 +71,26 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
       ),
     },
     {
+      section: 'models' as const,
+      label: 'Models',
+      description: 'Choose which models generate possibilities',
+      icon: (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 10h16M4 14h16M4 18h16"
+          />
+        </svg>
+      ),
+    },
+    {
       section: 'temperatures' as const,
       label: 'Temperatures',
       description: 'Response creativity settings',
@@ -81,6 +106,26 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
             strokeLinejoin="round"
             strokeWidth={2}
             d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
+        </svg>
+      ),
+    },
+    {
+      section: 'generation' as const,
+      label: 'Generation',
+      description: 'Control limits for possibilities',
+      icon: (
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 10h16M4 14h16M4 18h16"
           />
         </svg>
       ),
