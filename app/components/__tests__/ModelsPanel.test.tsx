@@ -10,17 +10,13 @@ vi.mock('next-auth/react')
 vi.mock('../../hooks/useApiKeys')
 vi.mock('../../utils/cloudSettings')
 vi.mock('../../services/ai/config')
-vi.mock('next/image', () => ({
-  default: ({ src, alt, width, height, className }: any) => (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-    />
-  ),
-}))
+vi.mock('next/image', async () => {
+  const mod = await vi.importActual<typeof import('next/image')>('next/image')
+  return {
+    __esModule: true,
+    default: (props: any) => <mod.default {...props} unoptimized />,
+  }
+})
 
 const mockSession = vi.mocked(useSession)
 const mockUseApiKeys = vi.mocked(useApiKeys)

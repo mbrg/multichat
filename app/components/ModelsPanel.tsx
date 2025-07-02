@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { getAllModels } from '@/services/ai/config'
 import { CloudSettings } from '@/utils/cloudSettings'
@@ -13,19 +13,11 @@ const ModelsPanel: React.FC = () => {
   const [enabledModels, setEnabledModels] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const allModels = getAllModels()
+  // getAllModels() returns a new array each call which can cause effects to
+  // re-run unnecessarily. Memoize the result so dependencies remain stable.
+  const allModels = useMemo(() => getAllModels(), [])
 
-  useEffect(() => {
-    if (status !== 'loading') {
-      if (session?.user) {
-        load()
-      } else {
-        setIsLoading(false)
-      }
-    }
-  }, [status, session])
-
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setIsLoading(true)
       const saved = await CloudSettings.getEnabledModels()
@@ -36,7 +28,17 @@ const ModelsPanel: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [allModels])
+
+  useEffect(() => {
+    if (status !== 'loading') {
+      if (session?.user) {
+        load()
+      } else {
+        setIsLoading(false)
+      }
+    }
+  }, [status, session, load])
 
   const toggle = async (id: string) => {
     const newModels = enabledModels.includes(id)

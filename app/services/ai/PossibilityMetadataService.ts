@@ -44,6 +44,7 @@ export class PossibilityMetadataService {
   ): PossibilityMetadata[] {
     // Convert UserSettings to the format expected by PermutationGenerator
     let enabledProviders: string[] = []
+    let enabledModels: string[] = []
 
     try {
       if (settings?.enabledProviders) {
@@ -75,9 +76,19 @@ export class PossibilityMetadataService {
       enabledProviders = []
     }
 
+    try {
+      if (Array.isArray(settings.enabledModels)) {
+        enabledModels = settings.enabledModels
+      }
+    } catch (error) {
+      console.error('Failed to parse enabledModels:', error)
+      enabledModels = []
+    }
+
     const permutationSettings = {
       systemPrompt: settings.systemPrompt,
       enabledProviders,
+      enabledModels,
       systemInstructions: settings.systemInstructions || [],
       temperatures: settings.temperatures?.map((t) => t.value) || [0.7],
     }
@@ -135,6 +146,7 @@ export class PossibilityMetadataService {
   getTotalPossibilityCount(settings: UserSettings): number {
     // Convert UserSettings to the format expected by PermutationGenerator
     let enabledProviders: string[] = []
+    let enabledModels: string[] = []
 
     try {
       if (settings?.enabledProviders) {
@@ -169,9 +181,22 @@ export class PossibilityMetadataService {
       enabledProviders = []
     }
 
+    try {
+      if (Array.isArray(settings.enabledModels)) {
+        enabledModels = settings.enabledModels
+      }
+    } catch (error) {
+      console.error(
+        'Failed to parse enabledModels in getTotalPossibilityCount:',
+        error
+      )
+      enabledModels = []
+    }
+
     const permutationSettings = {
       systemPrompt: settings.systemPrompt,
       enabledProviders,
+      enabledModels,
       systemInstructions: settings.systemInstructions || [],
       temperatures: settings.temperatures?.map((t) => t.value) || [0.7],
     }
