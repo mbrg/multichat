@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ChatService, type ChatServiceEvents } from '../ChatService'
 import type { ChatMessage } from '../../../types/api'
 import type { UserSettings } from '../../../types/settings'
+import { TOKEN_LIMITS } from '../config'
 import { ValidationError, NetworkError } from '../../../types/errors'
 
 // Mock dependencies
@@ -124,6 +125,35 @@ describe('ChatService', () => {
         duration: expect.any(Number),
         success: true,
       })
+    })
+
+    it('uses possibilityTokens setting for maxTokens', () => {
+      const messages: ChatMessage[] = [
+        { role: 'user', content: 'Hello', id: '1', timestamp: new Date() },
+      ]
+      const settings: UserSettings = {
+        enabledProviders: '{"openai": true}',
+        systemInstructions: [],
+        temperatures: [{ id: '1', value: 0.7 }],
+        possibilityTokens: 250,
+      }
+
+      const request = (chatService as any).buildChatRequest(messages, settings)
+      expect(request.options.maxTokens).toBe(250)
+    })
+
+    it('falls back to default tokens when not specified', () => {
+      const messages: ChatMessage[] = [
+        { role: 'user', content: 'Hi', id: '1', timestamp: new Date() },
+      ]
+      const settings: UserSettings = {
+        enabledProviders: '{"openai": true}',
+        systemInstructions: [],
+        temperatures: [{ id: '1', value: 0.7 }],
+      }
+
+      const request = (chatService as any).buildChatRequest(messages, settings)
+      expect(request.options.maxTokens).toBe(TOKEN_LIMITS.POSSIBILITY_DEFAULT)
     })
   })
 

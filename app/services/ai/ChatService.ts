@@ -202,7 +202,8 @@ export class ChatService {
         ],
       },
       options: {
-        maxTokens: TOKEN_LIMITS.POSSIBILITY_DEFAULT,
+        maxTokens:
+          settings.possibilityTokens ?? TOKEN_LIMITS.POSSIBILITY_DEFAULT,
         stream: true,
         mode: 'possibilities',
       },
