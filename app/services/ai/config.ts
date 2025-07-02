@@ -313,8 +313,12 @@ export const isReasoningModel = (modelId: string): boolean => {
   return model?.isReasoningModel === true
 }
 
-export const getDefaultTokenLimit = (modelId: string): number => {
-  return isReasoningModel(modelId)
-    ? TOKEN_LIMITS.POSSIBILITY_REASONING
-    : TOKEN_LIMITS.POSSIBILITY_DEFAULT
+export const getDefaultTokenLimit = (
+  modelId: string,
+  settings?: { possibilityTokens?: number; reasoningTokens?: number }
+): number => {
+  if (isReasoningModel(modelId)) {
+    return settings?.reasoningTokens ?? TOKEN_LIMITS.POSSIBILITY_REASONING
+  }
+  return settings?.possibilityTokens ?? TOKEN_LIMITS.POSSIBILITY_DEFAULT
 }

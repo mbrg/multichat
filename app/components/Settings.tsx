@@ -5,6 +5,7 @@ import ApiKeysPanel from './ApiKeysPanel'
 import SystemInstructionsPanel from './SystemInstructionsPanel'
 import TemperaturesPanel from './TemperaturesPanel'
 import ModelsPanel from './ModelsPanel'
+import GenerationSettingsPanel from './GenerationSettingsPanel'
 import ErrorBoundary from './ErrorBoundary'
 import { CloudSettings } from '../utils/cloudSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
@@ -17,6 +18,7 @@ interface SettingsProps {
     | 'system-instructions'
     | 'temperatures'
     | 'models'
+    | 'generation'
 }
 
 type SettingsSection =
@@ -24,6 +26,7 @@ type SettingsSection =
   | 'system-instructions'
   | 'temperatures'
   | 'models'
+  | 'generation'
 
 const Settings: React.FC<SettingsProps> = ({
   isOpen,
@@ -46,6 +49,7 @@ const Settings: React.FC<SettingsProps> = ({
     },
     { id: 'models' as const, label: 'Models', icon: '🧠' },
     { id: 'temperatures' as const, label: 'Temperatures', icon: '🌡️' },
+    { id: 'generation' as const, label: 'Generation', icon: '⚙️' },
   ]
 
   // Update active section when initialSection changes
@@ -103,6 +107,7 @@ const Settings: React.FC<SettingsProps> = ({
             )}
             {activeSection === 'models' && <ModelsPanel />}
             {activeSection === 'temperatures' && <TemperaturesPanel />}
+            {activeSection === 'generation' && <GenerationSettingsPanel />}
           </ErrorBoundary>
         </div>
       </div>

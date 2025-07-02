@@ -61,7 +61,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
           (m: PossibilityMetadata) =>
             m.priority === 'high' || m.priority === 'medium'
         )
-        .slice(0, 12)
+        .slice(0, settings.maxInitialPossibilities ?? 12)
 
       highPriority.forEach((meta: PossibilityMetadata) =>
         loadPossibility(meta.id)
