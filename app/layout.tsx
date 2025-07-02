@@ -1,7 +1,7 @@
 import './globals.css'
 import { metadata } from './metadata'
 import AuthProvider from './components/AuthProvider'
-import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/react'
 
 export { metadata }
 
@@ -14,7 +14,7 @@ export default function RootLayout({
     <html lang="en" className="dark h-full">
       <body className="bg-[#0a0a0a] text-[#e0e0e0] h-full">
         <AuthProvider>{children}</AuthProvider>
-        <Script defer src="https://analytics.vercel.com/script.js" />
+        <Analytics />
       </body>
     </html>
   )
