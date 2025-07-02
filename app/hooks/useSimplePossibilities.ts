@@ -18,6 +18,7 @@ interface PossibilityState {
   isComplete: boolean
   metadata: PossibilityMetadata
   probability: number | null
+  error: string | null
 }
 
 export function useSimplePossibilities(
@@ -94,6 +95,7 @@ export function useSimplePossibilities(
           isComplete: false,
           metadata: meta,
           probability: null,
+          error: null,
         },
       ])
 
@@ -159,6 +161,19 @@ export function useSimplePossibilities(
                         : p
                     )
                   )
+                } else if (event.type === 'error') {
+                  // Mark as failed with short message
+                  setPossibilities((prev) =>
+                    prev.map((p) =>
+                      p.id === possibilityId
+                        ? {
+                            ...p,
+                            isComplete: true,
+                            error: event.data.message || 'Error',
+                          }
+                        : p
+                    )
+                  )
                 }
               }
             }
@@ -176,9 +191,21 @@ export function useSimplePossibilities(
             loadingRef.current.delete(possibilityId)
           } else {
             console.error(`Error loading possibility ${possibilityId}:`, error)
+            setPossibilities((prev) =>
+              prev.map((p) =>
+                p.id === possibilityId
+                  ? {
+                      ...p,
+                      isComplete: true,
+                      error:
+                        error instanceof Error
+                          ? error.message
+                          : 'Unknown error',
+                    }
+                  : p
+              )
+            )
           }
-          // Remove from possibilities on error
-          setPossibilities((prev) => prev.filter((p) => p.id !== possibilityId))
         } finally {
           activeConnections--
           abortControllersRef.current.delete(possibilityId)

@@ -119,6 +119,14 @@ const Message: React.FC<ExtendedMessageProps> = ({
             </div>
           )}
 
+          {/* Error message */}
+          {message.error && (
+            <div className="mt-2 text-xs text-red-400 flex items-center gap-1">
+              <span>⚠️</span>
+              <span>{message.error}</span>
+            </div>
+          )}
+
           {/* Possibilities Panel */}
           {!isUser &&
             message.possibilities &&

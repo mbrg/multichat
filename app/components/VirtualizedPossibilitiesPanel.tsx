@@ -124,6 +124,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
                   systemInstruction:
                     possibility.metadata.systemInstruction?.name,
                   isPossibility: true,
+                  error: possibility.error || undefined,
                 }
 
                 return (

@@ -19,6 +19,7 @@ export interface Message {
   possibilities?: Message[] // Alternative responses for assistant messages
   isPossibility?: boolean // True if this is a possibility that can be selected
   systemInstruction?: string // Name of the system instruction used
+  error?: string // Short error message when generation fails
 }
 
 export interface ChatContainerProps {
