@@ -146,6 +146,7 @@ export class PossibilityMetadataService {
   getTotalPossibilityCount(settings: UserSettings): number {
     // Convert UserSettings to the format expected by PermutationGenerator
     let enabledProviders: string[] = []
+    let enabledModels: string[] = []
 
     try {
       if (settings?.enabledProviders) {
