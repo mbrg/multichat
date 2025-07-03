@@ -38,7 +38,10 @@
     "next-auth": "^4.24.11",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-window": "^1.8.11"
+    "react-window": "^1.8.11",
+    "html2canvas": "^1.4.1",
+    "gifshot": "^0.3.2",
+    "lz-string": "^1.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

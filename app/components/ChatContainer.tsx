@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import type { ChatContainerProps, Message as MessageType } from '../types/chat'
 import { useAuthPopup } from '../hooks/useAuthPopup'
@@ -9,6 +9,7 @@ import {
   MessageInputContainer,
   ModalContainer,
 } from './chat'
+import { ShareButton } from './share'
 
 const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
@@ -21,6 +22,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   settingsLoading = false,
   apiKeysLoading = false,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null!)
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
   const [settingsSection, setSettingsSection] = useState<
@@ -56,8 +58,16 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }
 
   return (
-    <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
-      <ChatHeader onOpenSettings={handleOpenSettings} />
+    <div
+      ref={containerRef}
+      className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}
+    >
+      <ChatHeader
+        onOpenSettings={handleOpenSettings}
+        shareButton={
+          <ShareButton containerRef={containerRef} messages={messages} />
+        }
+      />
 
       <AuthenticationBanner
         disabled={disabled}

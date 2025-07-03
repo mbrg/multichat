@@ -16,6 +16,8 @@ export default defineConfig({
       '@/components': resolve(__dirname, './app/components'),
       '@/lib': resolve(__dirname, './lib'),
       redis: resolve(__dirname, './app/__mocks__/redis.ts'),
+      html2canvas: resolve(__dirname, './app/shims/html2canvas.ts'),
+      gifshot: resolve(__dirname, './app/shims/gifshot.ts'),
     },
   },
   esbuild: {

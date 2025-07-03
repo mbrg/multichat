@@ -17,15 +17,22 @@ export interface ChatHeaderProps {
       | 'models'
       | 'generation'
   ) => void
+  shareButton?: React.ReactNode
 }
 
-export const ChatHeader: React.FC<ChatHeaderProps> = ({ onOpenSettings }) => {
+export const ChatHeader: React.FC<ChatHeaderProps> = ({
+  onOpenSettings,
+  shareButton,
+}) => {
   return (
     <div className="flex items-center justify-between p-4 bg-[#1a1a1a] border-b border-[#2a2a2a] min-h-[56px]">
       <div className="text-lg font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
         multichat
       </div>
-      <Menu onOpenSettings={onOpenSettings} />
+      <div className="flex items-center gap-2">
+        {shareButton}
+        <Menu onOpenSettings={onOpenSettings} />
+      </div>
     </div>
   )
 }

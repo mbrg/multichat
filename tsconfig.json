@@ -21,6 +21,12 @@
     "paths": {
       "@/*": [
         "./app/*"
+      ],
+      "html2canvas": [
+        "./app/shims/html2canvas"
+      ],
+      "gifshot": [
+        "./app/shims/gifshot"
       ]
     },
     "types": [
