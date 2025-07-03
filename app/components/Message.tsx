@@ -46,17 +46,16 @@ const Message: React.FC<ExtendedMessageProps> = ({
         >
           {isUser ? (
             'U'
-          ) : (
+          ) : message.model ? (
             <Image
-              src={getProviderLogo(
-                getProviderFromModel(message.model || 'openai'),
-                'light'
-              )}
+              src={getProviderLogo(getProviderFromModel(message.model), 'light')}
               alt="AI"
               width={24}
               height={24}
               className="w-full h-full object-contain"
             />
+          ) : (
+            'A'
           )}
         </div>
       </div>
@@ -167,18 +166,20 @@ const Message: React.FC<ExtendedMessageProps> = ({
                         </div>
                         <div className="flex items-center gap-2 ml-3 text-xs text-[#888] min-w-0">
                           <div className="flex items-center gap-1 shrink-0 w-[16px]">
-                            <Image
-                              src={getProviderLogo(
-                                getProviderFromModel(
-                                  possibility.model || 'openai'
-                                ),
-                                'dark'
-                              )}
-                              alt="Provider"
-                              width={16}
-                              height={16}
-                              className="object-contain"
-                            />
+                            {possibility.model ? (
+                              <Image
+                                src={getProviderLogo(
+                                  getProviderFromModel(possibility.model),
+                                  'dark'
+                                )}
+                                alt="Provider"
+                                width={16}
+                                height={16}
+                                className="object-contain"
+                              />
+                            ) : (
+                              <span className="text-xs font-bold">A</span>
+                            )}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <span className="font-medium truncate">
