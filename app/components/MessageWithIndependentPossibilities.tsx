@@ -95,12 +95,12 @@ const MessageWithIndependentPossibilities: React.FC<
         >
           {isUser ? (
             'U'
-          ) : message.model ? (
+          ) : (
             <Image
               src={getProviderLogo(
                 typeof message.model === 'string'
-                  ? getProviderFromModel(message.model)
-                  : (message.model as any).provider,
+                  ? getProviderFromModel(message.model || 'openai')
+                  : (message.model as any)?.provider || 'openai',
                 'light'
               )}
               alt="AI"
@@ -108,8 +108,6 @@ const MessageWithIndependentPossibilities: React.FC<
               height={24}
               className="w-full h-full object-contain"
             />
-          ) : (
-            'A'
           )}
         </div>
       </div>
