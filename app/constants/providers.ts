@@ -44,7 +44,7 @@ export const PROVIDER_NAMES: Record<AIProviderType, string> = {
 export const PROVIDER_DESCRIPTIONS: Record<AIProviderType, string> = {
   [AI_PROVIDERS.OPENAI]: 'GPT-4, GPT-3.5-Turbo',
   [AI_PROVIDERS.ANTHROPIC]: 'Claude 3, Claude 2',
-  [AI_PROVIDERS.GOOGLE]: 'Gemini Pro',
+  [AI_PROVIDERS.GOOGLE]: 'Gemini 2.5 Pro & Flash',
   [AI_PROVIDERS.MISTRAL]: 'Mistral Large, Mistral Small',
   [AI_PROVIDERS.TOGETHER]: 'Llama 2, Code Llama',
 }
