@@ -4,7 +4,6 @@ import anthropicLogo from '../assets/anthropic.png'
 import geminiLogo from '../assets/gemini.svg'
 import mistralLogo from '../assets/mistral.png'
 import huggingfaceLogo from '../assets/huggingface.svg'
-import { getModelById } from '../services/ai/config'
 
 export const providerLogos = {
   openai: {
@@ -35,15 +34,28 @@ export function getProviderLogo(
 ) {
   const logos = providerLogos[provider as keyof typeof providerLogos]
   if (!logos) {
-    throw new Error(`Unknown provider: ${provider}`)
+    // Default to OpenAI if provider not found
+    return providerLogos.openai[theme]
   }
   return logos[theme]
 }
 
 export function getProviderFromModel(model: string): string {
-  const modelInfo = getModelById(model)
-  if (!modelInfo) {
-    throw new Error(`Model not found: ${model}`)
+  // Extract provider from model ID
+  if (model.includes('gpt') || model.includes('openai')) {
+    return 'openai'
+  } else if (model.includes('claude') || model.includes('anthropic')) {
+    return 'anthropic'
+  } else if (model.includes('gemini') || model.includes('google')) {
+    return 'google'
+  } else if (model.includes('mistral')) {
+    return 'mistral'
+  } else if (
+    model.includes('meta') ||
+    model.includes('llama') ||
+    model.includes('together')
+  ) {
+    return 'together'
   }
-  return modelInfo.provider
+  return 'openai' // default
 }
