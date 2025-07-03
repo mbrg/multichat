@@ -3,6 +3,7 @@ import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
+import { useShare } from '../hooks/share'
 
 const ChatDemo: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
@@ -21,6 +22,16 @@ const ChatDemo: React.FC = () => {
   } = useApiKeys(refreshSettings)
 
   const [isGenerating, setIsGenerating] = useState(false)
+  const { decodeMessages } = useShare()
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const share = params.get('share')
+    if (share) {
+      const msgs = decodeMessages(share)
+      if (msgs.length) setMessages(msgs)
+    }
+  }, [decodeMessages])
 
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
