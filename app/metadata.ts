@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const baseTitle = 'multichat - Multi-Model AI Chat Interface'
+const baseTitle = 'chatsbox.ai - Chat Sandbox'
 
 const env = process.env.VERCEL_ENV
 let prefix = ''
@@ -26,8 +26,8 @@ export const metadata: Metadata = {
     'Mistral',
   ],
   authors: [{ name: 'mbrg' }],
-  creator: 'multichat',
-  publisher: 'multichat',
+  creator: 'chatsbox.ai',
+  publisher: 'chatsbox.ai',
   robots: 'index, follow',
   openGraph: {
     type: 'website',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: `${prefix}${baseTitle}`,
     description:
       'An AI assistant that shows multiple response possibilities from various AI models simultaneously.',
-    siteName: 'multichat',
+    siteName: 'chatsbox.ai',
   },
   twitter: {
     card: 'summary_large_image',

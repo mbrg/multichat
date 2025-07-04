@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-multichat is a production-ready Next.js application that provides a multi-model AI chat interface with an "infinite possibilities" panel showing multiple AI responses simultaneously. The project emphasizes security, maintainability, and extensibility.
+chatsbox.ai is a production-ready Next.js application that provides a Chat Sandbox with an "infinite possibilities" panel showing multiple AI responses simultaneously. The project emphasizes security, maintainability, and extensibility.
 
 ## Essential Commands
 
