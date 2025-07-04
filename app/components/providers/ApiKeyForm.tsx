@@ -100,7 +100,7 @@ export const ApiKeyForm: React.FC<ApiKeyFormProps> = ({
             value={apiKeyValue}
             onChange={(e) => setApiKeyValue(e.target.value)}
             placeholder="Enter your API key..."
-            className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-md text-[#e0e0e0] text-sm focus:outline-none focus:border-[#667eea] placeholder-[#666]"
+            className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-md text-[#e0e0e0] text-base focus:outline-none focus:border-[#667eea] placeholder-[#666]"
           />
         </div>
       )}
