@@ -35,6 +35,9 @@ export interface ChatContainerProps {
   className?: string
   settingsLoading?: boolean
   apiKeysLoading?: boolean
+  onPublish?: () => void
+  publishDisabled?: boolean
+  linkCopied?: boolean
 }
 
 export interface MessageProps {

@@ -20,12 +20,14 @@ vi.mock('../../Menu', () => ({
 }))
 
 describe('ChatHeader', () => {
-  it('should render the title correctly', () => {
+  it('should render the title link correctly', () => {
     const mockOnOpenSettings = vi.fn()
 
     render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
 
-    expect(screen.getByText('chatsbox.ai')).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: 'chatsbox.ai' })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/')
   })
 
   it('should have the correct styling classes', () => {
@@ -66,5 +68,67 @@ describe('ChatHeader', () => {
     render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
 
     expect(screen.getByTestId('menu-button')).toBeInTheDocument()
+  })
+
+  it('should render publish button when onPublish provided', () => {
+    const mockOnOpenSettings = vi.fn()
+    const mockOnPublish = vi.fn()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={mockOnPublish}
+      />
+    )
+
+    expect(screen.getByLabelText('Publish')).toBeInTheDocument()
+  })
+
+  it('should call onPublish when publish button clicked', async () => {
+    const mockOnOpenSettings = vi.fn()
+    const mockOnPublish = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={mockOnPublish}
+      />
+    )
+
+    const publishButton = screen.getByLabelText('Publish')
+    await user.click(publishButton)
+
+    expect(mockOnPublish).toHaveBeenCalled()
+  })
+
+  it('should disable publish button when publishDisabled', () => {
+    const mockOnOpenSettings = vi.fn()
+    const mockOnPublish = vi.fn()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={mockOnPublish}
+        publishDisabled
+      />
+    )
+
+    expect(screen.getByLabelText('Publish')).toBeDisabled()
+  })
+
+  it('should show copy indicator when linkCopied true', () => {
+    const mockOnOpenSettings = vi.fn()
+    const mockOnPublish = vi.fn()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={mockOnPublish}
+        linkCopied
+      />
+    )
+
+    expect(screen.getByLabelText('Copied to clipboard')).toBeInTheDocument()
   })
 })
