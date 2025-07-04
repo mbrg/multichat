@@ -20,6 +20,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   className = '',
   settingsLoading = false,
   apiKeysLoading = false,
+  onPublish,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -57,7 +58,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
-      <ChatHeader onOpenSettings={handleOpenSettings} />
+      <ChatHeader onOpenSettings={handleOpenSettings} onPublish={onPublish} />
 
       <AuthenticationBanner
         disabled={disabled}
