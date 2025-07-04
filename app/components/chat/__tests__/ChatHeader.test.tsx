@@ -67,4 +67,46 @@ describe('ChatHeader', () => {
 
     expect(screen.getByTestId('menu-button')).toBeInTheDocument()
   })
+
+  it('calls onPublish when publish button clicked', async () => {
+    const mockOnOpenSettings = vi.fn()
+    const mockPublish = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={mockPublish}
+        publishDisabled={false}
+      />
+    )
+
+    const button = screen.getByLabelText('Publish conversation')
+    await user.click(button)
+    expect(mockPublish).toHaveBeenCalled()
+  })
+
+  it('shows copied indicator when showCopied true', () => {
+    const mockOnOpenSettings = vi.fn()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={vi.fn()}
+        showCopied
+      />
+    )
+
+    expect(screen.getByText('Copied')).toBeInTheDocument()
+  })
+
+  it('triggers onTitleClick when title clicked', async () => {
+    const mockTitle = vi.fn()
+    const user = userEvent.setup()
+
+    render(<ChatHeader onOpenSettings={vi.fn()} onTitleClick={mockTitle} />)
+
+    await user.click(screen.getByText('chatsbox.ai'))
+    expect(mockTitle).toHaveBeenCalled()
+  })
 })

@@ -1,11 +1,17 @@
+'use client'
 import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
-const ChatDemo: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([])
+export interface ChatDemoProps {
+  initialMessages?: Message[]
+}
+
+const ChatDemo: React.FC<ChatDemoProps> = ({ initialMessages = [] }) => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const {
@@ -21,6 +27,7 @@ const ChatDemo: React.FC = () => {
   } = useApiKeys(refreshSettings)
 
   const [isGenerating, setIsGenerating] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
@@ -187,6 +194,29 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  const router = useRouter()
+
+  const handlePublish = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      const { id } = await res.json()
+      const url = `${window.location.origin}/conversation/${id}`
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+      router.push(`/conversation/${id}`)
+    } catch (err) {
+      console.error('Publish failed', err)
+    }
+  }, [messages, router])
+
+  const publishDisabled = messages.length === 0 || isGenerating
+
   return (
     <ChatContainer
       messages={messages}
@@ -198,6 +228,10 @@ const ChatDemo: React.FC = () => {
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
+      onPublish={handlePublish}
+      publishDisabled={publishDisabled}
+      showCopied={copied}
+      onTitleClick={() => router.push('/')}
     />
   )
 }
