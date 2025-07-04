@@ -1,11 +1,17 @@
+'use client'
 import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
-const ChatDemo: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([])
+interface ChatDemoProps {
+  initialMessages?: Message[]
+}
+
+const ChatDemo: React.FC<ChatDemoProps> = ({ initialMessages = [] }) => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const {
@@ -187,12 +193,33 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  const router = useRouter()
+
+  const handlePublishConversation = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      const url = `${window.location.origin}/conversation/${data.id}`
+      await navigator.clipboard.writeText(url)
+      router.push(`/conversation/${data.id}`)
+    } catch (error) {
+      console.error('Failed to publish conversation', error)
+    }
+  }, [messages, router])
+
   return (
     <ChatContainer
       messages={messages}
       onSendMessage={handleSendMessage}
       onSelectPossibility={handleSelectPossibility}
       onContinuePossibility={handleContinuePossibility}
+      onPublishConversation={handlePublishConversation}
+      publishDisabled={messages.length === 0 || isGenerating}
       isLoading={isGenerating}
       disabled={!isSystemReady() || hasActivePossibilities()}
       className="h-[100dvh]"

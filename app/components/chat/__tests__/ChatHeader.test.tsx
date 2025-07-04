@@ -67,4 +67,46 @@ describe('ChatHeader', () => {
 
     expect(screen.getByTestId('menu-button')).toBeInTheDocument()
   })
+
+  it('calls onPublish when publish button clicked', async () => {
+    const mockOnOpenSettings = vi.fn()
+    const mockOnPublish = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={mockOnPublish}
+      />
+    )
+
+    const publishButton = screen.getByLabelText('Publish conversation')
+    await user.click(publishButton)
+    expect(mockOnPublish).toHaveBeenCalled()
+  })
+
+  it('disables publish button when publishDisabled is true', () => {
+    const mockOnOpenSettings = vi.fn()
+
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        onPublish={vi.fn()}
+        publishDisabled
+      />
+    )
+
+    const publishButton = screen.getByLabelText('Publish conversation')
+    expect(publishButton).toBeDisabled()
+  })
+
+  it('title links to home page', () => {
+    const mockOnOpenSettings = vi.fn()
+
+    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+
+    const link = screen.getByText('chatsbox.ai') as HTMLAnchorElement
+    expect(link.tagName).toBe('A')
+    expect(link.getAttribute('href')).toBe('/')
+  })
 })

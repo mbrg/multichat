@@ -15,6 +15,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onSendMessage,
   onSelectPossibility,
   onContinuePossibility,
+  onPublishConversation,
+  publishDisabled = false,
   isLoading = false,
   disabled = false,
   className = '',
@@ -57,7 +59,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
-      <ChatHeader onOpenSettings={handleOpenSettings} />
+      <ChatHeader
+        onOpenSettings={handleOpenSettings}
+        onPublish={onPublishConversation}
+        publishDisabled={publishDisabled}
+      />
 
       <AuthenticationBanner
         disabled={disabled}

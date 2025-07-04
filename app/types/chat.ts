@@ -30,6 +30,8 @@ export interface ChatContainerProps {
     selectedPossibility: Message
   ) => void
   onContinuePossibility?: (selectedPossibility: Message) => void
+  onPublishConversation?: () => void
+  publishDisabled?: boolean
   isLoading?: boolean
   disabled?: boolean
   className?: string
