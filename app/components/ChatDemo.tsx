@@ -1,11 +1,21 @@
+'use client'
 import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
-const ChatDemo: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([])
+interface ChatDemoProps {
+  initialMessages?: Message[]
+  allowMessaging?: boolean
+}
+
+const ChatDemo: React.FC<ChatDemoProps> = ({
+  initialMessages = [],
+  allowMessaging = true,
+}) => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const {
@@ -21,6 +31,8 @@ const ChatDemo: React.FC = () => {
   } = useApiKeys(refreshSettings)
 
   const [isGenerating, setIsGenerating] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const router = useRouter()
 
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
@@ -187,18 +199,44 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  const handlePublish = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      })
+      if (!res.ok) throw new Error('Failed to publish')
+      const data = await res.json()
+      const url = `${window.location.origin}/conversation/${data.id}`
+      await navigator.clipboard.writeText(url)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+      router.push(`/conversation/${data.id}`)
+    } catch (error) {
+      console.error('Publish failed', error)
+    }
+  }, [messages, router])
+
   return (
-    <ChatContainer
-      messages={messages}
-      onSendMessage={handleSendMessage}
-      onSelectPossibility={handleSelectPossibility}
-      onContinuePossibility={handleContinuePossibility}
-      isLoading={isGenerating}
-      disabled={!isSystemReady() || hasActivePossibilities()}
-      className="h-[100dvh]"
-      settingsLoading={settingsLoading}
-      apiKeysLoading={apiKeysLoading}
-    />
+    <div className="relative h-[100dvh]">
+      <ChatContainer
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        onSelectPossibility={handleSelectPossibility}
+        onContinuePossibility={handleContinuePossibility}
+        isLoading={isGenerating}
+        disabled={
+          !allowMessaging || !isSystemReady() || hasActivePossibilities()
+        }
+        className="h-full"
+        settingsLoading={settingsLoading}
+        apiKeysLoading={apiKeysLoading}
+        onPublish={handlePublish}
+        publishDisabled={messages.length === 0 || isGenerating}
+        linkCopied={linkCopied}
+      />
+    </div>
   )
 }
 
