@@ -1,11 +1,20 @@
+'use client'
 import React, { useState, useCallback, useEffect } from 'react'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
-const ChatDemo: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([])
+interface ChatDemoProps {
+  initialMessages?: Message[]
+  allowMessaging?: boolean
+}
+
+const ChatDemo: React.FC<ChatDemoProps> = ({
+  initialMessages = [],
+  allowMessaging = true,
+}) => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const {
@@ -21,6 +30,7 @@ const ChatDemo: React.FC = () => {
   } = useApiKeys(refreshSettings)
 
   const [isGenerating, setIsGenerating] = useState(false)
+  const [showCopyToast, setShowCopyToast] = useState(false)
 
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
@@ -187,18 +197,47 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  const handlePublish = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      })
+      if (!res.ok) throw new Error('Failed to publish')
+      const data = await res.json()
+      const url = `${window.location.origin}/conversation/${data.id}`
+      await navigator.clipboard.writeText(url)
+      setShowCopyToast(true)
+      setTimeout(() => setShowCopyToast(false), 2000)
+      window.location.href = `/conversation/${data.id}`
+    } catch (error) {
+      console.error('Publish failed', error)
+    }
+  }, [messages])
+
   return (
-    <ChatContainer
-      messages={messages}
-      onSendMessage={handleSendMessage}
-      onSelectPossibility={handleSelectPossibility}
-      onContinuePossibility={handleContinuePossibility}
-      isLoading={isGenerating}
-      disabled={!isSystemReady() || hasActivePossibilities()}
-      className="h-[100dvh]"
-      settingsLoading={settingsLoading}
-      apiKeysLoading={apiKeysLoading}
-    />
+    <div className="relative h-[100dvh]">
+      <ChatContainer
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        onSelectPossibility={handleSelectPossibility}
+        onContinuePossibility={handleContinuePossibility}
+        isLoading={isGenerating}
+        disabled={
+          !allowMessaging || !isSystemReady() || hasActivePossibilities()
+        }
+        className="h-full"
+        settingsLoading={settingsLoading}
+        apiKeysLoading={apiKeysLoading}
+        onPublish={handlePublish}
+      />
+      {showCopyToast && (
+        <div className="absolute top-4 right-4 bg-[#333] text-white px-3 py-2 rounded shadow-lg animate-fadeInOut">
+          Link copied to clipboard
+        </div>
+      )}
+    </div>
   )
 }
 
