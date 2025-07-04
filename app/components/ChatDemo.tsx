@@ -1,11 +1,20 @@
+'use client'
 import React, { useState, useCallback, useEffect } from 'react'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
-const ChatDemo: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([])
+interface ChatDemoProps {
+  initialMessages?: Message[]
+  allowMessaging?: boolean
+}
+
+const ChatDemo: React.FC<ChatDemoProps> = ({
+  initialMessages = [],
+  allowMessaging = true,
+}) => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const {
@@ -187,6 +196,21 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  const handlePublish = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      })
+      if (!res.ok) throw new Error('Failed to publish')
+      const data = await res.json()
+      window.location.href = `/conversation/${data.id}`
+    } catch (error) {
+      console.error('Publish failed', error)
+    }
+  }, [messages])
+
   return (
     <ChatContainer
       messages={messages}
@@ -194,10 +218,11 @@ const ChatDemo: React.FC = () => {
       onSelectPossibility={handleSelectPossibility}
       onContinuePossibility={handleContinuePossibility}
       isLoading={isGenerating}
-      disabled={!isSystemReady() || hasActivePossibilities()}
+      disabled={!allowMessaging || !isSystemReady() || hasActivePossibilities()}
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
+      onPublish={handlePublish}
     />
   )
 }
