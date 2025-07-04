@@ -25,7 +25,7 @@ describe('ChatHeader', () => {
 
     render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
 
-    expect(screen.getByText('multichat')).toBeInTheDocument()
+    expect(screen.getByText('chatsbox.ai')).toBeInTheDocument()
   })
 
   it('should have the correct styling classes', () => {
