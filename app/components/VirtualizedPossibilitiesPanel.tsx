@@ -14,6 +14,7 @@ interface VirtualizedPossibilitiesPanelProps {
   onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
+  onPendingChange?: (count: number) => void
 }
 
 const VirtualizedPossibilitiesPanel: React.FC<
@@ -25,8 +26,9 @@ const VirtualizedPossibilitiesPanel: React.FC<
   onSelectResponse,
   enableVirtualScrolling = true,
   maxTokens,
+  onPendingChange,
 }) => {
-  const { possibilities, loadPossibility } = useSimplePossibilities(
+  const { possibilities, loadPossibility, isLoading } = useSimplePossibilities(
     messages,
     settings
   )
@@ -39,6 +41,13 @@ const VirtualizedPossibilitiesPanel: React.FC<
   useEffect(() => {
     loadedConversationRef.current = ''
   }, [])
+
+  // Notify parent about pending possibility count
+  useEffect(() => {
+    const pending =
+      possibilities.filter((p) => !p.isComplete).length + (isLoading ? 1 : 0)
+    onPendingChange?.(pending)
+  }, [possibilities, isLoading, onPendingChange])
 
   // Auto-load top 6 high-priority possibilities to show variety
   useEffect(() => {

@@ -16,12 +16,14 @@ export interface MessagesListProps {
     possibility: MessageType
   ) => void
   onContinuePossibility?: (possibility: MessageType) => void
+  onPendingChange?: (count: number) => void
 }
 
 export const MessagesList: React.FC<MessagesListProps> = ({
   messages,
   onSelectPossibility,
   onContinuePossibility,
+  onPendingChange,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -57,6 +59,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({
             className="max-w-[800px] w-full self-center animate-fadeIn"
             showPossibilities={message.role === 'assistant' && !message.content}
             conversationMessages={messages}
+            onPendingChange={onPendingChange}
           />
         ))
       )}
