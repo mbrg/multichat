@@ -19,9 +19,8 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./app/*"
-      ]
+      "@/*": ["./app/*"],
+      "lucide-react": ["./lucide-react"]
     },
     "types": [
       "vitest/globals"

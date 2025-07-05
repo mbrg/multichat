@@ -23,7 +23,13 @@ describe('ChatHeader', () => {
   it('should render the title correctly', () => {
     const mockOnOpenSettings = vi.fn()
 
-    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        messages={[]}
+        isGeneratingPossibilities={false}
+      />
+    )
 
     expect(screen.getByText('chatsbox.ai')).toBeInTheDocument()
   })
@@ -32,7 +38,11 @@ describe('ChatHeader', () => {
     const mockOnOpenSettings = vi.fn()
 
     const { container } = render(
-      <ChatHeader onOpenSettings={mockOnOpenSettings} />
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        messages={[]}
+        isGeneratingPossibilities={false}
+      />
     )
 
     const headerElement = container.firstChild as HTMLElement
@@ -52,7 +62,13 @@ describe('ChatHeader', () => {
     const mockOnOpenSettings = vi.fn()
     const user = userEvent.setup()
 
-    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        messages={[]}
+        isGeneratingPossibilities={false}
+      />
+    )
 
     const menuButton = screen.getByTestId('menu-button')
     await user.click(menuButton)
@@ -63,7 +79,13 @@ describe('ChatHeader', () => {
   it('should render the Menu component', () => {
     const mockOnOpenSettings = vi.fn()
 
-    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+    render(
+      <ChatHeader
+        onOpenSettings={mockOnOpenSettings}
+        messages={[]}
+        isGeneratingPossibilities={false}
+      />
+    )
 
     expect(screen.getByTestId('menu-button')).toBeInTheDocument()
   })
