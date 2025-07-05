@@ -21,6 +21,7 @@ const ChatDemo: React.FC = () => {
   } = useApiKeys(refreshSettings)
 
   const [isGenerating, setIsGenerating] = useState(false)
+  const [pendingPossibilities, setPendingPossibilities] = useState(0)
 
   // Check if system is ready for messaging
   const isSystemReady = useCallback(() => {
@@ -41,9 +42,8 @@ const ChatDemo: React.FC = () => {
 
   // Check if there are active possibilities being generated
   const hasActivePossibilities = useCallback(() => {
-    // With the new system, check if we're currently generating
-    return isGenerating
-  }, [isGenerating])
+    return pendingPossibilities > 0
+  }, [pendingPossibilities])
 
   // Update messages when using new streaming system
   useEffect(() => {
@@ -106,6 +106,7 @@ const ChatDemo: React.FC = () => {
 
       try {
         setIsGenerating(true)
+        setPendingPossibilities(1)
         // The new VirtualizedPossibilitiesPanel will handle streaming automatically
       } catch (error) {
         console.error('Error generating response:', error)
@@ -187,6 +188,11 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  const handlePendingChange = useCallback((count: number) => {
+    setPendingPossibilities(count)
+    setIsGenerating(count > 0)
+  }, [])
+
   return (
     <ChatContainer
       messages={messages}
@@ -198,6 +204,8 @@ const ChatDemo: React.FC = () => {
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
+      isGeneratingPossibilities={isGenerating}
+      onPendingPossibilitiesChange={handlePendingChange}
     />
   )
 }
