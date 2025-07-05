@@ -16,6 +16,7 @@ export default defineConfig({
       '@/components': resolve(__dirname, './app/components'),
       '@/lib': resolve(__dirname, './lib'),
       redis: resolve(__dirname, './app/__mocks__/redis.ts'),
+      'lucide-react': resolve(__dirname, './lucide-react'),
     },
   },
   esbuild: {

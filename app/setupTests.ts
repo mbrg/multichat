@@ -17,6 +17,11 @@ vi.mock('next-auth', () => ({
   getServerSession: vi.fn(),
 }))
 
+// Mock next/navigation router
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
+
 // Mock ServerKeys for tests
 vi.mock('./utils/serverKeys', () => ({
   ServerKeys: {
