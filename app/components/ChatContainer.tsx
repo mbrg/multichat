@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import type { ChatContainerProps, Message as MessageType } from '../types/chat'
@@ -17,9 +18,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onContinuePossibility,
   isLoading = false,
   disabled = false,
+  isGeneratingPossibilities = false,
   className = '',
   settingsLoading = false,
   apiKeysLoading = false,
+  onPendingPossibilitiesChange,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -57,7 +60,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
-      <ChatHeader onOpenSettings={handleOpenSettings} />
+      <ChatHeader
+        onOpenSettings={handleOpenSettings}
+        messages={messages}
+        isGeneratingPossibilities={isGeneratingPossibilities}
+      />
 
       <AuthenticationBanner
         disabled={disabled}
@@ -72,6 +79,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         messages={messages}
         onSelectPossibility={onSelectPossibility}
         onContinuePossibility={onContinuePossibility}
+        onPendingChange={onPendingPossibilitiesChange}
       />
 
       <MessageInputContainer
