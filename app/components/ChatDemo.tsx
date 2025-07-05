@@ -198,6 +198,7 @@ const ChatDemo: React.FC = () => {
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
+      isGeneratingPossibilities={isGenerating}
     />
   )
 }
