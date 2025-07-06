@@ -8,15 +8,6 @@ import {
 } from '../ConversationMigrationService'
 import type { SharedConversation } from '../../../types/conversation'
 
-// Mock logging service to avoid DOM dependencies
-vi.mock('../../LoggingService', () => ({
-  log: {
-    info: vi.fn(),
-    debug: vi.fn(),
-    error: vi.fn(),
-  },
-}))
-
 describe('ConversationMigrationService', () => {
   describe('version detection', () => {
     it('should detect legacy format when no version field exists', () => {
