@@ -71,11 +71,13 @@ export const PublishButton: React.FC<PublishButtonProps> = ({
           className="flex items-center justify-center p-2 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg hover:translate-y-[-2px] hover:shadow-[0_4px_20px_rgba(102,126,234,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all disabled:hover:transform-none disabled:hover:shadow-none -webkit-tap-highlight-color-transparent"
           aria-label="Publish conversation"
           title={
-            !hasMessages
-              ? 'Add messages to publish conversation'
-              : isGenerating
-                ? 'Wait for possibilities to finish generating'
-                : 'Publish conversation and share'
+            disabled
+              ? 'Sign in to publish conversations'
+              : !hasMessages
+                ? 'Add messages to publish conversation'
+                : isGenerating
+                  ? 'Wait for possibilities to finish generating'
+                  : 'Publish conversation and share'
           }
         >
           {isLoading ? (

@@ -232,9 +232,6 @@ const ChatDemo: React.FC = () => {
 
       const result = await response.json()
 
-      // Navigate to the shared conversation
-      router.push(`/conversation/${result.id}`)
-
       return result
     } catch (error) {
       console.error('Error publishing conversation:', error)
@@ -242,7 +239,7 @@ const ChatDemo: React.FC = () => {
     } finally {
       setIsPublishing(false)
     }
-  }, [session, messages, router])
+  }, [session, messages])
 
   // Handle title click (go to home)
   const handleTitleClick = useCallback(() => {
@@ -264,6 +261,7 @@ const ChatDemo: React.FC = () => {
       onTitleClick={handleTitleClick}
       isGenerating={isGenerating}
       isPublishing={isPublishing}
+      onPossibilitiesFinished={() => setIsGenerating(false)}
     />
   )
 }

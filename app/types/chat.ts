@@ -39,6 +39,7 @@ export interface ChatContainerProps {
   onTitleClick?: () => void
   isGenerating?: boolean
   isPublishing?: boolean
+  onPossibilitiesFinished?: () => void
 }
 
 export interface MessageProps {

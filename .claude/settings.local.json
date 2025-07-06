@@ -18,7 +18,8 @@
       "Bash(rm:*)",
       "Bash(mv:*)",
       "Bash(sed:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   },

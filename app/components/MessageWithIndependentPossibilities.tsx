@@ -15,6 +15,7 @@ interface MessageWithIndependentPossibilitiesProps {
   className?: string
   showPossibilities?: boolean
   conversationMessages?: Message[]
+  onPossibilitiesFinished?: () => void
 }
 
 const MessageWithIndependentPossibilities: React.FC<
@@ -26,6 +27,7 @@ const MessageWithIndependentPossibilities: React.FC<
   className = '',
   showPossibilities = true,
   conversationMessages = [],
+  onPossibilitiesFinished,
 }) => {
   const isUser = message.role === 'user'
   const { settings } = useSettings()
@@ -207,6 +209,7 @@ const MessageWithIndependentPossibilities: React.FC<
                   onSelectResponse={handleSelectResponse}
                   enableVirtualScrolling={true}
                   maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
+                  onPossibilitiesFinished={onPossibilitiesFinished}
                 />
               </div>
             )}

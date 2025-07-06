@@ -14,6 +14,7 @@ interface VirtualizedPossibilitiesPanelProps {
   onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
+  onPossibilitiesFinished?: () => void
 }
 
 const VirtualizedPossibilitiesPanel: React.FC<
@@ -25,6 +26,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
   onSelectResponse,
   enableVirtualScrolling = true,
   maxTokens,
+  onPossibilitiesFinished,
 }) => {
   const { possibilities, loadPossibility } = useSimplePossibilities(
     messages,
@@ -68,6 +70,21 @@ const VirtualizedPossibilitiesPanel: React.FC<
       )
     }
   }, [isActive, conversationKey, settings, loadPossibility, messages.length])
+
+  // Track when all possibilities have finished loading
+  const finishedTrackingRef = useRef<string>('')
+  useEffect(() => {
+    if (
+      isActive &&
+      possibilities.length > 0 &&
+      possibilities.every((p) => p.isComplete) &&
+      finishedTrackingRef.current !== conversationKey &&
+      onPossibilitiesFinished
+    ) {
+      finishedTrackingRef.current = conversationKey
+      onPossibilitiesFinished()
+    }
+  }, [isActive, possibilities, conversationKey, onPossibilitiesFinished])
 
   return (
     <>

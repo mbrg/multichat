@@ -18,11 +18,12 @@ export interface ChatHeaderProps {
       | 'models'
       | 'generation'
   ) => void
-  onPublishConversation: () => Promise<{ url: string; id: string } | void>
+  onPublishConversation?: () => Promise<{ url: string; id: string } | void>
   onTitleClick: () => void
   hasMessages: boolean
   isGenerating: boolean
   isPublishing: boolean
+  isAuthenticated?: boolean
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -32,6 +33,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   hasMessages,
   isGenerating,
   isPublishing,
+  isAuthenticated = true,
 }) => {
   return (
     <div className="flex items-center justify-between p-4 bg-[#1a1a1a] border-b border-[#2a2a2a] min-h-[56px]">
@@ -45,10 +47,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 
       <div className="flex items-center gap-3">
         <PublishButton
-          onPublish={onPublishConversation}
+          onPublish={onPublishConversation || (() => Promise.resolve())}
           hasMessages={hasMessages}
           isGenerating={isGenerating}
           isLoading={isPublishing}
+          disabled={!isAuthenticated || !onPublishConversation}
         />
         <Menu onOpenSettings={onOpenSettings} />
       </div>

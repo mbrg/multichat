@@ -15,6 +15,7 @@ export interface AuthenticationBannerProps {
   messages: MessageType[]
   settingsLoading: boolean
   apiKeysLoading: boolean
+  hasUserInteracted?: boolean
 }
 
 export const AuthenticationBanner: React.FC<AuthenticationBannerProps> = ({
@@ -24,6 +25,7 @@ export const AuthenticationBanner: React.FC<AuthenticationBannerProps> = ({
   messages,
   settingsLoading,
   apiKeysLoading,
+  hasUserInteracted = false,
 }) => {
   // Don't show anything if not disabled or currently loading
   if (!disabled || isLoading) {
@@ -56,8 +58,8 @@ export const AuthenticationBanner: React.FC<AuthenticationBannerProps> = ({
     </div>
   )
 
-  // Not authenticated - show sign in message
-  if (!isAuthenticated) {
+  // Not authenticated - only show sign in message after user interaction
+  if (!isAuthenticated && hasUserInteracted) {
     return (
       <BannerWrapper>
         <span>Sign in to save and manage your API keys securely.</span>
@@ -66,7 +68,7 @@ export const AuthenticationBanner: React.FC<AuthenticationBannerProps> = ({
   }
 
   // Authenticated but no API keys configured and not in possibilities state
-  if (!isInPossibilitiesState) {
+  if (isAuthenticated && !isInPossibilitiesState) {
     return (
       <BannerWrapper>
         <span>

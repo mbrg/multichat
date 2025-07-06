@@ -96,8 +96,8 @@ export async function DELETE(
     // Check if the user owns this conversation
     if (conversation.creatorId !== session.user.id) {
       return NextResponse.json(
-        { error: 'Unauthorized to delete this conversation' },
-        { status: 403 }
+        { error: 'Conversation not found' },
+        { status: 404 }
       )
     }
 
