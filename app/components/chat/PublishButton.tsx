@@ -26,14 +26,42 @@ export const PublishButton: React.FC<PublishButtonProps> = ({
       const result = await onPublish()
 
       if (result?.url) {
-        // Copy URL to clipboard
-        await navigator.clipboard.writeText(result.url)
-
-        // Show copied indicator
-        setShowCopiedIndicator(true)
-        setTimeout(() => {
-          setShowCopiedIndicator(false)
-        }, 2000)
+        // Copy URL to clipboard with fallback
+        try {
+          await navigator.clipboard.writeText(result.url)
+          
+          // Show copied indicator
+          setShowCopiedIndicator(true)
+          setTimeout(() => {
+            setShowCopiedIndicator(false)
+          }, 2000)
+        } catch (clipboardError) {
+          // Fallback for clipboard access denied
+          console.warn('Clipboard access denied, using fallback', clipboardError)
+          
+          // Create a temporary input element
+          const input = document.createElement('input')
+          input.value = result.url
+          input.style.position = 'fixed'
+          input.style.opacity = '0'
+          document.body.appendChild(input)
+          input.select()
+          
+          try {
+            document.execCommand('copy')
+            
+            // Show copied indicator
+            setShowCopiedIndicator(true)
+            setTimeout(() => {
+              setShowCopiedIndicator(false)
+            }, 2000)
+          } catch (fallbackError) {
+            console.error('Failed to copy URL:', fallbackError)
+            // Could show an error message to the user here
+          } finally {
+            document.body.removeChild(input)
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to publish conversation:', error)

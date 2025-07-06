@@ -12,12 +12,14 @@ vi.mock('@vercel/blob', () => ({
   put: vi.fn(),
   head: vi.fn(),
   del: vi.fn(),
+  list: vi.fn(),
 }))
 
 describe('ConversationStorageService', () => {
   let service: ConversationStorageService
   let mockPut: any
   let mockHead: any
+  let mockList: any
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -26,6 +28,7 @@ describe('ConversationStorageService', () => {
     const blobModule = vi.mocked(await import('@vercel/blob'))
     mockPut = blobModule.put
     mockHead = blobModule.head
+    mockList = blobModule.list
   })
 
   describe('saveConversation', () => {
@@ -140,6 +143,12 @@ describe('ConversationStorageService', () => {
         metadata: {},
       }
 
+      mockList.mockResolvedValue({
+        blobs: [{
+          url: 'https://example.blob.vercel-storage.com/conversations/test-id.json'
+        }]
+      })
+
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockConversation),
@@ -148,24 +157,29 @@ describe('ConversationStorageService', () => {
       const result = await service.getConversation('test-id')
 
       expect(result).toEqual(mockConversation)
+      expect(mockList).toHaveBeenCalledWith({
+        prefix: 'conversations/test-id'
+      })
       expect(fetch).toHaveBeenCalledWith(
-        'https://blob.vercel-storage.com/conversations/test-id.json'
+        'https://example.blob.vercel-storage.com/conversations/test-id.json'
       )
     })
 
     it('should return null when conversation not found', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
+      mockList.mockResolvedValue({
+        blobs: []
       })
 
       const result = await service.getConversation('nonexistent-id')
 
       expect(result).toBeNull()
+      expect(mockList).toHaveBeenCalledWith({
+        prefix: 'conversations/nonexistent-id'
+      })
     })
 
     it('should throw error on network failure', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      mockList.mockRejectedValue(new Error('Network error'))
 
       await expect(service.getConversation('test-id')).rejects.toThrow(
         'Failed to retrieve conversation: Network error'

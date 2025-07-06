@@ -1,4 +1,4 @@
-import { put, head } from '@vercel/blob'
+import { put, head, list } from '@vercel/blob'
 import type {
   SharedConversation,
   ShareConversationRequest,
@@ -62,8 +62,21 @@ export class ConversationStorageService {
    */
   async getConversation(id: string): Promise<SharedConversation | null> {
     try {
-      const url = `https://blob.vercel-storage.com/conversations/${id}.json`
-      const response = await fetch(url)
+      // List blobs to find the one we're looking for
+      const { blobs } = await list({
+        prefix: `conversations/${id}`,
+      })
+
+      if (blobs.length === 0) {
+        console.log(`Conversation not found: ${id}`)
+        return null
+      }
+
+      // Get the first matching blob
+      const blob = blobs[0]
+      
+      // Fetch the content from the blob URL
+      const response = await fetch(blob.url)
 
       if (!response.ok) {
         if (response.status === 404) {

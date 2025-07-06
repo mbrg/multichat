@@ -11,6 +11,7 @@ export interface SharedConversation {
     title?: string
     description?: string
   }
+  blobUrl?: string
 }
 
 export interface ShareConversationRequest {
