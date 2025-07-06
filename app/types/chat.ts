@@ -40,6 +40,8 @@ export interface ChatContainerProps {
   isGenerating?: boolean
   isPublishing?: boolean
   onPossibilitiesFinished?: () => void
+  onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  disableLivePossibilities?: boolean
 }
 
 export interface MessageProps {

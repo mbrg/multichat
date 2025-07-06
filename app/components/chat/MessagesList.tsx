@@ -17,6 +17,8 @@ export interface MessagesListProps {
   ) => void
   onContinuePossibility?: (possibility: MessageType) => void
   onPossibilitiesFinished?: () => void
+  onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  disableLivePossibilities?: boolean
 }
 
 export const MessagesList: React.FC<MessagesListProps> = ({
@@ -24,6 +26,8 @@ export const MessagesList: React.FC<MessagesListProps> = ({
   onSelectPossibility,
   onContinuePossibility,
   onPossibilitiesFinished,
+  onPossibilitiesChange,
+  disableLivePossibilities = false,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -60,6 +64,8 @@ export const MessagesList: React.FC<MessagesListProps> = ({
             showPossibilities={message.role === 'assistant' && !message.content}
             conversationMessages={messages}
             onPossibilitiesFinished={onPossibilitiesFinished}
+            onPossibilitiesChange={onPossibilitiesChange}
+            disableLivePossibilities={disableLivePossibilities}
           />
         ))
       )}

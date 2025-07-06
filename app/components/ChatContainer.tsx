@@ -25,6 +25,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   isGenerating = false,
   isPublishing = false,
   onPossibilitiesFinished,
+  onPossibilitiesChange,
+  disableLivePossibilities = false,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -104,6 +106,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         onSelectPossibility={onSelectPossibility}
         onContinuePossibility={onContinuePossibility}
         onPossibilitiesFinished={onPossibilitiesFinished}
+        onPossibilitiesChange={onPossibilitiesChange}
+        disableLivePossibilities={disableLivePossibilities}
       />
 
       <MessageInputContainer

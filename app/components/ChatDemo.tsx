@@ -14,6 +14,9 @@ const ChatDemo: React.FC = () => {
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
+  const [getCompletedPossibilities, setGetCompletedPossibilities] = useState<
+    (() => any[]) | null
+  >(null)
   const {
     settings,
     loading: settingsLoading,
@@ -208,9 +211,10 @@ const ChatDemo: React.FC = () => {
     try {
       setIsPublishing(true)
 
-      // TODO: Extract possibilities from the current conversation
-      // For now, we'll just publish with an empty possibilities array
-      const possibilities: PossibilityResponse[] = []
+      // Extract possibilities from the current conversation
+      const possibilities: PossibilityResponse[] = getCompletedPossibilities
+        ? getCompletedPossibilities()
+        : []
 
       const response = await fetch('/api/conversations', {
         method: 'POST',
@@ -239,7 +243,7 @@ const ChatDemo: React.FC = () => {
     } finally {
       setIsPublishing(false)
     }
-  }, [session, messages])
+  }, [session, messages, getCompletedPossibilities])
 
   // Handle title click (go to home)
   const handleTitleClick = useCallback(() => {
@@ -262,6 +266,9 @@ const ChatDemo: React.FC = () => {
       isGenerating={isGenerating}
       isPublishing={isPublishing}
       onPossibilitiesFinished={() => setIsGenerating(false)}
+      onPossibilitiesChange={(getCompletedPossibilitiesFn) =>
+        setGetCompletedPossibilities(() => getCompletedPossibilitiesFn)
+      }
     />
   )
 }

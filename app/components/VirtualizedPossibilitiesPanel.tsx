@@ -15,6 +15,7 @@ interface VirtualizedPossibilitiesPanelProps {
   enableVirtualScrolling?: boolean
   maxTokens?: number
   onPossibilitiesFinished?: () => void
+  onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
 }
 
 const VirtualizedPossibilitiesPanel: React.FC<
@@ -27,11 +28,10 @@ const VirtualizedPossibilitiesPanel: React.FC<
   enableVirtualScrolling = true,
   maxTokens,
   onPossibilitiesFinished,
+  onPossibilitiesChange,
 }) => {
-  const { possibilities, loadPossibility } = useSimplePossibilities(
-    messages,
-    settings
-  )
+  const { possibilities, loadPossibility, getCompletedPossibilities } =
+    useSimplePossibilities(messages, settings)
 
   // Track if we've loaded initial possibilities for this conversation
   const loadedConversationRef = useRef<string>('')
@@ -85,6 +85,13 @@ const VirtualizedPossibilitiesPanel: React.FC<
       onPossibilitiesFinished()
     }
   }, [isActive, possibilities, conversationKey, onPossibilitiesFinished])
+
+  // Notify parent when possibilities change
+  useEffect(() => {
+    if (onPossibilitiesChange) {
+      onPossibilitiesChange(getCompletedPossibilities)
+    }
+  }, [onPossibilitiesChange, getCompletedPossibilities])
 
   return (
     <>

@@ -16,6 +16,8 @@ interface MessageWithIndependentPossibilitiesProps {
   showPossibilities?: boolean
   conversationMessages?: Message[]
   onPossibilitiesFinished?: () => void
+  onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  disableLivePossibilities?: boolean
 }
 
 const MessageWithIndependentPossibilities: React.FC<
@@ -28,6 +30,8 @@ const MessageWithIndependentPossibilities: React.FC<
   showPossibilities = true,
   conversationMessages = [],
   onPossibilitiesFinished,
+  onPossibilitiesChange,
+  disableLivePossibilities = false,
 }) => {
   const isUser = message.role === 'user'
   const { settings } = useSettings()
@@ -205,11 +209,12 @@ const MessageWithIndependentPossibilities: React.FC<
                     return converted
                   })()}
                   settings={settings}
-                  isActive={true}
+                  isActive={!disableLivePossibilities}
                   onSelectResponse={handleSelectResponse}
                   enableVirtualScrolling={true}
                   maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
                   onPossibilitiesFinished={onPossibilitiesFinished}
+                  onPossibilitiesChange={onPossibilitiesChange}
                 />
               </div>
             )}

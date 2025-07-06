@@ -55,42 +55,66 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         const conversationData: SharedConversation = await response.json()
         setConversation(conversationData)
 
-        // Convert possibilities to message format and add to the last assistant message
+        // Convert possibilities to message format and add to the appropriate assistant message
         const messagesWithPossibilities = [...conversationData.messages]
         if (conversationData.possibilities.length > 0) {
-          // Find the last assistant message to attach possibilities
-          const lastAssistantIndex = messagesWithPossibilities
-            .reverse()
-            .findIndex((msg) => msg.role === 'assistant')
+          // Find an assistant message with empty content (placeholder for possibilities)
+          // or the last assistant message if no empty one exists
+          let targetIndex = -1
 
-          if (lastAssistantIndex !== -1) {
-            const actualIndex =
-              messagesWithPossibilities.length - 1 - lastAssistantIndex
-            messagesWithPossibilities.reverse()
-
-            // Convert PossibilityResponse to Message format
-            const possibilityMessages: Message[] =
-              conversationData.possibilities.map((p) => ({
-                id: p.id,
-                role: 'assistant' as const,
-                content: p.content,
-                model: p.model,
-                probability: p.probability,
-                temperature: p.temperature,
-                timestamp:
-                  p.timestamp instanceof Date
-                    ? p.timestamp
-                    : new Date(p.timestamp),
-                systemInstruction: p.systemInstruction,
-                isPossibility: true,
-              }))
-
-            messagesWithPossibilities[actualIndex] = {
-              ...messagesWithPossibilities[actualIndex],
-              possibilities: possibilityMessages,
+          // First, look for an assistant message with empty content
+          for (let i = messagesWithPossibilities.length - 1; i >= 0; i--) {
+            const msg = messagesWithPossibilities[i]
+            if (
+              msg.role === 'assistant' &&
+              (!msg.content || msg.content.trim() === '')
+            ) {
+              targetIndex = i
+              break
             }
-          } else {
-            messagesWithPossibilities.reverse()
+          }
+
+          // If no empty assistant message found, use the last assistant message
+          if (targetIndex === -1) {
+            for (let i = messagesWithPossibilities.length - 1; i >= 0; i--) {
+              if (messagesWithPossibilities[i].role === 'assistant') {
+                targetIndex = i
+                break
+              }
+            }
+          }
+
+          // If still no assistant message found, add a placeholder
+          if (targetIndex === -1) {
+            messagesWithPossibilities.push({
+              id: 'shared-possibilities',
+              role: 'assistant' as const,
+              content: '',
+              timestamp: new Date(),
+            })
+            targetIndex = messagesWithPossibilities.length - 1
+          }
+
+          // Convert PossibilityResponse to Message format
+          const possibilityMessages: Message[] =
+            conversationData.possibilities.map((p) => ({
+              id: p.id,
+              role: 'assistant' as const,
+              content: p.content,
+              model: p.model,
+              probability: p.probability,
+              temperature: p.temperature,
+              timestamp:
+                p.timestamp instanceof Date
+                  ? p.timestamp
+                  : new Date(p.timestamp),
+              systemInstruction: p.systemInstruction,
+              isPossibility: true,
+            }))
+
+          messagesWithPossibilities[targetIndex] = {
+            ...messagesWithPossibilities[targetIndex],
+            possibilities: possibilityMessages,
           }
         }
 
@@ -189,6 +213,17 @@ export default function ConversationPage({ params }: ConversationPageProps) {
     }
   }, [session, conversation])
 
+  // Auto-redirect on error with toast notification
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        router.push('/')
+      }, 2000) // Redirect after 2 seconds
+
+      return () => clearTimeout(timer)
+    }
+  }, [error, router])
+
   if (isLoading) {
     return <LoadingSkeleton />
   }
@@ -200,12 +235,12 @@ export default function ConversationPage({ params }: ConversationPageProps) {
           <div className="text-lg font-semibold text-[#e0e0e0] mb-2">
             {error}
           </div>
-          <button
-            onClick={() => router.push('/')}
-            className="px-4 py-2 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg hover:opacity-80 transition-opacity"
-          >
-            Go to Home
-          </button>
+          <div className="text-sm text-[#999] mb-4">
+            Redirecting to home page...
+          </div>
+          <div className="flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin"></div>
+          </div>
         </div>
       </div>
     )
@@ -218,12 +253,12 @@ export default function ConversationPage({ params }: ConversationPageProps) {
           <div className="text-lg font-semibold text-[#e0e0e0] mb-2">
             Conversation not found
           </div>
-          <button
-            onClick={() => router.push('/')}
-            className="px-4 py-2 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg hover:opacity-80 transition-opacity"
-          >
-            Go to Home
-          </button>
+          <div className="text-sm text-[#999] mb-4">
+            Redirecting to home page...
+          </div>
+          <div className="flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin"></div>
+          </div>
         </div>
       </div>
     )
@@ -247,7 +282,9 @@ export default function ConversationPage({ params }: ConversationPageProps) {
             ? handlePublishConversation
             : undefined
         }
-        // Shared conversation mode
+        // Shared conversation mode - disable live possibilities
+        isGenerating={false}
+        disableLivePossibilities={true}
       />
     </div>
   )
