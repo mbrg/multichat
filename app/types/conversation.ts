@@ -3,6 +3,7 @@ import type { PossibilityResponse } from './api'
 
 export interface SharedConversation {
   id: string
+  version: string
   createdAt: number
   creatorId: string
   messages: Message[]

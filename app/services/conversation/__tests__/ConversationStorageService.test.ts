@@ -134,13 +134,20 @@ describe('ConversationStorageService', () => {
 
   describe('getConversation', () => {
     it('should retrieve conversation successfully', async () => {
-      const mockConversation: SharedConversation = {
+      // Mock legacy conversation data (without version field)
+      const mockLegacyConversation = {
         id: 'test-id',
         createdAt: Date.now(),
         creatorId: 'user-123',
         messages: [],
         possibilities: [],
         metadata: {},
+      }
+
+      // Expected result after migration
+      const expectedConversation: SharedConversation = {
+        ...mockLegacyConversation,
+        version: '1.0.0', // Added by migration
       }
 
       mockList.mockResolvedValue({
@@ -153,12 +160,12 @@ describe('ConversationStorageService', () => {
 
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockConversation),
+        json: () => Promise.resolve(mockLegacyConversation),
       })
 
       const result = await service.getConversation('test-id')
 
-      expect(result).toEqual(mockConversation)
+      expect(result).toEqual(expectedConversation)
       expect(mockList).toHaveBeenCalledWith({
         prefix: 'conversations/test-id',
       })

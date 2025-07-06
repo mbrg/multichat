@@ -76,6 +76,14 @@ export const UI_DEFAULTS = {
 } as const
 
 /**
+ * Conversation schema versioning
+ */
+export const CONVERSATION_SCHEMA = {
+  CURRENT_VERSION: '1.0.0',
+  SUPPORTED_VERSIONS: ['1.0.0'],
+} as const
+
+/**
  * Validation patterns
  */
 export const VALIDATION_PATTERNS = {

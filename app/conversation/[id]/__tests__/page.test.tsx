@@ -37,6 +37,7 @@ vi.mock('../../../components/LoadingSkeleton', () => ({
 describe('ConversationPage', () => {
   const mockConversation: SharedConversation = {
     id: 'test-id',
+    version: '1.0.0',
     createdAt: Date.now(),
     creatorId: 'user-123',
     messages: [

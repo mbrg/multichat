@@ -4,6 +4,12 @@ import type {
   ShareConversationRequest,
   ShareConversationResponse,
 } from '../../types/conversation'
+import { CONVERSATION_SCHEMA } from '../../constants/defaults'
+import { 
+  migrateConversation, 
+  validateConversationSchema,
+  getCurrentVersion 
+} from './ConversationMigrationService'
 
 export class ConversationStorageService {
   private getBaseUrl(): string {
@@ -32,11 +38,17 @@ export class ConversationStorageService {
 
       const sharedConversation: SharedConversation = {
         id,
+        version: getCurrentVersion(),
         createdAt: Date.now(),
         creatorId,
         messages: request.messages,
         possibilities: request.possibilities,
         metadata: request.metadata || {},
+      }
+
+      // Validate schema before saving
+      if (!validateConversationSchema(sharedConversation)) {
+        throw new Error('Invalid conversation schema')
       }
 
       const key = `conversations/${id}.json`
@@ -96,8 +108,17 @@ export class ConversationStorageService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
-      const conversation = await response.json()
-      return conversation as SharedConversation
+      const rawData = await response.json()
+      
+      // Migrate conversation to current schema version if needed
+      const conversation = migrateConversation(rawData)
+      
+      // Validate migrated conversation
+      if (!validateConversationSchema(conversation)) {
+        throw new Error('Invalid conversation schema after migration')
+      }
+      
+      return conversation
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'

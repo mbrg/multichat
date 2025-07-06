@@ -34,6 +34,7 @@ describe('GET /api/conversations/[id]', () => {
   it('should retrieve conversation successfully', async () => {
     const mockConversation: SharedConversation = {
       id: 'conv-123',
+      version: '1.0.0',
       createdAt: Date.now(),
       creatorId: 'user-123',
       messages: [
