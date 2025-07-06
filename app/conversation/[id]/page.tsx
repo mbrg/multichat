@@ -8,6 +8,7 @@ import LoadingSkeleton from '../../components/LoadingSkeleton'
 import type { Message, Attachment } from '../../types/chat'
 import type { SharedConversation } from '../../types/conversation'
 import type { PossibilityResponse } from '../../types/api'
+import { log } from '@/services/LoggingService'
 
 interface ConversationPageProps {
   params: Promise<{ id: string }>
@@ -53,6 +54,13 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         }
 
         const conversationData: SharedConversation = await response.json()
+        log.debug('Fetched shared conversation data', {
+          conversationId: conversationData.id,
+          messagesCount: conversationData.messages.length,
+          possibilitiesCount: conversationData.possibilities.length,
+          messages: conversationData.messages,
+          possibilities: conversationData.possibilities,
+        })
         setConversation(conversationData)
 
         // Convert possibilities to message format and add to the appropriate assistant message
@@ -70,6 +78,12 @@ export default function ConversationPage({ params }: ConversationPageProps) {
               (!msg.content || msg.content.trim() === '')
             ) {
               targetIndex = i
+              log.debug('Found empty assistant message for possibilities', {
+                conversationId: conversationData.id,
+                messageIndex: i,
+                messageId: msg.id,
+                messageRole: msg.role,
+              })
               break
             }
           }
@@ -79,6 +93,12 @@ export default function ConversationPage({ params }: ConversationPageProps) {
             for (let i = messagesWithPossibilities.length - 1; i >= 0; i--) {
               if (messagesWithPossibilities[i].role === 'assistant') {
                 targetIndex = i
+                log.debug('Found last assistant message for possibilities', {
+                  conversationId: conversationData.id,
+                  messageIndex: i,
+                  messageId: messagesWithPossibilities[i].id,
+                  messageContent: messagesWithPossibilities[i].content,
+                })
                 break
               }
             }
@@ -86,6 +106,10 @@ export default function ConversationPage({ params }: ConversationPageProps) {
 
           // If still no assistant message found, add a placeholder
           if (targetIndex === -1) {
+            log.debug('No assistant message found, adding placeholder', {
+              conversationId: conversationData.id,
+              messagesCount: messagesWithPossibilities.length,
+            })
             messagesWithPossibilities.push({
               id: 'shared-possibilities',
               role: 'assistant' as const,
@@ -112,10 +136,25 @@ export default function ConversationPage({ params }: ConversationPageProps) {
               isPossibility: true,
             }))
 
+          log.debug('Attaching possibilities to message', {
+            conversationId: conversationData.id,
+            targetIndex,
+            originalMessageId: messagesWithPossibilities[targetIndex].id,
+            possibilityCount: possibilityMessages.length,
+            possibilityIds: possibilityMessages.map(p => p.id),
+          })
+          
           messagesWithPossibilities[targetIndex] = {
             ...messagesWithPossibilities[targetIndex],
             possibilities: possibilityMessages,
           }
+          
+          log.debug('Successfully attached possibilities to message', {
+            conversationId: conversationData.id,
+            messageId: messagesWithPossibilities[targetIndex].id,
+            hasPossibilities: !!messagesWithPossibilities[targetIndex].possibilities,
+            possibilityCount: messagesWithPossibilities[targetIndex].possibilities?.length || 0,
+          })
         }
 
         setMessages(messagesWithPossibilities)

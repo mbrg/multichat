@@ -7,6 +7,7 @@ import VirtualizedPossibilitiesPanel from './VirtualizedPossibilitiesPanel'
 import { getProviderLogo, getProviderFromModel } from '../utils/providerLogos'
 import { useSettings } from '../hooks/useSettings'
 import { TOKEN_LIMITS } from '../services/ai/config'
+import { log } from '@/services/LoggingService'
 
 interface MessageWithIndependentPossibilitiesProps {
   message: Message
@@ -35,6 +36,18 @@ const MessageWithIndependentPossibilities: React.FC<
 }) => {
   const isUser = message.role === 'user'
   const { settings } = useSettings()
+  
+  // Log message details for debugging possibilities
+  log.debug('MessageWithIndependentPossibilities render', {
+    messageId: message.id,
+    messageRole: message.role,
+    hasContent: !!message.content,
+    contentLength: message.content?.length || 0,
+    hasPossibilities: !!message.possibilities,
+    possibilitiesCount: message.possibilities?.length || 0,
+    showPossibilities,
+    disableLivePossibilities,
+  })
 
   // Helper function to get display model name (same as OptionCard)
   const getDisplayModelName = (modelName: string): string => {
@@ -184,9 +197,99 @@ const MessageWithIndependentPossibilities: React.FC<
               </div>
             )}
 
+            {/* Saved Possibilities - Show saved possibilities if they exist */}
+            {!isUser && message.possibilities && message.possibilities.length > 0 && (
+              <div className={message.content ? 'mt-3 space-y-2' : 'space-y-2'}>
+                {(() => {
+                  log.debug('Rendering saved possibilities', {
+                    messageId: message.id,
+                    savedPossibilitiesCount: message.possibilities.length,
+                    possibilityIds: message.possibilities.map(p => p.id),
+                    messageHasContent: !!message.content,
+                  })
+                  return null
+                })()}
+                {message.content && (
+                  <div className="text-xs text-[#888] font-medium">
+                    Other possibilities:
+                  </div>
+                )}
+                <div className="max-h-96 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-[#3a3a4a] scrollbar-track-[#1a1a1a]">
+                  {message.possibilities.map((possibility) => (
+                    <div
+                      key={possibility.id}
+                      onClick={() => {
+                        if (possibility.content) {
+                          onSelectPossibility?.(message, possibility)
+                        }
+                      }}
+                      className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#1a1a2a] rounded-lg transition-all border border-[#2a2a2a] hover:border-[#667eea] -webkit-tap-highlight-color-transparent cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 text-sm text-[#e0e0e0] word-wrap break-word overflow-wrap break-word line-clamp-2">
+                          {possibility.content}
+                        </div>
+                        <div className="flex items-center gap-2 ml-3 text-xs text-[#888] min-w-0">
+                          <div className="flex items-center gap-1 shrink-0 w-[16px]">
+                            <Image
+                              src={getProviderLogo(
+                                possibility.model
+                                  ? getProviderFromModel(possibility.model)
+                                  : 'openai',
+                                'dark'
+                              )}
+                              alt="Provider"
+                              width={16}
+                              height={16}
+                              className="object-contain"
+                            />
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="font-medium truncate">
+                              {getDisplayModelName(possibility.model || 'unknown')}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {possibility.temperature !== undefined && (
+                              <span className="bg-orange-900/30 text-orange-400 px-1 py-0.5 rounded text-xs">
+                                T:{possibility.temperature.toFixed(1)}
+                              </span>
+                            )}
+                            {possibility.systemInstruction && (
+                              <span
+                                className="bg-purple-900/30 text-purple-400 px-1 py-0.5 rounded text-xs"
+                                title={`System: ${possibility.systemInstruction}`}
+                              >
+                                {possibility.systemInstruction}
+                              </span>
+                            )}
+                            {possibility.probability !== undefined && possibility.probability !== null && (
+                              <span className="text-[#667eea] text-xs">
+                                P:{Math.round(possibility.probability * 100)}%
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Independent Streaming Possibilities Panel */}
-            {!isUser && showPossibilities && !message.content && settings && (
+            {!isUser && showPossibilities && !message.content && settings && !message.possibilities?.length && (
               <div className="mt-3">
+                {(() => {
+                  log.debug('Showing live possibilities panel', {
+                    messageId: message.id,
+                    showPossibilities,
+                    hasContent: !!message.content,
+                    disableLivePossibilities,
+                    isActive: !disableLivePossibilities,
+                  })
+                  return null
+                })()}
                 <VirtualizedPossibilitiesPanel
                   messages={(() => {
                     console.debug(
