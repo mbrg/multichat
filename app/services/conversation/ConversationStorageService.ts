@@ -8,7 +8,9 @@ import { CONVERSATION_SCHEMA } from '../../constants/defaults'
 import { 
   migrateConversation, 
   validateConversationSchema,
-  getCurrentVersion 
+  getCurrentVersion,
+  ConversationMigrationError,
+  ConversationSchemaError
 } from './ConversationMigrationService'
 
 export class ConversationStorageService {
@@ -110,15 +112,35 @@ export class ConversationStorageService {
 
       const rawData = await response.json()
       
-      // Migrate conversation to current schema version if needed
-      const conversation = migrateConversation(rawData)
-      
-      // Validate migrated conversation
-      if (!validateConversationSchema(conversation)) {
-        throw new Error('Invalid conversation schema after migration')
+      try {
+        // Migrate conversation to current schema version if needed
+        const conversation = migrateConversation(rawData)
+        
+        // Validate migrated conversation (throw on error)
+        validateConversationSchema(conversation, true)
+        
+        return conversation
+      } catch (migrationError) {
+        if (migrationError instanceof ConversationMigrationError) {
+          console.error('Conversation migration failed:', {
+            conversationId: id,
+            fromVersion: migrationError.fromVersion,
+            error: migrationError.message,
+          })
+          throw new Error(`Conversation format is incompatible: ${migrationError.message}`)
+        }
+        
+        if (migrationError instanceof ConversationSchemaError) {
+          console.error('Conversation schema validation failed:', {
+            conversationId: id,
+            invalidFields: migrationError.invalidFields,
+            error: migrationError.message,
+          })
+          throw new Error(`Conversation data is corrupted: ${migrationError.message}`)
+        }
+        
+        throw migrationError
       }
-      
-      return conversation
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'

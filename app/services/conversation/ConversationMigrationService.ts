@@ -10,6 +10,32 @@ import { CONVERSATION_SCHEMA } from '../../constants/defaults'
 import { log } from '../LoggingService'
 
 /**
+ * Conversation migration error types
+ */
+export class ConversationMigrationError extends Error {
+  constructor(
+    message: string,
+    public conversationId: string,
+    public fromVersion: string,
+    public cause?: Error
+  ) {
+    super(message)
+    this.name = 'ConversationMigrationError'
+  }
+}
+
+export class ConversationSchemaError extends Error {
+  constructor(
+    message: string,
+    public conversationId: string,
+    public invalidFields: string[]
+  ) {
+    super(message)
+    this.name = 'ConversationSchemaError'
+  }
+}
+
+/**
  * Legacy conversation format (pre-versioning)
  */
 interface LegacySharedConversation {
@@ -92,7 +118,11 @@ export function migrateConversation(data: any): SharedConversation {
 
   // Handle unsupported versions
   if (!isSupportedVersion(version)) {
-    const error = new Error(`Unsupported conversation version: ${version}`)
+    const error = new ConversationMigrationError(
+      `Unsupported conversation version: ${version}`,
+      data.id,
+      version
+    )
     log.error('Unsupported conversation version', error, {
       conversationId: data.id,
       version,
@@ -106,39 +136,69 @@ export function migrateConversation(data: any): SharedConversation {
     return data as SharedConversation
   }
 
-  // Future migration logic would go here
-  // Example: if (version === '1.0.0' && getCurrentVersion() === '1.1.0') { ... }
+  // Future migration chains would go here
+  let migratedData = data
+  
+  // Example future migration: v1.0.0 → v1.1.0
+  // if (version === '1.0.0' && getCurrentVersion() >= '1.1.0') {
+  //   migratedData = migrateV1ToV1_1(migratedData)
+  // }
+  
+  // Example future migration: v1.1.0 → v1.2.0  
+  // if (migratedData.version === '1.1.0' && getCurrentVersion() >= '1.2.0') {
+  //   migratedData = migrateV1_1ToV1_2(migratedData)
+  // }
 
-  log.info('No migration needed', {
+  log.info('Migration completed', {
     conversationId: data.id,
-    version,
+    fromVersion: version,
+    toVersion: migratedData.version || getCurrentVersion(),
   })
   
-  return data as SharedConversation
+  return migratedData as SharedConversation
 }
 
 /**
  * Validates conversation schema after migration
  */
-export function validateConversationSchema(data: SharedConversation): boolean {
+export function validateConversationSchema(data: SharedConversation, throwOnError = false): boolean {
   const requiredFields = ['id', 'version', 'createdAt', 'creatorId', 'messages', 'possibilities', 'metadata']
+  const missingFields: string[] = []
   
   for (const field of requiredFields) {
     if (!(field in data)) {
-      log.error('Missing required field in conversation schema', undefined, {
-        conversationId: data.id,
-        missingField: field,
-      })
-      return false
+      missingFields.push(field)
     }
   }
 
+  if (missingFields.length > 0) {
+    const error = new ConversationSchemaError(
+      `Missing required fields: ${missingFields.join(', ')}`,
+      data.id,
+      missingFields
+    )
+    log.error('Missing required fields in conversation schema', error, {
+      conversationId: data.id,
+      missingFields,
+    })
+    
+    if (throwOnError) throw error
+    return false
+  }
+
   if (!isSupportedVersion(data.version)) {
-    log.error('Invalid version in conversation schema', undefined, {
+    const error = new ConversationSchemaError(
+      `Invalid version: ${data.version}`,
+      data.id,
+      ['version']
+    )
+    log.error('Invalid version in conversation schema', error, {
       conversationId: data.id,
       version: data.version,
       supportedVersions: CONVERSATION_SCHEMA.SUPPORTED_VERSIONS,
     })
+    
+    if (throwOnError) throw error
     return false
   }
 

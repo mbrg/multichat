@@ -5,6 +5,8 @@ import {
   validateConversationSchema,
   getCurrentVersion,
   isSupportedVersion,
+  ConversationMigrationError,
+  ConversationSchemaError,
 } from '../ConversationMigrationService'
 import type { SharedConversation } from '../../../types/conversation'
 
@@ -96,7 +98,7 @@ describe('ConversationMigrationService', () => {
       expect(result).toEqual(currentData)
     })
 
-    it('should throw error for unsupported versions', () => {
+    it('should throw ConversationMigrationError for unsupported versions', () => {
       const unsupportedData = {
         id: 'test-id',
         version: '999.0.0',
@@ -107,9 +109,15 @@ describe('ConversationMigrationService', () => {
         metadata: {},
       }
 
-      expect(() => migrateConversation(unsupportedData)).toThrow(
-        'Unsupported conversation version: 999.0.0'
-      )
+      expect(() => migrateConversation(unsupportedData)).toThrow(ConversationMigrationError)
+      
+      try {
+        migrateConversation(unsupportedData)
+      } catch (error) {
+        expect(error).toBeInstanceOf(ConversationMigrationError)
+        expect((error as ConversationMigrationError).conversationId).toBe('test-id')
+        expect((error as ConversationMigrationError).fromVersion).toBe('999.0.0')
+      }
     })
   })
 
@@ -150,6 +158,24 @@ describe('ConversationMigrationService', () => {
       }
 
       expect(validateConversationSchema(invalidVersionConversation)).toBe(false)
+    })
+
+    it('should throw ConversationSchemaError when throwOnError is true', () => {
+      const incompleteConversation = {
+        id: 'test-id',
+        version: getCurrentVersion(),
+        // Missing other required fields
+      } as any
+
+      expect(() => validateConversationSchema(incompleteConversation, true)).toThrow(ConversationSchemaError)
+      
+      try {
+        validateConversationSchema(incompleteConversation, true)
+      } catch (error) {
+        expect(error).toBeInstanceOf(ConversationSchemaError)
+        expect((error as ConversationSchemaError).conversationId).toBe('test-id')
+        expect((error as ConversationSchemaError).invalidFields.length).toBeGreaterThan(0)
+      }
     })
   })
 
