@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import ChatContainer from '../../components/ChatContainer'
@@ -174,8 +174,8 @@ export default function ConversationPage({ params }: ConversationPageProps) {
   const handleSendMessage = useCallback(
     async (content: string, attachments?: Attachment[]) => {
       if (!session?.user) {
-        // Redirect to sign in if not authenticated
-        router.push('/auth/signin')
+        // Don't redirect - just prevent action
+        console.log('Authentication required for messaging')
         return
       }
 
@@ -191,14 +191,15 @@ export default function ConversationPage({ params }: ConversationPageProps) {
 
       setMessages((prev) => [...prev, userMessage])
     },
-    [session, router]
+    [session]
   )
 
   // Handle possibility selection (requires authentication)
   const handleSelectPossibility = useCallback(
     (userMessage: Message, selectedPossibility: Message) => {
       if (!session?.user) {
-        router.push('/auth/signin')
+        // Don't redirect - just prevent action
+        console.log('Authentication required for possibility selection')
         return
       }
 
@@ -208,14 +209,15 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         selectedPossibility: selectedPossibility.id,
       })
     },
-    [session, router]
+    [session]
   )
 
   // Handle possibility continuation (requires authentication)
   const handleContinuePossibility = useCallback(
     async (selectedPossibility: Message) => {
       if (!session?.user) {
-        router.push('/auth/signin')
+        // Don't redirect - just prevent action
+        console.log('Authentication required for possibility continuation')
         return
       }
 
@@ -225,7 +227,7 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         selectedPossibility.id
       )
     },
-    [session, router]
+    [session]
   )
 
   // Handle title click (go to home)
@@ -324,7 +326,7 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         // Shared conversation mode - disable live possibilities
         isGenerating={false}
         disableLivePossibilities={true}
-        hasUnselectedPossibilities={(() => {
+        hasUnselectedPossibilities={useMemo(() => {
           // Check if there are saved possibilities that haven't been selected
           const lastMessage = messages[messages.length - 1]
           return (
@@ -334,7 +336,7 @@ export default function ConversationPage({ params }: ConversationPageProps) {
             lastMessage.possibilities.length > 0 &&
             !lastMessage?.content
           )
-        })()}
+        }, [messages])}
       />
     </div>
   )
