@@ -249,6 +249,17 @@ export function useSimplePossibilities(
       }))
   }, [possibilities])
 
+  // Clear all possibilities (called when user selects one)
+  const clearPossibilities = useCallback(() => {
+    setPossibilities([])
+    loadingRef.current.clear()
+    // Cancel any active requests
+    abortControllersRef.current.forEach((controller) => {
+      controller.abort()
+    })
+    abortControllersRef.current.clear()
+  }, [])
+
   return {
     possibilities,
     availableMetadata: metadata.filter(
@@ -259,5 +270,6 @@ export function useSimplePossibilities(
     loadPossibility,
     isLoading,
     getCompletedPossibilities,
+    clearPossibilities,
   }
 }

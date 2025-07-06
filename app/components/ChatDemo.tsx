@@ -17,6 +17,9 @@ const ChatDemo: React.FC = () => {
   const [getCompletedPossibilities, setGetCompletedPossibilities] = useState<
     (() => any[]) | null
   >(null)
+  const [clearPossibilities, setClearPossibilities] = useState<
+    (() => void) | null
+  >(null)
   const {
     settings,
     loading: settingsLoading,
@@ -48,11 +51,25 @@ const ChatDemo: React.FC = () => {
     return missingKeys.length === 0
   }, [settingsLoading, settings, enabledProviders, hasApiKey])
 
-  // Check if there are active possibilities being generated
+  // Check if there are active possibilities being generated or completed ones waiting for selection
   const hasActivePossibilities = useCallback(() => {
-    // With the new system, check if we're currently generating
-    return isGenerating
-  }, [isGenerating])
+    // If we're currently generating, definitely block input
+    if (isGenerating) return true
+    
+    // If there are completed possibilities that haven't been selected, block input
+    if (getCompletedPossibilities) {
+      const completedPossibilities = getCompletedPossibilities()
+      if (completedPossibilities.length > 0) {
+        // Check if there's an empty assistant message waiting for possibilities
+        const hasEmptyAssistantMessage = messages.some(
+          msg => msg.role === 'assistant' && (!msg.content || msg.content.trim() === '')
+        )
+        return hasEmptyAssistantMessage
+      }
+    }
+    
+    return false
+  }, [isGenerating, getCompletedPossibilities, messages])
 
   // Update messages when using new streaming system
   useEffect(() => {
@@ -168,11 +185,16 @@ const ChatDemo: React.FC = () => {
 
         // Stop generating since user made a selection
         setIsGenerating(false)
+        
+        // Clear other possibilities from tracking system
+        if (clearPossibilities) {
+          clearPossibilities()
+        }
 
         return newMessages
       })
     },
-    []
+    [clearPossibilities]
   )
 
   const handleContinuePossibility = useCallback(
@@ -268,6 +290,9 @@ const ChatDemo: React.FC = () => {
       onPossibilitiesFinished={() => setIsGenerating(false)}
       onPossibilitiesChange={(getCompletedPossibilitiesFn) =>
         setGetCompletedPossibilities(() => getCompletedPossibilitiesFn)
+      }
+      onClearPossibilities={(clearFn) =>
+        setClearPossibilities(() => clearFn)
       }
     />
   )

@@ -16,6 +16,7 @@ interface VirtualizedPossibilitiesPanelProps {
   maxTokens?: number
   onPossibilitiesFinished?: () => void
   onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  onClearPossibilities?: (clearFn: () => void) => void
 }
 
 const VirtualizedPossibilitiesPanel: React.FC<
@@ -29,8 +30,9 @@ const VirtualizedPossibilitiesPanel: React.FC<
   maxTokens,
   onPossibilitiesFinished,
   onPossibilitiesChange,
+  onClearPossibilities,
 }) => {
-  const { possibilities, loadPossibility, getCompletedPossibilities } =
+  const { possibilities, loadPossibility, getCompletedPossibilities, clearPossibilities } =
     useSimplePossibilities(messages, settings)
 
   // Track if we've loaded initial possibilities for this conversation
@@ -92,6 +94,13 @@ const VirtualizedPossibilitiesPanel: React.FC<
       onPossibilitiesChange(getCompletedPossibilities)
     }
   }, [onPossibilitiesChange, getCompletedPossibilities])
+
+  // Provide clear function to parent
+  useEffect(() => {
+    if (onClearPossibilities) {
+      onClearPossibilities(clearPossibilities)
+    }
+  }, [onClearPossibilities, clearPossibilities])
 
   return (
     <>

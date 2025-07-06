@@ -19,6 +19,7 @@ interface MessageWithIndependentPossibilitiesProps {
   conversationMessages?: Message[]
   onPossibilitiesFinished?: () => void
   onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  onClearPossibilities?: (clearFn: () => void) => void
   disableLivePossibilities?: boolean
 }
 
@@ -33,6 +34,7 @@ const MessageWithIndependentPossibilities: React.FC<
   conversationMessages = [],
   onPossibilitiesFinished,
   onPossibilitiesChange,
+  onClearPossibilities,
   disableLivePossibilities = false,
 }) => {
   const isUser = message.role === 'user'
@@ -281,6 +283,7 @@ const MessageWithIndependentPossibilities: React.FC<
                   maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
                   onPossibilitiesFinished={onPossibilitiesFinished}
                   onPossibilitiesChange={onPossibilitiesChange}
+                  onClearPossibilities={onClearPossibilities}
                 />
               </div>
             )}

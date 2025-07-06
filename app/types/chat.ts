@@ -41,6 +41,7 @@ export interface ChatContainerProps {
   isPublishing?: boolean
   onPossibilitiesFinished?: () => void
   onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  onClearPossibilities?: (clearFn: () => void) => void
   disableLivePossibilities?: boolean
 }
 
