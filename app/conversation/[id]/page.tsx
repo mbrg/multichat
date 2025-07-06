@@ -324,6 +324,17 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         // Shared conversation mode - disable live possibilities
         isGenerating={false}
         disableLivePossibilities={true}
+        hasUnselectedPossibilities={(() => {
+          // Check if there are saved possibilities that haven't been selected
+          const lastMessage = messages[messages.length - 1]
+          return (
+            messages.length > 0 &&
+            lastMessage?.role === 'assistant' &&
+            lastMessage?.possibilities &&
+            lastMessage.possibilities.length > 0 &&
+            !lastMessage?.content
+          )
+        })()}
       />
     </div>
   )

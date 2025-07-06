@@ -28,6 +28,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onPossibilitiesChange,
   onClearPossibilities,
   disableLivePossibilities = false,
+  hasUnselectedPossibilities = false,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -120,6 +121,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         messages={messages}
         settingsLoading={settingsLoading}
         apiKeysLoading={apiKeysLoading}
+        hasUnselectedPossibilities={hasUnselectedPossibilities}
       />
 
       <ModalContainer

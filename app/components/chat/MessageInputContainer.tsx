@@ -17,6 +17,7 @@ export interface MessageInputContainerProps {
   messages: MessageType[]
   settingsLoading: boolean
   apiKeysLoading: boolean
+  hasUnselectedPossibilities?: boolean
 }
 
 export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
@@ -27,6 +28,7 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
   messages,
   settingsLoading,
   apiKeysLoading,
+  hasUnselectedPossibilities = false,
 }) => {
   /**
    * Determine the appropriate placeholder text based on current state
@@ -50,16 +52,16 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       return 'Sign in to start chatting...'
     }
 
-    // Check if we're in a possibilities selection state
+    // Check if we're in a possibilities selection state (saved or live)
     const lastMessage = messages[messages.length - 1]
-    const isInPossibilitiesState =
+    const hasSavedPossibilities =
       messages.length > 0 &&
       lastMessage?.role === 'assistant' &&
       lastMessage?.possibilities &&
       lastMessage.possibilities.length > 0 &&
       !lastMessage?.content
 
-    if (isInPossibilitiesState) {
+    if (hasSavedPossibilities || hasUnselectedPossibilities) {
       return 'Select a possibility to continue...'
     }
 

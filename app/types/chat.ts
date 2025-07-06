@@ -43,6 +43,7 @@ export interface ChatContainerProps {
   onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
   onClearPossibilities?: (clearFn: () => void) => void
   disableLivePossibilities?: boolean
+  hasUnselectedPossibilities?: boolean
 }
 
 export interface MessageProps {

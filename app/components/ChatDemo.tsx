@@ -107,6 +107,12 @@ const ChatDemo: React.FC = () => {
         return
       }
 
+      // Check if there are unselected possibilities that need attention first
+      if (hasActivePossibilities()) {
+        console.log('Please select a possibility before sending a new message')
+        return
+      }
+
       // Add user message immediately
       const userMessage: Message = {
         id: `user-${Date.now()}`,
@@ -279,7 +285,7 @@ const ChatDemo: React.FC = () => {
       onSelectPossibility={handleSelectPossibility}
       onContinuePossibility={handleContinuePossibility}
       isLoading={isGenerating}
-      disabled={!isSystemReady() || hasActivePossibilities()}
+      disabled={!isSystemReady()}
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
@@ -294,6 +300,7 @@ const ChatDemo: React.FC = () => {
       onClearPossibilities={(clearFn) =>
         setClearPossibilities(() => clearFn)
       }
+      hasUnselectedPossibilities={hasActivePossibilities()}
     />
   )
 }
