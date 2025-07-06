@@ -53,15 +53,17 @@ npm run vercel:deploy # Deploy to Vercel production
    - Clean separation between presentation and business logic
 
 3. **Repository Pattern**: KV store interface abstracts storage implementation
-   - Interface: `app/types/kv.ts`
-   - Implementations: `app/services/kv/vercel.ts` (production), `app/services/kv/memory.ts` (testing)
+   - Interface: `app/services/kv/IKVStore.ts`
+   - Implementations: `app/services/kv/CloudKVStore.ts` (production), `app/services/kv/LocalKVStore.ts` (testing)
 
-4. **Observer Pattern**: Viewport tracking and lazy loading with Intersection Observer
-   - Used in `app/hooks/useViewportObserver.ts` for efficient rendering
-   - Enables virtual scrolling with 300px preload margin
+4. **Circuit Breaker Pattern**: Fault tolerance for AI provider operations
+   - Implemented in `app/services/reliability/CircuitBreaker.ts`
+   - Automatic recovery and cascade failure prevention
+   - Integrated with `AbstractAIProvider` for all AI operations
 
 5. **Queue Pattern**: Priority-based loading queue with concurrent execution limits
    - Implemented in `app/hooks/useSimplePossibilities.ts`
+   - Connection pooling via `app/services/ConnectionPoolService.ts`
    - Manages up to 6 concurrent streaming connections
 
 ### Key Architectural Decisions
@@ -69,7 +71,7 @@ npm run vercel:deploy # Deploy to Vercel production
 1. **Security-First Approach**:
    - API keys encrypted client-side using Web Crypto API (AES-GCM)
    - No plaintext secrets in localStorage
-   - Cloud storage for encrypted keys via Vercel KV
+   - Cloud storage for encrypted keys via Upstash Redis (KV abstraction)
 
 2. **Multi-Model Support**:
    - Unified interface for OpenAI, Anthropic, Google, Mistral, Together AI
@@ -86,7 +88,7 @@ npm run vercel:deploy # Deploy to Vercel production
    - Server-Sent Events (SSE) for real-time token streaming
    - Individual API endpoints per possibility (`/api/possibility/[id]`)
    - Priority-based queue management (popular models + standard settings = high priority)
-   - Virtual scrolling reduces memory usage by 70%
+   - Virtual scrolling with react-window reduces memory usage by 70%
    - Connection pooling prevents resource overload
 
 5. **Testing Strategy**:
@@ -102,13 +104,18 @@ npm run vercel:deploy # Deploy to Vercel production
 - **Chat Interface**: `app/components/ChatContainer.tsx` and `app/components/ChatDemo.tsx`
 - **Streaming Possibilities**: `app/components/VirtualizedPossibilitiesPanel.tsx`
 - **Possibility Management**: `app/hooks/useSimplePossibilities.ts`
-- **Virtual Scrolling**: `app/hooks/useVirtualizedPossibilities.ts`
-- **Viewport Observer**: `app/hooks/useViewportObserver.ts`
+- **Connection Pooling**: `app/services/ConnectionPoolService.ts`
+- **Circuit Breaker**: `app/services/reliability/CircuitBreaker.ts`
 - **Possibility Metadata**: `app/services/ai/PossibilityMetadataService.ts`
 - **Individual Possibility API**: `app/api/possibility/[id]/route.ts`
 - **API Key Management**: `app/components/providers/`
 - **Type Definitions**: `app/types/`
 - **Constants**: `app/constants/`
+- **KV Storage Interface**: `app/services/kv/IKVStore.ts` 
+- **Event Bus**: `app/services/events/EventBus.ts`
+- **State Machine**: `app/services/state/PossibilityGenerationStateMachine.ts`
+- **Logging Service**: `app/services/LoggingService.ts`
+- **System Monitor**: `app/services/monitoring/SystemMonitor.ts`
 
 ### Recent Architecture Changes
 
@@ -132,4 +139,7 @@ The project underwent a comprehensive architectural audit and independent stream
 - Virtual scrolling components should use fixed item heights (180px) for predictable performance
 - Implement proper connection pooling for concurrent operations (max 6 connections)
 - Use priority-based queuing for user-facing features (popular models + standard settings = high priority)
+- Follow the Circuit Breaker pattern for external service calls to prevent cascade failures
+- Use the Event Bus for loose coupling between components (`app/services/events/EventBus.ts`)
+- Implement proper error handling with the error types in `app/types/errors.ts`
 - Run `npm run ci` before committing to ensure all checks pass
