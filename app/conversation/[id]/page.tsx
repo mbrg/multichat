@@ -267,14 +267,11 @@ export default function ConversationPage({ params }: ConversationPageProps) {
     )
   }, [messages])
 
-  // Auto-redirect on error with toast notification
+  // Redirect immediately on error and show toast
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => {
-        router.push('/')
-      }, 2000) // Redirect after 2 seconds
-
-      return () => clearTimeout(timer)
+      router.push('/')
+      // TODO: Add toast notification for "Conversation not found"
     }
   }, [error, router])
 
@@ -282,41 +279,7 @@ export default function ConversationPage({ params }: ConversationPageProps) {
     return <LoadingSkeleton />
   }
 
-  if (error) {
-    return (
-      <div className="h-[100dvh] flex items-center justify-center bg-[#0a0a0a]">
-        <div className="text-center">
-          <div className="text-lg font-semibold text-[#e0e0e0] mb-2">
-            {error}
-          </div>
-          <div className="text-sm text-[#999] mb-4">
-            Redirecting to home page...
-          </div>
-          <div className="flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!conversation) {
-    return (
-      <div className="h-[100dvh] flex items-center justify-center bg-[#0a0a0a]">
-        <div className="text-center">
-          <div className="text-lg font-semibold text-[#e0e0e0] mb-2">
-            Conversation not found
-          </div>
-          <div className="text-sm text-[#999] mb-4">
-            Redirecting to home page...
-          </div>
-          <div className="flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // Don't render error states - redirect handles it
 
   return (
     <div className="h-[100dvh] bg-[#0a0a0a]">
