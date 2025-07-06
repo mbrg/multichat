@@ -1,73 +1,211 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Playwright Configuration
+ * Comprehensive E2E Testing Configuration for chatsbox.ai
  * 
- * E2E testing configuration following Dave Farley's principles:
- * - Fast feedback with parallel execution
- * - Reliable tests with proper waits and retries
- * - Comprehensive coverage of critical user flows
+ * Following Dave Farley's principles:
+ * - Fast feedback with optimized parallel execution
+ * - Reliable tests with proper waits and smart retries
+ * - Comprehensive coverage of critical user journeys
+ * - Cross-platform testing with real user scenarios
+ * - Performance monitoring and memory leak detection
+ * - Clean test isolation with no side effects
  */
 export default defineConfig({
   testDir: './e2e',
-  /* Run tests in files in parallel */
+  
+  /* Test organization and execution */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  retries: process.env.CI ? 2 : 1,
+  workers: process.env.CI ? 4 : 6, // Optimized for connection pooling limit
+  
+  /* Test timeouts */
+  timeout: 60 * 1000, // 60 seconds per test
+  expect: {
+    timeout: 10 * 1000, // 10 seconds for assertions
+  },
+  
+  /* Global test setup */
+  globalSetup: require.resolve('./e2e/fixtures/helpers/global-setup.ts'),
+  globalTeardown: require.resolve('./e2e/fixtures/helpers/global-teardown.ts'),
+  
+  /* Reporting configuration */
+  reporter: [
+    ['html', { 
+      outputFolder: 'e2e-results/html-report',
+      open: 'never'
+    }],
+    ['json', { 
+      outputFile: 'e2e-results/test-results.json' 
+    }],
+    ['junit', { 
+      outputFile: 'e2e-results/junit.xml' 
+    }],
+    ['github'], // GitHub Actions integration
+    ['list', { printSteps: true }],
+  ],
+  
+  /* Base configuration for all tests */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     
-    /* Take screenshot on failure */
+    /* Browser and viewport settings */
+    viewport: { width: 1280, height: 720 },
+    ignoreHTTPSErrors: true,
+    
+    /* Performance and debugging */
+    trace: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
     screenshot: 'only-on-failure',
-    
-    /* Record video for failed tests */
     video: 'retain-on-failure',
+    
+    /* Test execution settings */
+    actionTimeout: 15 * 1000, // 15 seconds for actions
+    navigationTimeout: 30 * 1000, // 30 seconds for navigation
+    
+    /* Custom test attributes */
+    storageState: undefined, // Each test starts with clean storage
+    contextOptions: {
+      reducedMotion: 'reduce', // Faster test execution
+      forcedColors: 'none',
+    },
   },
 
-  /* Configure projects for major browsers */
+  /* Test projects - organized by test type and platform */
   projects: [
+    /* Smoke tests - run first for fast feedback */
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'smoke-chrome',
+      testMatch: '**/smoke/**/*.spec.ts',
+      use: { 
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+      },
+      fullyParallel: true,
     },
-
+    
+    /* Critical flow tests - desktop browsers */
     {
-      name: 'firefox',
+      name: 'flows-chrome',
+      testMatch: '**/flows/**/*.spec.ts',
+      testIgnore: '**/mobile.spec.ts',
+      use: { 
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+      },
+      dependencies: ['smoke-chrome'],
+    },
+    
+    {
+      name: 'flows-firefox',
+      testMatch: '**/flows/**/*.spec.ts',
+      testIgnore: '**/mobile.spec.ts',
       use: { ...devices['Desktop Firefox'] },
+      dependencies: ['smoke-chrome'],
     },
-
+    
     {
-      name: 'webkit',
+      name: 'flows-safari',
+      testMatch: '**/flows/**/*.spec.ts',
+      testIgnore: '**/mobile.spec.ts',
       use: { ...devices['Desktop Safari'] },
+      dependencies: ['smoke-chrome'],
     },
-
-    /* Test against mobile viewports. */
+    
+    /* Mobile-specific tests */
     {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      name: 'mobile-chrome',
+      testMatch: '**/flows/mobile.spec.ts',
+      use: { 
+        ...devices['Pixel 7'],
+        isMobile: true,
+        hasTouch: true,
+      },
+      dependencies: ['flows-chrome'],
     },
+    
     {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
+      name: 'mobile-safari',
+      testMatch: '**/flows/mobile.spec.ts',
+      use: { 
+        ...devices['iPhone 14'],
+        isMobile: true,
+        hasTouch: true,
+      },
+      dependencies: ['flows-chrome'],
+    },
+    
+    /* Tablet testing */
+    {
+      name: 'tablet-chrome',
+      testMatch: '**/flows/**/*.spec.ts',
+      testIgnore: '**/mobile.spec.ts',
+      use: { 
+        ...devices['iPad Pro'],
+        isMobile: true,
+        hasTouch: true,
+      },
+      dependencies: ['mobile-chrome'],
+    },
+    
+    /* Performance and load tests */
+    {
+      name: 'performance',
+      testMatch: '**/performance/**/*.spec.ts',
+      use: { 
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+      },
+      dependencies: ['flows-chrome'],
+      timeout: 5 * 60 * 1000, // 5 minutes for performance tests
+    },
+    
+    /* Cross-browser compatibility - extended viewports */
+    {
+      name: 'compatibility-large',
+      testMatch: '**/smoke/critical-path.spec.ts',
+      use: { 
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+      },
+      dependencies: ['flows-chrome'],
+    },
+    
+    {
+      name: 'compatibility-small',
+      testMatch: '**/smoke/critical-path.spec.ts',
+      use: { 
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1024, height: 768 },
+      },
+      dependencies: ['flows-chrome'],
     },
   ],
 
-  /* Run your local dev server before starting the tests */
+  /* Development server configuration */
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2 minutes timeout for server to start
+    timeout: 120 * 1000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    env: {
+      NODE_ENV: 'test',
+      E2E_TESTING: 'true',
+    },
+  },
+  
+  /* Test output configuration */
+  outputDir: 'e2e-results',
+  
+  /* Metadata for test reporting */
+  metadata: {
+    'Test Suite': 'chatsbox.ai E2E Tests',
+    'Test Framework': 'Playwright',
+    'Test Design': 'Dave Farley Principles',
+    'Coverage': 'Critical User Journeys',
+    'Platforms': 'Desktop + Mobile + Tablet',
+    'Browsers': 'Chrome, Firefox, Safari',
   },
 })

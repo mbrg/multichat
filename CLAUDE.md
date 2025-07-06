@@ -16,10 +16,19 @@ npm run vercel:dev   # Start Vercel development server with local environment
 
 ### Testing
 ```bash
-npm test             # Run all tests once
-npm run test:watch   # Run tests in watch mode
+npm test             # Run all unit tests once
+npm run test:watch   # Run unit tests in watch mode
 npm run test:ui      # Open Vitest UI for interactive testing
 npm test -- path/to/test.ts  # Run a specific test file
+
+# E2E Testing
+npm run test:e2e            # Run all E2E tests
+npm run test:e2e:smoke      # Run smoke tests only (fast feedback)
+npm run test:e2e:flows      # Run user flow tests
+npm run test:e2e:mobile     # Run mobile-specific tests
+npm run test:e2e:performance # Run performance tests
+npm run test:e2e:ui         # Interactive E2E test runner
+npm run test:e2e:debug      # Debug E2E tests
 ```
 
 ### Code Quality
@@ -143,6 +152,41 @@ The project underwent a comprehensive architectural audit and independent stream
 - Use the Event Bus for loose coupling between components (`app/services/events/EventBus.ts`)
 - Implement proper error handling with the error types in `app/types/errors.ts`
 - Run `npm run ci` before committing to ensure all checks pass
+
+## E2E Testing Architecture
+
+The project includes a comprehensive E2E testing suite built with Playwright following Dave Farley's principles:
+
+### Test Organization
+- **Smoke Tests** (`e2e/smoke/`): Critical path validation for fast feedback (< 5 min)
+- **Flow Tests** (`e2e/flows/`): Complete user journey testing across browsers
+- **Performance Tests** (`e2e/performance/`): Load testing and memory validation
+- **Page Objects** (`e2e/fixtures/page-objects/`): Maintainable, reusable test components
+- **Test Data** (`e2e/fixtures/test-data.ts`): Isolated, ephemeral test data factories
+
+### Key Testing Principles
+- **Test Independence**: Each test runs in complete isolation with automatic cleanup
+- **Real User Journeys**: Tests mirror actual user workflows, not technical implementations  
+- **Cross-Platform Coverage**: Desktop, mobile, and tablet testing across major browsers
+- **Performance Monitoring**: Memory usage, connection limits, and response time validation
+- **Clean Architecture**: Well-organized, maintainable test code with domain-specific assertions
+
+### Test Execution Strategy
+- **Every Commit**: Smoke tests (3-5 minutes)
+- **PR Creation**: Full flow tests (15-20 minutes)
+- **Nightly**: Cross-browser + performance (1 hour)
+- **Weekly**: Extended load testing (2 hours)
+
+### User Flows Covered
+1. **First-Time User Onboarding**: Homepage → API setup → First chat
+2. **Core Chat Experience**: Message sending, streaming, history management
+3. **Multi-Model Possibilities**: Concurrent AI responses with virtual scrolling
+4. **API Key Management**: Secure storage, encryption, multi-provider setup
+5. **Settings Configuration**: Temperature, tokens, system prompts, persistence
+6. **Error Recovery**: Network issues, rate limits, circuit breaker activation
+7. **Mobile Experience**: Touch interactions, responsive design, accessibility
+
+Run `npm run test:e2e:smoke` for fast validation or see `e2e/README.md` for comprehensive documentation.
 
 ## Task Completion Checklist
 

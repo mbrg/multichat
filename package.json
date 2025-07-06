@@ -20,9 +20,17 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:smoke": "playwright test --project=smoke-chrome",
+    "test:e2e:flows": "playwright test flows/",
+    "test:e2e:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:e2e:performance": "playwright test --project=performance",
+    "test:e2e:report": "playwright show-report e2e-results/html-report",
+    "test:e2e:install": "playwright install",
+    "test:e2e:clean": "rm -rf e2e-results test-results playwright-report",
     "typecheck": "tsc --noEmit",
     "ci": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
-    "ci:full": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run test:e2e && npm run build"
+    "ci:full": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run test:e2e && npm run build",
+    "ci:e2e": "npm run test:e2e:clean && npm run test:e2e"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
