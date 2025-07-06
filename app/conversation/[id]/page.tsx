@@ -165,6 +165,30 @@ export default function ConversationPage({ params }: ConversationPageProps) {
     [session, router]
   )
 
+  // Handle title click (go to home)
+  const handleTitleClick = useCallback(() => {
+    router.push('/')
+  }, [router])
+
+  // Handle publish conversation (only for creator)
+  const handlePublishConversation = useCallback(async () => {
+    if (!session?.user || !conversation) {
+      return
+    }
+
+    // Only allow creator to publish
+    if (conversation.creatorId !== session.user.id) {
+      return
+    }
+
+    // Re-publish the same conversation (already exists)
+    // Return the existing share data
+    return {
+      url: window.location.href,
+      id: conversation.id,
+    }
+  }, [session, conversation])
+
   if (isLoading) {
     return <LoadingSkeleton />
   }
@@ -217,6 +241,12 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         className="h-full"
         settingsLoading={false}
         apiKeysLoading={false}
+        onTitleClick={handleTitleClick}
+        onPublishConversation={
+          conversation?.creatorId === session?.user?.id
+            ? handlePublishConversation
+            : undefined
+        }
         // Shared conversation mode
       />
     </div>
