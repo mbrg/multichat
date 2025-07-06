@@ -4,6 +4,7 @@ import type { Message } from '../types/chat'
 import type { ChatMessage } from '../types/api'
 import AttachmentPreview from './AttachmentPreview'
 import VirtualizedPossibilitiesPanel from './VirtualizedPossibilitiesPanel'
+import MessageComponent from './Message'
 import { getProviderLogo, getProviderFromModel } from '../utils/providerLogos'
 import { useSettings } from '../hooks/useSettings'
 import { TOKEN_LIMITS } from '../services/ai/config'
@@ -197,11 +198,11 @@ const MessageWithIndependentPossibilities: React.FC<
               </div>
             )}
 
-            {/* Saved Possibilities - Show saved possibilities if they exist */}
+            {/* Saved Possibilities - Use modern Message component for consistent styling */}
             {!isUser && message.possibilities && message.possibilities.length > 0 && (
               <div className={message.content ? 'mt-3 space-y-2' : 'space-y-2'}>
                 {(() => {
-                  log.debug('Rendering saved possibilities', {
+                  log.debug('Rendering saved possibilities with modern styling', {
                     messageId: message.id,
                     savedPossibilitiesCount: message.possibilities.length,
                     possibilityIds: message.possibilities.map(p => p.id),
@@ -214,65 +215,27 @@ const MessageWithIndependentPossibilities: React.FC<
                     Other possibilities:
                   </div>
                 )}
-                <div className="max-h-96 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-[#3a3a4a] scrollbar-track-[#1a1a1a]">
-                  {message.possibilities.map((possibility) => (
-                    <div
-                      key={possibility.id}
-                      onClick={() => {
-                        if (possibility.content) {
-                          onSelectPossibility?.(message, possibility)
-                        }
-                      }}
-                      className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#1a1a2a] rounded-lg transition-all border border-[#2a2a2a] hover:border-[#667eea] -webkit-tap-highlight-color-transparent cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 text-sm text-[#e0e0e0] word-wrap break-word overflow-wrap break-word line-clamp-2">
-                          {possibility.content}
-                        </div>
-                        <div className="flex items-center gap-2 ml-3 text-xs text-[#888] min-w-0">
-                          <div className="flex items-center gap-1 shrink-0 w-[16px]">
-                            <Image
-                              src={getProviderLogo(
-                                possibility.model
-                                  ? getProviderFromModel(possibility.model)
-                                  : 'openai',
-                                'dark'
-                              )}
-                              alt="Provider"
-                              width={16}
-                              height={16}
-                              className="object-contain"
-                            />
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <span className="font-medium truncate">
-                              {getDisplayModelName(possibility.model || 'unknown')}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {possibility.temperature !== undefined && (
-                              <span className="bg-orange-900/30 text-orange-400 px-1 py-0.5 rounded text-xs">
-                                T:{possibility.temperature.toFixed(1)}
-                              </span>
-                            )}
-                            {possibility.systemInstruction && (
-                              <span
-                                className="bg-purple-900/30 text-purple-400 px-1 py-0.5 rounded text-xs"
-                                title={`System: ${possibility.systemInstruction}`}
-                              >
-                                {possibility.systemInstruction}
-                              </span>
-                            )}
-                            {possibility.probability !== undefined && possibility.probability !== null && (
-                              <span className="text-[#667eea] text-xs">
-                                P:{Math.round(possibility.probability * 100)}%
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
+                  {message.possibilities.map((possibility) => {
+                    const modelConfig = { alias: possibility.model } // Simple config for saved possibilities
+                    
+                    return (
+                      <MessageComponent
+                        key={possibility.id}
+                        message={{
+                          ...possibility,
+                          role: 'assistant' as const,
+                          timestamp: possibility.timestamp || new Date(),
+                          isPossibility: true,
+                        }}
+                        onSelectPossibility={(selectedPossibility) => {
+                          // Convert back to the expected format for the parent handler
+                          onSelectPossibility?.(message, selectedPossibility)
+                        }}
+                        className="max-w-[800px] w-full"
+                      />
+                    )
+                  })}
                 </div>
               </div>
             )}
