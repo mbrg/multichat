@@ -292,9 +292,15 @@ export default function ConversationPage({ params }: ConversationPageProps) {
           <div className="text-sm text-[#999] mb-4">
             Redirecting to home page...
           </div>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center mb-4">
             <div className="w-6 h-6 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin"></div>
           </div>
+          <button
+            onClick={() => router.push('/')}
+            className="px-4 py-2 bg-[#667eea] text-white rounded-lg hover:bg-[#5a6fd8] transition-colors"
+          >
+            Go to Home Now
+          </button>
         </div>
       </div>
     )
@@ -310,9 +316,15 @@ export default function ConversationPage({ params }: ConversationPageProps) {
           <div className="text-sm text-[#999] mb-4">
             Redirecting to home page...
           </div>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center mb-4">
             <div className="w-6 h-6 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin"></div>
           </div>
+          <button
+            onClick={() => router.push('/')}
+            className="px-4 py-2 bg-[#667eea] text-white rounded-lg hover:bg-[#5a6fd8] transition-colors"
+          >
+            Go to Home Now
+          </button>
         </div>
       </div>
     )
