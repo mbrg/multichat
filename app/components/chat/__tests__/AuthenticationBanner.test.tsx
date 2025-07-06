@@ -86,13 +86,14 @@ describe('AuthenticationBanner', () => {
 
   describe('when disabled and not loading', () => {
     describe('not authenticated', () => {
-      it('should show sign in message', () => {
+      it('should show sign in message after user interaction', () => {
         render(
           <AuthenticationBanner
             {...defaultProps}
             disabled={true}
             isLoading={false}
             isAuthenticated={false}
+            hasUserInteracted={true}
           />
         )
 
@@ -102,6 +103,25 @@ describe('AuthenticationBanner', () => {
         ).toBeInTheDocument()
       })
 
+      it('should not show sign in message before user interaction', () => {
+        render(
+          <AuthenticationBanner
+            {...defaultProps}
+            disabled={true}
+            isLoading={false}
+            isAuthenticated={false}
+            hasUserInteracted={false}
+          />
+        )
+
+        expect(screen.queryByText('⚠️')).not.toBeInTheDocument()
+        expect(
+          screen.queryByText(
+            'Sign in to save and manage your API keys securely.'
+          )
+        ).not.toBeInTheDocument()
+      })
+
       it('should have correct styling classes', () => {
         const { container } = render(
           <AuthenticationBanner
@@ -109,6 +129,7 @@ describe('AuthenticationBanner', () => {
             disabled={true}
             isLoading={false}
             isAuthenticated={false}
+            hasUserInteracted={true}
           />
         )
 
@@ -203,6 +224,7 @@ describe('AuthenticationBanner', () => {
           {...defaultProps}
           disabled={true}
           isAuthenticated={false}
+          hasUserInteracted={true}
         />
       )
 

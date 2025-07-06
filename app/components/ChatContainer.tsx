@@ -20,6 +20,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   className = '',
   settingsLoading = false,
   apiKeysLoading = false,
+  onPublishConversation,
+  onTitleClick,
+  isGenerating = false,
+  isPublishing = false,
+  onPossibilitiesFinished,
+  onPossibilitiesChange,
+  onClearPossibilities,
+  disableLivePossibilities = false,
+  hasUnselectedPossibilities = false,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -31,6 +40,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     | 'generation'
     | undefined
   >()
+
+  // Track user interaction for conditional auth warning
+  const [hasUserInteracted, setHasUserInteracted] = useState(false)
 
   // Auth state
   const { isPopupOpen, closePopup } = useAuthPopup()
@@ -55,9 +67,31 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setSettingsSection(undefined)
   }
 
+  // Default handlers for optional props
+  const handlePublishConversation = onPublishConversation
+  const handleTitleClick = onTitleClick || (() => {})
+
+  // Track user interaction
+  const handleUserInteraction = () => {
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true)
+    }
+  }
+
   return (
-    <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
-      <ChatHeader onOpenSettings={handleOpenSettings} />
+    <div
+      className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}
+      onClick={handleUserInteraction}
+    >
+      <ChatHeader
+        onOpenSettings={handleOpenSettings}
+        onPublishConversation={handlePublishConversation}
+        onTitleClick={handleTitleClick}
+        hasMessages={messages.length > 0}
+        isGenerating={isGenerating}
+        isPublishing={isPublishing}
+        isAuthenticated={isAuthenticated}
+      />
 
       <AuthenticationBanner
         disabled={disabled}
@@ -66,12 +100,17 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         messages={messages}
         settingsLoading={settingsLoading}
         apiKeysLoading={apiKeysLoading}
+        hasUserInteracted={hasUserInteracted}
       />
 
       <MessagesList
         messages={messages}
         onSelectPossibility={onSelectPossibility}
         onContinuePossibility={onContinuePossibility}
+        onPossibilitiesFinished={onPossibilitiesFinished}
+        onPossibilitiesChange={onPossibilitiesChange}
+        onClearPossibilities={onClearPossibilities}
+        disableLivePossibilities={disableLivePossibilities}
       />
 
       <MessageInputContainer
@@ -82,6 +121,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         messages={messages}
         settingsLoading={settingsLoading}
         apiKeysLoading={apiKeysLoading}
+        hasUnselectedPossibilities={hasUnselectedPossibilities}
       />
 
       <ModalContainer

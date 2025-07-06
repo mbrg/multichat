@@ -14,6 +14,9 @@ interface VirtualizedPossibilitiesPanelProps {
   onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
+  onPossibilitiesFinished?: () => void
+  onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  onClearPossibilities?: (clearFn: () => void) => void
 }
 
 const VirtualizedPossibilitiesPanel: React.FC<
@@ -25,11 +28,16 @@ const VirtualizedPossibilitiesPanel: React.FC<
   onSelectResponse,
   enableVirtualScrolling = true,
   maxTokens,
+  onPossibilitiesFinished,
+  onPossibilitiesChange,
+  onClearPossibilities,
 }) => {
-  const { possibilities, loadPossibility } = useSimplePossibilities(
-    messages,
-    settings
-  )
+  const {
+    possibilities,
+    loadPossibility,
+    getCompletedPossibilities,
+    clearPossibilities,
+  } = useSimplePossibilities(messages, settings)
 
   // Track if we've loaded initial possibilities for this conversation
   const loadedConversationRef = useRef<string>('')
@@ -68,6 +76,35 @@ const VirtualizedPossibilitiesPanel: React.FC<
       )
     }
   }, [isActive, conversationKey, settings, loadPossibility, messages.length])
+
+  // Track when all possibilities have finished loading
+  const finishedTrackingRef = useRef<string>('')
+  useEffect(() => {
+    if (
+      isActive &&
+      possibilities.length > 0 &&
+      possibilities.every((p) => p.isComplete) &&
+      finishedTrackingRef.current !== conversationKey &&
+      onPossibilitiesFinished
+    ) {
+      finishedTrackingRef.current = conversationKey
+      onPossibilitiesFinished()
+    }
+  }, [isActive, possibilities, conversationKey, onPossibilitiesFinished])
+
+  // Notify parent when possibilities change
+  useEffect(() => {
+    if (onPossibilitiesChange) {
+      onPossibilitiesChange(getCompletedPossibilities)
+    }
+  }, [onPossibilitiesChange, getCompletedPossibilities])
+
+  // Provide clear function to parent
+  useEffect(() => {
+    if (onClearPossibilities) {
+      onClearPossibilities(clearPossibilities)
+    }
+  }, [onClearPossibilities, clearPossibilities])
 
   return (
     <>

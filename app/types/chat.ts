@@ -35,6 +35,15 @@ export interface ChatContainerProps {
   className?: string
   settingsLoading?: boolean
   apiKeysLoading?: boolean
+  onPublishConversation?: () => Promise<{ url: string; id: string } | void>
+  onTitleClick?: () => void
+  isGenerating?: boolean
+  isPublishing?: boolean
+  onPossibilitiesFinished?: () => void
+  onPossibilitiesChange?: (getCompletedPossibilities: () => any[]) => void
+  onClearPossibilities?: (clearFn: () => void) => void
+  disableLivePossibilities?: boolean
+  hasUnselectedPossibilities?: boolean
 }
 
 export interface MessageProps {

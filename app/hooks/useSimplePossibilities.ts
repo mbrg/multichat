@@ -229,6 +229,37 @@ export function useSimplePossibilities(
     [messages, metadata, settings.possibilityTokens, settings.reasoningTokens]
   )
 
+  // Extract completed possibilities for publishing
+  const getCompletedPossibilities = useCallback(() => {
+    return possibilities
+      .filter((p) => p.isComplete && !p.error && p.content.trim())
+      .map((p) => ({
+        id: p.id,
+        provider: p.metadata.provider,
+        model: p.metadata.model,
+        content: p.content,
+        temperature: p.metadata.temperature,
+        systemInstruction: p.metadata.systemInstruction?.name,
+        probability: p.probability,
+        timestamp: new Date(),
+        metadata: {
+          permutationId: p.id,
+          hasLogprobs: false,
+        },
+      }))
+  }, [possibilities])
+
+  // Clear all possibilities (called when user selects one)
+  const clearPossibilities = useCallback(() => {
+    setPossibilities([])
+    loadingRef.current.clear()
+    // Cancel any active requests
+    abortControllersRef.current.forEach((controller) => {
+      controller.abort()
+    })
+    abortControllersRef.current.clear()
+  }, [])
+
   return {
     possibilities,
     availableMetadata: metadata.filter(
@@ -238,5 +269,7 @@ export function useSimplePossibilities(
     ),
     loadPossibility,
     isLoading,
+    getCompletedPossibilities,
+    clearPossibilities,
   }
 }
