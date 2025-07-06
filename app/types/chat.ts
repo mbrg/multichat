@@ -35,7 +35,7 @@ export interface ChatContainerProps {
   className?: string
   settingsLoading?: boolean
   apiKeysLoading?: boolean
-  onPublishConversation?: () => Promise<{ url: string } | void>
+  onPublishConversation?: () => Promise<{ url: string; id: string } | void>
   onTitleClick?: () => void
   isGenerating?: boolean
   isPublishing?: boolean

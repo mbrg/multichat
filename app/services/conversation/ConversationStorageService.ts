@@ -1,4 +1,4 @@
-import { put, head, list } from '@vercel/blob'
+import { put, head, list, del } from '@vercel/blob'
 import type {
   SharedConversation,
   ShareConversationRequest,
@@ -6,15 +6,25 @@ import type {
 } from '../../types/conversation'
 
 export class ConversationStorageService {
-  private readonly baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  private getBaseUrl(): string {
+    // In browser context, use the current origin
+    if (typeof window !== 'undefined') {
+      return window.location.origin
+    }
+
+    // In server context, use environment variable or headers
+    return process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_BASE_URL || ''
+  }
 
   /**
    * Save a conversation to Vercel Blob storage with collision-resistant UUID generation
    */
   async saveConversation(
     creatorId: string,
-    request: ShareConversationRequest
+    request: ShareConversationRequest,
+    baseUrl?: string
   ): Promise<ShareConversationResponse> {
     try {
       // Generate unique ID with collision checking
@@ -42,7 +52,7 @@ export class ConversationStorageService {
 
       return {
         id,
-        url: `${this.baseUrl}/conversation/${id}`,
+        url: `${baseUrl || this.getBaseUrl()}/conversation/${id}`,
       }
     } catch (error) {
       const errorMessage =
@@ -74,7 +84,7 @@ export class ConversationStorageService {
 
       // Get the first matching blob
       const blob = blobs[0]
-      
+
       // Fetch the content from the blob URL
       const response = await fetch(blob.url)
 
@@ -102,6 +112,36 @@ export class ConversationStorageService {
         conversationId: id,
       })
       throw new Error(`Failed to retrieve conversation: ${errorMessage}`)
+    }
+  }
+
+  /**
+   * Delete a conversation from Vercel Blob storage
+   */
+  async deleteConversation(id: string): Promise<void> {
+    try {
+      // List blobs to find the one we're looking for
+      const { blobs } = await list({
+        prefix: `conversations/${id}`,
+      })
+
+      if (blobs.length === 0) {
+        throw new Error(`Conversation not found: ${id}`)
+      }
+
+      // Delete the blob
+      const blob = blobs[0]
+      await del(blob.url)
+
+      console.log(`Conversation deleted successfully: ${id}`)
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to delete conversation:', {
+        error: errorMessage,
+        conversationId: id,
+      })
+      throw new Error(`Failed to delete conversation: ${errorMessage}`)
     }
   }
 

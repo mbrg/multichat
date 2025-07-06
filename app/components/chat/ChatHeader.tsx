@@ -18,7 +18,7 @@ export interface ChatHeaderProps {
       | 'models'
       | 'generation'
   ) => void
-  onPublishConversation: () => Promise<{ url: string } | void>
+  onPublishConversation: () => Promise<{ url: string; id: string } | void>
   onTitleClick: () => void
   hasMessages: boolean
   isGenerating: boolean

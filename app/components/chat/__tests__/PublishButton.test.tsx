@@ -98,12 +98,15 @@ describe('PublishButton', () => {
     expect(mockOnPublish).toHaveBeenCalledTimes(1)
   })
 
-  it('should show copied indicator after successful publish', async () => {
+  it('should show share menu after successful publish', async () => {
     const user = userEvent.setup()
 
-    // Mock successful publish that returns URL
+    // Mock successful publish that returns URL and ID
     mockOnPublish.mockImplementation(async () => {
-      return { url: 'http://localhost:3000/conversation/test-id' }
+      return {
+        url: 'http://localhost:3000/conversation/test-id',
+        id: 'test-id',
+      }
     })
 
     render(
@@ -120,16 +123,13 @@ describe('PublishButton', () => {
     await user.click(button)
 
     await waitFor(() => {
-      expect(screen.getByText('Copied!')).toBeInTheDocument()
+      expect(screen.getByText('Conversation Shared!')).toBeInTheDocument()
     })
 
-    // Should hide after animation
-    await waitFor(
-      () => {
-        expect(screen.queryByText('Copied!')).not.toBeInTheDocument()
-      },
-      { timeout: 3000 }
-    )
+    // Should show share menu options
+    expect(screen.getByText('Copy Share URL')).toBeInTheDocument()
+    expect(screen.getByText('Share')).toBeInTheDocument()
+    expect(screen.getByText('Undo Share')).toBeInTheDocument()
   })
 
   it('should have gradient styling matching send button', () => {

@@ -52,10 +52,16 @@ export async function POST(request: NextRequest) {
       metadata: metadata || {},
     }
 
+    // Get the host from the request headers
+    const host = request.headers.get('host')
+    const protocol = request.headers.get('x-forwarded-proto') || 'https'
+    const baseUrl = `${protocol}://${host}`
+
     const storageService = new ConversationStorageService()
     const result = await storageService.saveConversation(
       session.user.id,
-      conversationRequest
+      conversationRequest,
+      baseUrl
     )
 
     const context = await getServerLogContext()

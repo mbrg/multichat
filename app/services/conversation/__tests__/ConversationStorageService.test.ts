@@ -144,9 +144,11 @@ describe('ConversationStorageService', () => {
       }
 
       mockList.mockResolvedValue({
-        blobs: [{
-          url: 'https://example.blob.vercel-storage.com/conversations/test-id.json'
-        }]
+        blobs: [
+          {
+            url: 'https://example.blob.vercel-storage.com/conversations/test-id.json',
+          },
+        ],
       })
 
       global.fetch = vi.fn().mockResolvedValue({
@@ -158,7 +160,7 @@ describe('ConversationStorageService', () => {
 
       expect(result).toEqual(mockConversation)
       expect(mockList).toHaveBeenCalledWith({
-        prefix: 'conversations/test-id'
+        prefix: 'conversations/test-id',
       })
       expect(fetch).toHaveBeenCalledWith(
         'https://example.blob.vercel-storage.com/conversations/test-id.json'
@@ -167,14 +169,14 @@ describe('ConversationStorageService', () => {
 
     it('should return null when conversation not found', async () => {
       mockList.mockResolvedValue({
-        blobs: []
+        blobs: [],
       })
 
       const result = await service.getConversation('nonexistent-id')
 
       expect(result).toBeNull()
       expect(mockList).toHaveBeenCalledWith({
-        prefix: 'conversations/nonexistent-id'
+        prefix: 'conversations/nonexistent-id',
       })
     })
 

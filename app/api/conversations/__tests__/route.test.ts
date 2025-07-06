@@ -89,7 +89,8 @@ describe('POST /api/conversations', () => {
           }),
         ]),
         metadata: {},
-      })
+      }),
+      expect.any(String) // baseUrl parameter
     )
   })
 
