@@ -68,5 +68,11 @@
     "typescript-eslint": "^8.30.1",
     "vercel": "^44.2.1",
     "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "cookie": "^0.7.2",
+    "path-to-regexp": "^8.2.0",
+    "esbuild": "^0.25.5",
+    "undici": "^6.21.3"
   }
 }
