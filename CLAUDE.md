@@ -143,3 +143,20 @@ The project underwent a comprehensive architectural audit and independent stream
 - Use the Event Bus for loose coupling between components (`app/services/events/EventBus.ts`)
 - Implement proper error handling with the error types in `app/types/errors.ts`
 - Run `npm run ci` before committing to ensure all checks pass
+
+## Task Completion Checklist
+
+Before completing any task, ALWAYS execute these steps in order:
+
+1. **Format Code**: Execute `npm run format` to ensure consistent code formatting
+2. **Run Full CI Pipeline**: Execute `npm run ci` and ensure it passes completely
+   - Do NOT ignore warnings - fix root causes of all issues
+   - All lint, format, typecheck, test, and build steps must pass
+3. **Quality Gate**: Ask yourself "Would Dave Farley be proud of this work?"
+   - Is the code clean, testable, and maintainable?
+   - Are architectural patterns followed consistently?
+   - Is technical debt minimized?
+4. **Commit Guidelines**: If committing changes:
+   - Do NOT add Claude as co-author
+   - Use clear, descriptive commit messages
+   - Include `🤖 Generated with [Claude Code](https://claude.ai/code)` footer only
