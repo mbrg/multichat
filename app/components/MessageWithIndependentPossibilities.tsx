@@ -39,7 +39,7 @@ const MessageWithIndependentPossibilities: React.FC<
 }) => {
   const isUser = message.role === 'user'
   const { settings } = useSettings()
-  
+
   // Log message details for debugging possibilities
   log.debug('MessageWithIndependentPossibilities render', {
     messageId: message.id,
@@ -201,92 +201,103 @@ const MessageWithIndependentPossibilities: React.FC<
             )}
 
             {/* Saved Possibilities - Use modern Message component for consistent styling */}
-            {!isUser && message.possibilities && message.possibilities.length > 0 && (
-              <div className={message.content ? 'mt-3 space-y-2' : 'space-y-2'}>
-                {(() => {
-                  log.debug('Rendering saved possibilities with modern styling', {
-                    messageId: message.id,
-                    savedPossibilitiesCount: message.possibilities.length,
-                    possibilityIds: message.possibilities.map(p => p.id),
-                    messageHasContent: !!message.content,
-                  })
-                  return null
-                })()}
-                {message.content && (
-                  <div className="text-xs text-[#888] font-medium">
-                    Other possibilities:
-                  </div>
-                )}
-                <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
-                  {message.possibilities.map((possibility) => {
-                    const modelConfig = { alias: possibility.model } // Simple config for saved possibilities
-                    
-                    return (
-                      <MessageComponent
-                        key={possibility.id}
-                        message={{
-                          ...possibility,
-                          role: 'assistant' as const,
-                          timestamp: possibility.timestamp || new Date(),
-                          isPossibility: true,
-                        }}
-                        onSelectPossibility={(selectedPossibility) => {
-                          // Convert back to the expected format for the parent handler
-                          onSelectPossibility?.(message, selectedPossibility)
-                        }}
-                        className="max-w-[800px] w-full"
-                      />
+            {!isUser &&
+              message.possibilities &&
+              message.possibilities.length > 0 && (
+                <div
+                  className={message.content ? 'mt-3 space-y-2' : 'space-y-2'}
+                >
+                  {(() => {
+                    log.debug(
+                      'Rendering saved possibilities with modern styling',
+                      {
+                        messageId: message.id,
+                        savedPossibilitiesCount: message.possibilities.length,
+                        possibilityIds: message.possibilities.map((p) => p.id),
+                        messageHasContent: !!message.content,
+                      }
                     )
-                  })}
+                    return null
+                  })()}
+                  {message.content && (
+                    <div className="text-xs text-[#888] font-medium">
+                      Other possibilities:
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
+                    {message.possibilities.map((possibility) => {
+                      const modelConfig = { alias: possibility.model } // Simple config for saved possibilities
+
+                      return (
+                        <MessageComponent
+                          key={possibility.id}
+                          message={{
+                            ...possibility,
+                            role: 'assistant' as const,
+                            timestamp: possibility.timestamp || new Date(),
+                            isPossibility: true,
+                          }}
+                          onSelectPossibility={(selectedPossibility) => {
+                            // Convert back to the expected format for the parent handler
+                            onSelectPossibility?.(message, selectedPossibility)
+                          }}
+                          className="max-w-[800px] w-full"
+                        />
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Independent Streaming Possibilities Panel */}
-            {!isUser && showPossibilities && !message.content && settings && !message.possibilities?.length && (
-              <div className="mt-3">
-                {(() => {
-                  log.debug('Showing live possibilities panel', {
-                    messageId: message.id,
-                    showPossibilities,
-                    hasContent: !!message.content,
-                    disableLivePossibilities,
-                    isActive: !disableLivePossibilities,
-                  })
-                  return null
-                })()}
-                <VirtualizedPossibilitiesPanel
-                  messages={(() => {
-                    console.debug(
-                      '[MessageWithIndependentPossibilities] Original conversationMessages:',
-                      conversationMessages
-                    )
-                    // Filter out empty messages, especially trailing empty assistant messages
-                    const filteredMessages = conversationMessages.filter(
-                      (msg) => msg.content && msg.content.trim() !== ''
-                    )
-                    console.debug(
-                      '[MessageWithIndependentPossibilities] Filtered messages:',
-                      filteredMessages
-                    )
-                    const converted = convertToChatMessages(filteredMessages)
-                    console.debug(
-                      '[MessageWithIndependentPossibilities] Converted ChatMessages:',
-                      converted
-                    )
-                    return converted
+            {!isUser &&
+              showPossibilities &&
+              !message.content &&
+              settings &&
+              !message.possibilities?.length && (
+                <div className="mt-3">
+                  {(() => {
+                    log.debug('Showing live possibilities panel', {
+                      messageId: message.id,
+                      showPossibilities,
+                      hasContent: !!message.content,
+                      disableLivePossibilities,
+                      isActive: !disableLivePossibilities,
+                    })
+                    return null
                   })()}
-                  settings={settings}
-                  isActive={!disableLivePossibilities}
-                  onSelectResponse={handleSelectResponse}
-                  enableVirtualScrolling={true}
-                  maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
-                  onPossibilitiesFinished={onPossibilitiesFinished}
-                  onPossibilitiesChange={onPossibilitiesChange}
-                  onClearPossibilities={onClearPossibilities}
-                />
-              </div>
-            )}
+                  <VirtualizedPossibilitiesPanel
+                    messages={(() => {
+                      console.debug(
+                        '[MessageWithIndependentPossibilities] Original conversationMessages:',
+                        conversationMessages
+                      )
+                      // Filter out empty messages, especially trailing empty assistant messages
+                      const filteredMessages = conversationMessages.filter(
+                        (msg) => msg.content && msg.content.trim() !== ''
+                      )
+                      console.debug(
+                        '[MessageWithIndependentPossibilities] Filtered messages:',
+                        filteredMessages
+                      )
+                      const converted = convertToChatMessages(filteredMessages)
+                      console.debug(
+                        '[MessageWithIndependentPossibilities] Converted ChatMessages:',
+                        converted
+                      )
+                      return converted
+                    })()}
+                    settings={settings}
+                    isActive={!disableLivePossibilities}
+                    onSelectResponse={handleSelectResponse}
+                    enableVirtualScrolling={true}
+                    maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}
+                    onPossibilitiesFinished={onPossibilitiesFinished}
+                    onPossibilitiesChange={onPossibilitiesChange}
+                    onClearPossibilities={onClearPossibilities}
+                  />
+                </div>
+              )}
           </div>
         </div>
       </div>

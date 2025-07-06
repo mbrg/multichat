@@ -141,19 +141,21 @@ export default function ConversationPage({ params }: ConversationPageProps) {
             targetIndex,
             originalMessageId: messagesWithPossibilities[targetIndex].id,
             possibilityCount: possibilityMessages.length,
-            possibilityIds: possibilityMessages.map(p => p.id),
+            possibilityIds: possibilityMessages.map((p) => p.id),
           })
-          
+
           messagesWithPossibilities[targetIndex] = {
             ...messagesWithPossibilities[targetIndex],
             possibilities: possibilityMessages,
           }
-          
+
           log.debug('Successfully attached possibilities to message', {
             conversationId: conversationData.id,
             messageId: messagesWithPossibilities[targetIndex].id,
-            hasPossibilities: !!messagesWithPossibilities[targetIndex].possibilities,
-            possibilityCount: messagesWithPossibilities[targetIndex].possibilities?.length || 0,
+            hasPossibilities:
+              !!messagesWithPossibilities[targetIndex].possibilities,
+            possibilityCount:
+              messagesWithPossibilities[targetIndex].possibilities?.length || 0,
           })
         }
 

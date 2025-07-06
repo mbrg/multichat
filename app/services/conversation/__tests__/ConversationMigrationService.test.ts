@@ -109,14 +109,20 @@ describe('ConversationMigrationService', () => {
         metadata: {},
       }
 
-      expect(() => migrateConversation(unsupportedData)).toThrow(ConversationMigrationError)
-      
+      expect(() => migrateConversation(unsupportedData)).toThrow(
+        ConversationMigrationError
+      )
+
       try {
         migrateConversation(unsupportedData)
       } catch (error) {
         expect(error).toBeInstanceOf(ConversationMigrationError)
-        expect((error as ConversationMigrationError).conversationId).toBe('test-id')
-        expect((error as ConversationMigrationError).fromVersion).toBe('999.0.0')
+        expect((error as ConversationMigrationError).conversationId).toBe(
+          'test-id'
+        )
+        expect((error as ConversationMigrationError).fromVersion).toBe(
+          '999.0.0'
+        )
       }
     })
   })
@@ -167,14 +173,20 @@ describe('ConversationMigrationService', () => {
         // Missing other required fields
       } as any
 
-      expect(() => validateConversationSchema(incompleteConversation, true)).toThrow(ConversationSchemaError)
-      
+      expect(() =>
+        validateConversationSchema(incompleteConversation, true)
+      ).toThrow(ConversationSchemaError)
+
       try {
         validateConversationSchema(incompleteConversation, true)
       } catch (error) {
         expect(error).toBeInstanceOf(ConversationSchemaError)
-        expect((error as ConversationSchemaError).conversationId).toBe('test-id')
-        expect((error as ConversationSchemaError).invalidFields.length).toBeGreaterThan(0)
+        expect((error as ConversationSchemaError).conversationId).toBe(
+          'test-id'
+        )
+        expect(
+          (error as ConversationSchemaError).invalidFields.length
+        ).toBeGreaterThan(0)
       }
     })
   })

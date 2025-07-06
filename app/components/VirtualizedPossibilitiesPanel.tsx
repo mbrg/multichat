@@ -32,8 +32,12 @@ const VirtualizedPossibilitiesPanel: React.FC<
   onPossibilitiesChange,
   onClearPossibilities,
 }) => {
-  const { possibilities, loadPossibility, getCompletedPossibilities, clearPossibilities } =
-    useSimplePossibilities(messages, settings)
+  const {
+    possibilities,
+    loadPossibility,
+    getCompletedPossibilities,
+    clearPossibilities,
+  } = useSimplePossibilities(messages, settings)
 
   // Track if we've loaded initial possibilities for this conversation
   const loadedConversationRef = useRef<string>('')

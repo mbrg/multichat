@@ -1,6 +1,6 @@
 /**
  * Conversation Migration Service
- * 
+ *
  * Handles migration of conversation data between schema versions to maintain
  * backward compatibility with stored conversations.
  */
@@ -55,7 +55,9 @@ interface LegacySharedConversation {
 /**
  * Validates if a version is supported
  */
-export function isSupportedVersion(version: string): version is typeof CONVERSATION_SCHEMA.SUPPORTED_VERSIONS[number] {
+export function isSupportedVersion(
+  version: string
+): version is (typeof CONVERSATION_SCHEMA.SUPPORTED_VERSIONS)[number] {
   return CONVERSATION_SCHEMA.SUPPORTED_VERSIONS.includes(version as any)
 }
 
@@ -74,7 +76,7 @@ export function detectVersion(data: any): string {
   if (!data.version) {
     return 'legacy'
   }
-  
+
   return data.version
 }
 
@@ -98,7 +100,7 @@ function migrateLegacyToV1(data: LegacySharedConversation): SharedConversation {
  */
 export function migrateConversation(data: any): SharedConversation {
   const version = detectVersion(data)
-  
+
   log.debug('Processing conversation migration', {
     conversationId: data.id,
     detectedVersion: version,
@@ -138,13 +140,13 @@ export function migrateConversation(data: any): SharedConversation {
 
   // Future migration chains would go here
   let migratedData = data
-  
+
   // Example future migration: v1.0.0 → v1.1.0
   // if (version === '1.0.0' && getCurrentVersion() >= '1.1.0') {
   //   migratedData = migrateV1ToV1_1(migratedData)
   // }
-  
-  // Example future migration: v1.1.0 → v1.2.0  
+
+  // Example future migration: v1.1.0 → v1.2.0
   // if (migratedData.version === '1.1.0' && getCurrentVersion() >= '1.2.0') {
   //   migratedData = migrateV1_1ToV1_2(migratedData)
   // }
@@ -154,17 +156,28 @@ export function migrateConversation(data: any): SharedConversation {
     fromVersion: version,
     toVersion: migratedData.version || getCurrentVersion(),
   })
-  
+
   return migratedData as SharedConversation
 }
 
 /**
  * Validates conversation schema after migration
  */
-export function validateConversationSchema(data: SharedConversation, throwOnError = false): boolean {
-  const requiredFields = ['id', 'version', 'createdAt', 'creatorId', 'messages', 'possibilities', 'metadata']
+export function validateConversationSchema(
+  data: SharedConversation,
+  throwOnError = false
+): boolean {
+  const requiredFields = [
+    'id',
+    'version',
+    'createdAt',
+    'creatorId',
+    'messages',
+    'possibilities',
+    'metadata',
+  ]
   const missingFields: string[] = []
-  
+
   for (const field of requiredFields) {
     if (!(field in data)) {
       missingFields.push(field)
@@ -181,7 +194,7 @@ export function validateConversationSchema(data: SharedConversation, throwOnErro
       conversationId: data.id,
       missingFields,
     })
-    
+
     if (throwOnError) throw error
     return false
   }
@@ -197,7 +210,7 @@ export function validateConversationSchema(data: SharedConversation, throwOnErro
       version: data.version,
       supportedVersions: CONVERSATION_SCHEMA.SUPPORTED_VERSIONS,
     })
-    
+
     if (throwOnError) throw error
     return false
   }

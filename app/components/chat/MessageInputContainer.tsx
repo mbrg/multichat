@@ -43,7 +43,8 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
     !lastMessage?.content
 
   // Determine if input should be disabled due to unselected possibilities
-  const isDisabledByPossibilities = hasSavedPossibilities || hasUnselectedPossibilities
+  const isDisabledByPossibilities =
+    hasSavedPossibilities || hasUnselectedPossibilities
 
   const getPlaceholder = (): string => {
     if (isLoading) {
@@ -78,7 +79,13 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       <div className="max-w-[800px] mx-auto">
         <MessageInput
           onSendMessage={onSendMessage}
-          disabled={isLoading || disabled || settingsLoading || apiKeysLoading || isDisabledByPossibilities}
+          disabled={
+            isLoading ||
+            disabled ||
+            settingsLoading ||
+            apiKeysLoading ||
+            isDisabledByPossibilities
+          }
           placeholder={getPlaceholder()}
           className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"
         />

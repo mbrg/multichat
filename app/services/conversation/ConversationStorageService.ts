@@ -5,12 +5,12 @@ import type {
   ShareConversationResponse,
 } from '../../types/conversation'
 import { CONVERSATION_SCHEMA } from '../../constants/defaults'
-import { 
-  migrateConversation, 
+import {
+  migrateConversation,
   validateConversationSchema,
   getCurrentVersion,
   ConversationMigrationError,
-  ConversationSchemaError
+  ConversationSchemaError,
 } from './ConversationMigrationService'
 
 export class ConversationStorageService {
@@ -111,14 +111,14 @@ export class ConversationStorageService {
       }
 
       const rawData = await response.json()
-      
+
       try {
         // Migrate conversation to current schema version if needed
         const conversation = migrateConversation(rawData)
-        
+
         // Validate migrated conversation (throw on error)
         validateConversationSchema(conversation, true)
-        
+
         return conversation
       } catch (migrationError) {
         if (migrationError instanceof ConversationMigrationError) {
@@ -127,18 +127,22 @@ export class ConversationStorageService {
             fromVersion: migrationError.fromVersion,
             error: migrationError.message,
           })
-          throw new Error(`Conversation format is incompatible: ${migrationError.message}`)
+          throw new Error(
+            `Conversation format is incompatible: ${migrationError.message}`
+          )
         }
-        
+
         if (migrationError instanceof ConversationSchemaError) {
           console.error('Conversation schema validation failed:', {
             conversationId: id,
             invalidFields: migrationError.invalidFields,
             error: migrationError.message,
           })
-          throw new Error(`Conversation data is corrupted: ${migrationError.message}`)
+          throw new Error(
+            `Conversation data is corrupted: ${migrationError.message}`
+          )
         }
-        
+
         throw migrationError
       }
     } catch (error) {

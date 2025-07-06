@@ -55,19 +55,21 @@ const ChatDemo: React.FC = () => {
   const hasActivePossibilities = useCallback(() => {
     // If we're currently generating, definitely block input
     if (isGenerating) return true
-    
+
     // If there are completed possibilities that haven't been selected, block input
     if (getCompletedPossibilities) {
       const completedPossibilities = getCompletedPossibilities()
       if (completedPossibilities.length > 0) {
         // Check if there's an empty assistant message waiting for possibilities
         const hasEmptyAssistantMessage = messages.some(
-          msg => msg.role === 'assistant' && (!msg.content || msg.content.trim() === '')
+          (msg) =>
+            msg.role === 'assistant' &&
+            (!msg.content || msg.content.trim() === '')
         )
         return hasEmptyAssistantMessage
       }
     }
-    
+
     return false
   }, [isGenerating, getCompletedPossibilities, messages])
 
@@ -144,7 +146,13 @@ const ChatDemo: React.FC = () => {
         setIsGenerating(false)
       }
     },
-    [settings, settingsLoading, enabledProviders, hasApiKey]
+    [
+      settings,
+      settingsLoading,
+      enabledProviders,
+      hasApiKey,
+      hasActivePossibilities,
+    ]
   )
 
   const handleSelectPossibility = useCallback(
@@ -191,7 +199,7 @@ const ChatDemo: React.FC = () => {
 
         // Stop generating since user made a selection
         setIsGenerating(false)
-        
+
         // Clear other possibilities from tracking system
         if (clearPossibilities) {
           clearPossibilities()
@@ -297,9 +305,7 @@ const ChatDemo: React.FC = () => {
       onPossibilitiesChange={(getCompletedPossibilitiesFn) =>
         setGetCompletedPossibilities(() => getCompletedPossibilitiesFn)
       }
-      onClearPossibilities={(clearFn) =>
-        setClearPossibilities(() => clearFn)
-      }
+      onClearPossibilities={(clearFn) => setClearPossibilities(() => clearFn)}
       hasUnselectedPossibilities={hasActivePossibilities()}
     />
   )
