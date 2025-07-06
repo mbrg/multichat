@@ -1,13 +1,25 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
+import type { PossibilityResponse } from '../types/api'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
 const ChatDemo: React.FC = () => {
+  const router = useRouter()
+  const { data: session } = useSession()
   const [messages, setMessages] = useState<Message[]>([])
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [getCompletedPossibilities, setGetCompletedPossibilities] = useState<
+    (() => any[]) | null
+  >(null)
+  const [clearPossibilities, setClearPossibilities] = useState<
+    (() => void) | null
+  >(null)
   const {
     settings,
     loading: settingsLoading,
@@ -39,11 +51,27 @@ const ChatDemo: React.FC = () => {
     return missingKeys.length === 0
   }, [settingsLoading, settings, enabledProviders, hasApiKey])
 
-  // Check if there are active possibilities being generated
+  // Check if there are active possibilities being generated or completed ones waiting for selection
   const hasActivePossibilities = useCallback(() => {
-    // With the new system, check if we're currently generating
-    return isGenerating
-  }, [isGenerating])
+    // If we're currently generating, definitely block input
+    if (isGenerating) return true
+
+    // If there are completed possibilities that haven't been selected, block input
+    if (getCompletedPossibilities) {
+      const completedPossibilities = getCompletedPossibilities()
+      if (completedPossibilities.length > 0) {
+        // Check if there's an empty assistant message waiting for possibilities
+        const hasEmptyAssistantMessage = messages.some(
+          (msg) =>
+            msg.role === 'assistant' &&
+            (!msg.content || msg.content.trim() === '')
+        )
+        return hasEmptyAssistantMessage
+      }
+    }
+
+    return false
+  }, [isGenerating, getCompletedPossibilities, messages])
 
   // Update messages when using new streaming system
   useEffect(() => {
@@ -81,6 +109,12 @@ const ChatDemo: React.FC = () => {
         return
       }
 
+      // Check if there are unselected possibilities that need attention first
+      if (hasActivePossibilities()) {
+        console.log('Please select a possibility before sending a new message')
+        return
+      }
+
       // Add user message immediately
       const userMessage: Message = {
         id: `user-${Date.now()}`,
@@ -112,7 +146,13 @@ const ChatDemo: React.FC = () => {
         setIsGenerating(false)
       }
     },
-    [settings, settingsLoading, enabledProviders, hasApiKey]
+    [
+      settings,
+      settingsLoading,
+      enabledProviders,
+      hasApiKey,
+      hasActivePossibilities,
+    ]
   )
 
   const handleSelectPossibility = useCallback(
@@ -160,10 +200,15 @@ const ChatDemo: React.FC = () => {
         // Stop generating since user made a selection
         setIsGenerating(false)
 
+        // Clear other possibilities from tracking system
+        if (clearPossibilities) {
+          clearPossibilities()
+        }
+
         return newMessages
       })
     },
-    []
+    [clearPossibilities]
   )
 
   const handleContinuePossibility = useCallback(
@@ -187,6 +232,60 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  // Handle publishing conversation
+  const handlePublishConversation = useCallback(async () => {
+    if (!session?.user) {
+      console.error('Must be authenticated to publish conversation')
+      return
+    }
+
+    if (messages.length === 0) {
+      console.error('Cannot publish empty conversation')
+      return
+    }
+
+    try {
+      setIsPublishing(true)
+
+      // Extract possibilities from the current conversation
+      const possibilities: PossibilityResponse[] = getCompletedPossibilities
+        ? getCompletedPossibilities()
+        : []
+
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          possibilities,
+          metadata: {
+            title: 'Shared Conversation',
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to publish: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+
+      return result
+    } catch (error) {
+      console.error('Error publishing conversation:', error)
+      throw error
+    } finally {
+      setIsPublishing(false)
+    }
+  }, [session, messages, getCompletedPossibilities])
+
+  // Handle title click (go to home)
+  const handleTitleClick = useCallback(() => {
+    router.push('/')
+  }, [router])
+
   return (
     <ChatContainer
       messages={messages}
@@ -194,10 +293,20 @@ const ChatDemo: React.FC = () => {
       onSelectPossibility={handleSelectPossibility}
       onContinuePossibility={handleContinuePossibility}
       isLoading={isGenerating}
-      disabled={!isSystemReady() || hasActivePossibilities()}
+      disabled={!isSystemReady()}
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
+      onPublishConversation={handlePublishConversation}
+      onTitleClick={handleTitleClick}
+      isGenerating={isGenerating}
+      isPublishing={isPublishing}
+      onPossibilitiesFinished={() => setIsGenerating(false)}
+      onPossibilitiesChange={(getCompletedPossibilitiesFn) =>
+        setGetCompletedPossibilities(() => getCompletedPossibilitiesFn)
+      }
+      onClearPossibilities={(clearFn) => setClearPossibilities(() => clearFn)}
+      hasUnselectedPossibilities={hasActivePossibilities()}
     />
   )
 }

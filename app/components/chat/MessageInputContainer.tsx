@@ -17,6 +17,7 @@ export interface MessageInputContainerProps {
   messages: MessageType[]
   settingsLoading: boolean
   apiKeysLoading: boolean
+  hasUnselectedPossibilities?: boolean
 }
 
 export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
@@ -27,10 +28,24 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
   messages,
   settingsLoading,
   apiKeysLoading,
+  hasUnselectedPossibilities = false,
 }) => {
   /**
    * Determine the appropriate placeholder text based on current state
    */
+  // Check if we're in a possibilities selection state (saved or live)
+  const lastMessage = messages[messages.length - 1]
+  const hasSavedPossibilities =
+    messages.length > 0 &&
+    lastMessage?.role === 'assistant' &&
+    lastMessage?.possibilities &&
+    lastMessage.possibilities.length > 0 &&
+    !lastMessage?.content
+
+  // Determine if input should be disabled due to unselected possibilities
+  const isDisabledByPossibilities =
+    hasSavedPossibilities || hasUnselectedPossibilities
+
   const getPlaceholder = (): string => {
     if (isLoading) {
       return 'Generating response...'
@@ -39,6 +54,11 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
     // Don't show specific disabled reasons while authentication state is still loading
     if (settingsLoading || apiKeysLoading) {
       return 'Type message...'
+    }
+
+    // Check for possibilities first (higher priority than other disabled states)
+    if (isDisabledByPossibilities) {
+      return 'Select a possibility to continue...'
     }
 
     if (!disabled) {
@@ -50,19 +70,6 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       return 'Sign in to start chatting...'
     }
 
-    // Check if we're in a possibilities selection state
-    const lastMessage = messages[messages.length - 1]
-    const isInPossibilitiesState =
-      messages.length > 0 &&
-      lastMessage?.role === 'assistant' &&
-      lastMessage?.possibilities &&
-      lastMessage.possibilities.length > 0 &&
-      !lastMessage?.content
-
-    if (isInPossibilitiesState) {
-      return 'Select a possibility to continue...'
-    }
-
     // Default disabled state - no API keys configured
     return 'Configure API keys in settings...'
   }
@@ -72,7 +79,13 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       <div className="max-w-[800px] mx-auto">
         <MessageInput
           onSendMessage={onSendMessage}
-          disabled={isLoading || disabled || settingsLoading || apiKeysLoading}
+          disabled={
+            isLoading ||
+            disabled ||
+            settingsLoading ||
+            apiKeysLoading ||
+            isDisabledByPossibilities
+          }
           placeholder={getPlaceholder()}
           className="bg-[#0a0a0a] border-[#2a2a2a] text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea]"
         />

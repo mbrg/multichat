@@ -19,21 +19,37 @@ vi.mock('../../Menu', () => ({
   ),
 }))
 
-describe('ChatHeader', () => {
-  it('should render the title correctly', () => {
-    const mockOnOpenSettings = vi.fn()
+// Mock the PublishButton component
+vi.mock('../PublishButton', () => ({
+  default: ({ onPublish, disabled }: any) => (
+    <button
+      onClick={onPublish}
+      disabled={disabled}
+      data-testid="publish-button"
+    >
+      Publish
+    </button>
+  ),
+}))
 
-    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+describe('ChatHeader', () => {
+  const defaultProps = {
+    onOpenSettings: vi.fn(),
+    onPublishConversation: vi.fn(),
+    onTitleClick: vi.fn(),
+    hasMessages: false,
+    isGenerating: false,
+    isPublishing: false,
+  }
+
+  it('should render the title correctly', () => {
+    render(<ChatHeader {...defaultProps} />)
 
     expect(screen.getByText('chatsbox.ai')).toBeInTheDocument()
   })
 
   it('should have the correct styling classes', () => {
-    const mockOnOpenSettings = vi.fn()
-
-    const { container } = render(
-      <ChatHeader onOpenSettings={mockOnOpenSettings} />
-    )
+    const { container } = render(<ChatHeader {...defaultProps} />)
 
     const headerElement = container.firstChild as HTMLElement
     expect(headerElement).toHaveClass(
@@ -49,22 +65,50 @@ describe('ChatHeader', () => {
   })
 
   it('should pass onOpenSettings to Menu component', async () => {
-    const mockOnOpenSettings = vi.fn()
     const user = userEvent.setup()
 
-    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+    render(<ChatHeader {...defaultProps} />)
 
     const menuButton = screen.getByTestId('menu-button')
     await user.click(menuButton)
 
-    expect(mockOnOpenSettings).toHaveBeenCalledWith('api-keys')
+    expect(defaultProps.onOpenSettings).toHaveBeenCalledWith('api-keys')
   })
 
   it('should render the Menu component', () => {
-    const mockOnOpenSettings = vi.fn()
-
-    render(<ChatHeader onOpenSettings={mockOnOpenSettings} />)
+    render(<ChatHeader {...defaultProps} />)
 
     expect(screen.getByTestId('menu-button')).toBeInTheDocument()
+  })
+
+  it('should render the PublishButton component', () => {
+    render(<ChatHeader {...defaultProps} />)
+
+    expect(screen.getByTestId('publish-button')).toBeInTheDocument()
+  })
+
+  it('should make title clickable and call onTitleClick', async () => {
+    const user = userEvent.setup()
+
+    render(<ChatHeader {...defaultProps} />)
+
+    const titleButton = screen.getByRole('button', { name: /go to home page/i })
+    await user.click(titleButton)
+
+    expect(defaultProps.onTitleClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('should pass correct props to PublishButton', () => {
+    render(
+      <ChatHeader
+        {...defaultProps}
+        hasMessages={true}
+        isGenerating={true}
+        isPublishing={true}
+      />
+    )
+
+    const publishButton = screen.getByTestId('publish-button')
+    expect(publishButton).toBeInTheDocument()
   })
 })
