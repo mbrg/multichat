@@ -1,13 +1,19 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import ChatContainer from './ChatContainer'
 import type { Message, Attachment } from '../types/chat'
+import type { PossibilityResponse } from '../types/api'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
 
 const ChatDemo: React.FC = () => {
+  const router = useRouter()
+  const { data: session } = useSession()
   const [messages, setMessages] = useState<Message[]>([])
   const [currentAssistantMessage, setCurrentAssistantMessage] =
     useState<Message | null>(null)
+  const [isPublishing, setIsPublishing] = useState(false)
   const {
     settings,
     loading: settingsLoading,
@@ -187,6 +193,62 @@ const ChatDemo: React.FC = () => {
     [settings, settingsLoading, handleSelectPossibility]
   )
 
+  // Handle publishing conversation
+  const handlePublishConversation = useCallback(async () => {
+    if (!session?.user) {
+      console.error('Must be authenticated to publish conversation')
+      return
+    }
+
+    if (messages.length === 0) {
+      console.error('Cannot publish empty conversation')
+      return
+    }
+
+    try {
+      setIsPublishing(true)
+
+      // TODO: Extract possibilities from the current conversation
+      // For now, we'll just publish with an empty possibilities array
+      const possibilities: PossibilityResponse[] = []
+
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          possibilities,
+          metadata: {
+            title: 'Shared Conversation',
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to publish: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+
+      // Navigate to the shared conversation
+      router.push(`/conversation/${result.id}`)
+
+      return result
+    } catch (error) {
+      console.error('Error publishing conversation:', error)
+      throw error
+    } finally {
+      setIsPublishing(false)
+    }
+  }, [session, messages, router])
+
+  // Handle title click (go to home)
+  const handleTitleClick = useCallback(() => {
+    router.push('/')
+  }, [router])
+
   return (
     <ChatContainer
       messages={messages}
@@ -198,6 +260,10 @@ const ChatDemo: React.FC = () => {
       className="h-[100dvh]"
       settingsLoading={settingsLoading}
       apiKeysLoading={apiKeysLoading}
+      onPublishConversation={handlePublishConversation}
+      onTitleClick={handleTitleClick}
+      isGenerating={isGenerating}
+      isPublishing={isPublishing}
     />
   )
 }

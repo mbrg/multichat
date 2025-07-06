@@ -20,6 +20,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   className = '',
   settingsLoading = false,
   apiKeysLoading = false,
+  onPublishConversation,
+  onTitleClick,
+  isGenerating = false,
+  isPublishing = false,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -55,9 +59,21 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setSettingsSection(undefined)
   }
 
+  // Default handlers for optional props
+  const handlePublishConversation =
+    onPublishConversation || (() => Promise.resolve())
+  const handleTitleClick = onTitleClick || (() => {})
+
   return (
     <div className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}>
-      <ChatHeader onOpenSettings={handleOpenSettings} />
+      <ChatHeader
+        onOpenSettings={handleOpenSettings}
+        onPublishConversation={handlePublishConversation}
+        onTitleClick={handleTitleClick}
+        hasMessages={messages.length > 0}
+        isGenerating={isGenerating}
+        isPublishing={isPublishing}
+      />
 
       <AuthenticationBanner
         disabled={disabled}
