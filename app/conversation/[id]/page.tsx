@@ -254,6 +254,19 @@ export default function ConversationPage({ params }: ConversationPageProps) {
     }
   }, [session, conversation])
 
+  // Calculate if there are unselected possibilities
+  const hasUnselectedPossibilities = useMemo(() => {
+    // Check if there are saved possibilities that haven't been selected
+    const lastMessage = messages[messages.length - 1]
+    return (
+      messages.length > 0 &&
+      lastMessage?.role === 'assistant' &&
+      lastMessage?.possibilities &&
+      lastMessage.possibilities.length > 0 &&
+      !lastMessage?.content
+    )
+  }, [messages])
+
   // Auto-redirect on error with toast notification
   useEffect(() => {
     if (error) {
@@ -326,17 +339,7 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         // Shared conversation mode - disable live possibilities
         isGenerating={false}
         disableLivePossibilities={true}
-        hasUnselectedPossibilities={useMemo(() => {
-          // Check if there are saved possibilities that haven't been selected
-          const lastMessage = messages[messages.length - 1]
-          return (
-            messages.length > 0 &&
-            lastMessage?.role === 'assistant' &&
-            lastMessage?.possibilities &&
-            lastMessage.possibilities.length > 0 &&
-            !lastMessage?.content
-          )
-        }, [messages])}
+        hasUnselectedPossibilities={hasUnselectedPossibilities}
       />
     </div>
   )
