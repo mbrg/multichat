@@ -20,7 +20,8 @@
       "Bash(sed:*)",
       "Bash(npm ls:*)",
       "Bash(cat:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(npm run vercel:dev > dev-server-test.log 2>&1 &)"
     ],
     "deny": []
   },
