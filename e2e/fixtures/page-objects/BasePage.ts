@@ -12,6 +12,19 @@ export abstract class BasePage {
   async goto(path = '/'): Promise<void> {
     await this.page.goto(path);
     await CustomAssertions.assertPageLoaded(this.page);
+    // Wait for auth session to be loaded
+    await this.waitForAuthSession();
+  }
+
+  async waitForAuthSession(): Promise<void> {
+    // Wait for NextAuth session to be established (with our mock)
+    await this.page.waitForFunction(() => {
+      // Check if there's a session in the page context
+      return document.querySelector('[data-testid="message-input"]') !== null;
+    }, { timeout: 10000 });
+    
+    // Additional wait to ensure any auth popups have time to appear and be dismissed
+    await this.page.waitForTimeout(1000);
   }
 
   async waitForLoadComplete(): Promise<void> {

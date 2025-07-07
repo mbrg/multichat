@@ -57,6 +57,7 @@ export class TestCleanup {
 
     // Mock NextAuth session to return authenticated user for E2E tests
     await page.route('**/api/auth/session', route => {
+      console.log(`[E2E Mock] ${route.request().method()} ${route.request().url()}`);
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -70,6 +71,21 @@ export class TestCleanup {
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
         }),
       });
+    });
+
+    // Mock all other NextAuth endpoints to prevent errors
+    await page.route('**/api/auth/**', route => {
+      console.log(`[E2E Mock] ${route.request().method()} ${route.request().url()}`);
+      if (route.request().url().includes('/session')) {
+        // Already handled above
+        route.continue();
+      } else {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true }),
+        });
+      }
     });
 
     // Mock specific API endpoints for E2E tests

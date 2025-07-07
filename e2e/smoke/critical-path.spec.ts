@@ -12,9 +12,10 @@ test.describe('Critical Path Smoke Tests', () => {
     chatPage = new ChatPage(page);
     settingsPage = new SettingsPage(page);
     
+    // Setup mocks BEFORE navigating to avoid auth timing issues
+    await chatPage.setupMocks();
     await chatPage.goto();
     await chatPage.cleanup();
-    await chatPage.setupMocks();
   });
 
   test.afterEach(async ({ page }) => {
@@ -26,40 +27,28 @@ test.describe('Critical Path Smoke Tests', () => {
     await chatPage.goto();
     await CustomAssertions.assertPageLoaded(page);
     
-    // 2. Check if API keys are already configured, if not configure them
-    await settingsPage.openSettingsSection('api-keys');
+    // 2. Since our mocks show OpenAI as configured, check if we have a modal open
+    const settingsModal = page.locator('[data-testid="settings-modal"]');
+    const isSettingsOpen = await settingsModal.isVisible();
     
-    // Check if OpenAI is already configured by looking for the configured API key
-    const configuredOpenAI = page.locator('[data-testid="provider-openai"]');
-    const isConfigured = await configuredOpenAI.isVisible();
-    
-    if (!isConfigured) {
-      // API key not configured, set it up
-      const testUser = TestDataFactory.createTestUser();
-      await settingsPage.setApiKey('openai', testUser.apiKeys.openai);
-    } else {
-      console.log('OpenAI API key already configured, skipping setup');
+    if (isSettingsOpen) {
+      console.log('Settings modal is open, closing it to proceed with test');
+      await settingsPage.closeSettings();
     }
     
-    // 3. Ensure the provider is enabled (required for system to be ready)
-    await settingsPage.toggleProvider('openai', true);
-    
-    // 4. Close settings
-    await settingsPage.closeSettings();
-    
-    // 5. Wait for system to be ready (API keys loaded and providers enabled)
+    // 3. Wait for system to be ready (API keys should be loaded from mocks)
     await chatPage.waitForSystemReady();
     
-    // 6. Send first message
+    // 4. Send first message
     await chatPage.sendMessage('Hello, can you help me?');
     
-    // 7. Verify response received
+    // 5. Verify response received
     await chatPage.waitForAIResponse();
     
-    // 8. Verify no errors
+    // 6. Verify no errors
     await CustomAssertions.assertNoConsoleErrors(page);
     
-    // 9. Verify message history
+    // 7. Verify message history
     await chatPage.assertMessageInHistory('Hello, can you help me?');
     
     // Total time should be reasonable

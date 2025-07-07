@@ -93,9 +93,16 @@ export class SettingsPage extends BasePage {
   }
 
   async setApiKey(provider: string, apiKey: string): Promise<void> {
-    // Simply ensure we're in the API keys section - if settings aren't open, this will open them
-    // If they're already open, this is smart enough to handle it
-    await this.ensureApiKeysSection();
+    // Check if settings modal is already open
+    const isSettingsOpen = await this.settingsModal.isVisible();
+    if (!isSettingsOpen) {
+      // Settings not open, need to open them
+      await this.ensureApiKeysSection();
+    } else {
+      // Settings already open, just make sure we can see the Add Key button
+      const addKeyButton = this.page.locator('[data-testid="add-key-button"]');
+      await expect(addKeyButton).toBeVisible();
+    }
     
     // Click the "Add Key" button to open the form
     const addKeyButton = this.page.locator('[data-testid="add-key-button"]');
