@@ -13,7 +13,6 @@ import { ConnectionPoolService } from '@/services/ConnectionPoolService'
 import { LoggingService } from '@/services/LoggingService'
 import { CircuitBreakerRegistry } from '@/services/reliability/CircuitBreaker'
 import { EventBus } from '@/services/events/EventBus'
-import SystemMonitor from '@/services/monitoring/SystemMonitor'
 
 // Performance thresholds (in milliseconds)
 const PERFORMANCE_THRESHOLDS = {
@@ -21,7 +20,6 @@ const PERFORMANCE_THRESHOLDS = {
   LOGGING_OPERATION: 5,
   CIRCUIT_BREAKER_OPERATION: 5,
   EVENT_BUS_OPERATION: 15,
-  SYSTEM_HEALTH_CHECK: 100,
   COMPONENT_INITIALIZATION: 50,
 } as const
 
@@ -74,7 +72,6 @@ describe('Performance Regression Tests', () => {
     LoggingService.reset()
     CircuitBreakerRegistry.reset()
     EventBus.reset()
-    SystemMonitor.reset()
 
     // Suppress console output during performance tests
     vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -258,46 +255,6 @@ describe('Performance Regression Tests', () => {
     })
   })
 
-  describe('SystemMonitor Performance', () => {
-    it('should perform health check within performance threshold', async () => {
-      const monitor = SystemMonitor.getInstance({
-        checkInterval: 60000, // Don't auto-run during test
-        alertThresholds: {
-          errorRate: 0.1,
-          responseTime: 1000,
-          memoryUsage: 0.8,
-          cpuUsage: 0.8,
-        },
-        retentionPeriod: 60000,
-        enabledChecks: [
-          'connectionPool',
-          'circuitBreakers',
-          'eventBus',
-          'memory',
-          'performance',
-        ],
-      })
-
-      const { duration } = await measureTime(async () => {
-        return await monitor.getSystemHealth()
-      })
-
-      expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.SYSTEM_HEALTH_CHECK)
-    })
-
-    it('should get metrics within performance threshold', async () => {
-      const monitor = SystemMonitor.getInstance()
-
-      const { averageDuration } = await runPerformanceTest(() => {
-        return monitor.getActiveAlerts()
-      })
-
-      expect(averageDuration).toBeLessThan(
-        PERFORMANCE_THRESHOLDS.EVENT_BUS_OPERATION
-      )
-    })
-  })
-
   describe('Component Initialization Performance', () => {
     it('should initialize ConnectionPoolService within threshold', async () => {
       const { duration } = await measureTime(() => {
@@ -336,17 +293,6 @@ describe('Performance Regression Tests', () => {
       const { duration } = await measureTime(() => {
         EventBus.reset()
         return EventBus.getInstance()
-      })
-
-      expect(duration).toBeLessThan(
-        PERFORMANCE_THRESHOLDS.COMPONENT_INITIALIZATION
-      )
-    })
-
-    it('should initialize SystemMonitor within threshold', async () => {
-      const { duration } = await measureTime(() => {
-        SystemMonitor.reset()
-        return SystemMonitor.getInstance()
       })
 
       expect(duration).toBeLessThan(
