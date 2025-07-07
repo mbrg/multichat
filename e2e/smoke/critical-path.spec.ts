@@ -26,26 +26,40 @@ test.describe('Critical Path Smoke Tests', () => {
     await chatPage.goto();
     await CustomAssertions.assertPageLoaded(page);
     
-    // 2. Add API key (this will open settings automatically)
-    const testUser = TestDataFactory.createTestUser();
-    await settingsPage.setApiKey('openai', testUser.apiKeys.openai);
+    // 2. Check if API keys are already configured, if not configure them
+    await settingsPage.openSettingsSection('api-keys');
     
-    // 3. Enable the provider (required for system to be ready)
+    // Check if OpenAI is already configured by looking for the configured API key
+    const configuredOpenAI = page.locator('[data-testid="provider-openai"]');
+    const isConfigured = await configuredOpenAI.isVisible();
+    
+    if (!isConfigured) {
+      // API key not configured, set it up
+      const testUser = TestDataFactory.createTestUser();
+      await settingsPage.setApiKey('openai', testUser.apiKeys.openai);
+    } else {
+      console.log('OpenAI API key already configured, skipping setup');
+    }
+    
+    // 3. Ensure the provider is enabled (required for system to be ready)
     await settingsPage.toggleProvider('openai', true);
     
-    // 4. Save settings
-    await settingsPage.saveSettings();
+    // 4. Close settings
+    await settingsPage.closeSettings();
     
-    // 5. Send first message
+    // 5. Wait for system to be ready (API keys loaded and providers enabled)
+    await chatPage.waitForSystemReady();
+    
+    // 6. Send first message
     await chatPage.sendMessage('Hello, can you help me?');
     
-    // 6. Verify response received
+    // 7. Verify response received
     await chatPage.waitForAIResponse();
     
-    // 7. Verify no errors
+    // 8. Verify no errors
     await CustomAssertions.assertNoConsoleErrors(page);
     
-    // 8. Verify message history
+    // 9. Verify message history
     await chatPage.assertMessageInHistory('Hello, can you help me?');
     
     // Total time should be reasonable

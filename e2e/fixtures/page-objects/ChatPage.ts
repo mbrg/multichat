@@ -45,6 +45,18 @@ export class ChatPage extends BasePage {
     });
   }
 
+  async waitForSystemReady(): Promise<void> {
+    // Wait for the message input to be enabled (system ready)
+    await expect(this.messageInput).toBeEnabled({ timeout: 15000 });
+    
+    // Additional check: wait for placeholder to change from "Configure API keys..."
+    await expect(this.messageInput).not.toHaveAttribute('placeholder', 'Configure API keys in settings...');
+    
+    // Wait for the warning banner to disappear
+    const warningBanner = this.page.locator('text="Configure API keys in the settings menu"');
+    await expect(warningBanner).not.toBeVisible();
+  }
+
   async waitForStreamingComplete(): Promise<void> {
     await this.page.waitForFunction(() => {
       const streamingIndicators = document.querySelectorAll('[data-testid^="streaming-"]');
