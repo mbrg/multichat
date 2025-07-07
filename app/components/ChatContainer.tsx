@@ -80,6 +80,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div
+      data-testid="chat-container"
       className={`flex flex-col h-full bg-[#0a0a0a] ${className}`}
       onClick={handleUserInteraction}
     >

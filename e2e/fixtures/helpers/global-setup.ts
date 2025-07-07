@@ -1,5 +1,7 @@
 import { chromium, FullConfig } from '@playwright/test';
 import { TestDataFactory } from '../test-data';
+import fs from 'fs';
+import path from 'path';
 
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Starting E2E test suite setup...');
@@ -38,8 +40,6 @@ async function globalSetup(config: FullConfig) {
     process.env.E2E_TESTING = 'true';
     
     // Create test output directory
-    const fs = require('fs');
-    const path = require('path');
     
     const outputDir = path.join(process.cwd(), 'e2e-results');
     if (!fs.existsSync(outputDir)) {

@@ -1,5 +1,7 @@
 import { chromium, FullConfig } from '@playwright/test';
 import { TestDataFactory } from '../test-data';
+import fs from 'fs';
+import path from 'path';
 
 async function globalTeardown(config: FullConfig) {
   console.log('🧹 Starting E2E test suite teardown...');
@@ -66,8 +68,6 @@ async function globalTeardown(config: FullConfig) {
     });
     
     // Generate test summary report
-    const fs = require('fs');
-    const path = require('path');
     
     const outputDir = path.join(process.cwd(), 'e2e-results');
     const setupInfoPath = path.join(outputDir, 'setup-info.json');

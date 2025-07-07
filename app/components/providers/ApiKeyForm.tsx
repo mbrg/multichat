@@ -31,6 +31,7 @@ export const ApiKeyForm: React.FC<ApiKeyFormProps> = ({
   const [apiKeyValue, setApiKeyValue] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showApiKey, setShowApiKey] = useState(false)
 
   const handleSubmit = async () => {
     setError('')
@@ -94,12 +95,23 @@ export const ApiKeyForm: React.FC<ApiKeyFormProps> = ({
       {/* API Key Input */}
       {selectedProvider && (
         <div>
-          <label className="block text-xs text-[#aaa] mb-2">API Key</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-[#aaa]">API Key</label>
+            <button
+              type="button"
+              onClick={() => setShowApiKey(!showApiKey)}
+              data-testid="show-api-key"
+              className="text-xs text-[#667eea] hover:text-[#5a6fd8] transition-colors"
+            >
+              {showApiKey ? 'Hide' : 'Show'}
+            </button>
+          </div>
           <input
-            type="password"
+            type={showApiKey ? 'text' : 'password'}
             value={apiKeyValue}
             onChange={(e) => setApiKeyValue(e.target.value)}
             placeholder="Enter your API key..."
+            data-testid="api-key-input"
             className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-md text-[#e0e0e0] text-base focus:outline-none focus:border-[#667eea] placeholder-[#666]"
           />
         </div>

@@ -55,7 +55,10 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
     }
   }
   return (
-    <div className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
+    <div
+      data-testid={`provider-${provider.id}`}
+      className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg"
+    >
       <div className="flex items-center gap-3">
         <Image
           src={provider.icon}

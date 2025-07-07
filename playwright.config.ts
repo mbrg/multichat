@@ -27,8 +27,8 @@ export default defineConfig({
   },
   
   /* Global test setup */
-  globalSetup: require.resolve('./e2e/fixtures/helpers/global-setup.ts'),
-  globalTeardown: require.resolve('./e2e/fixtures/helpers/global-teardown.ts'),
+  globalSetup: './e2e/fixtures/helpers/global-setup.ts',
+  globalTeardown: './e2e/fixtures/helpers/global-teardown.ts',
   
   /* Reporting configuration */
   reporter: [
@@ -197,7 +197,7 @@ export default defineConfig({
   },
   
   /* Test output configuration */
-  outputDir: 'e2e-results',
+  outputDir: 'test-results',
   
   /* Metadata for test reporting */
   metadata: {

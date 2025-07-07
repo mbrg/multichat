@@ -3,10 +3,10 @@ import { BasePage } from './BasePage';
 import { CustomAssertions } from '../helpers/assertions';
 
 export class SettingsPage extends BasePage {
+  readonly menuButton: Locator;
   readonly settingsButton: Locator;
   readonly settingsModal: Locator;
   readonly closeButton: Locator;
-  readonly saveButton: Locator;
   
   // AI Provider sections
   readonly openAISection: Locator;
@@ -23,10 +23,10 @@ export class SettingsPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
+    this.menuButton = page.locator('[data-testid="menu-button"]');
     this.settingsButton = page.locator('[data-testid="settings-button"]');
     this.settingsModal = page.locator('[data-testid="settings-modal"]');
     this.closeButton = page.locator('[data-testid="close-settings"]');
-    this.saveButton = page.locator('[data-testid="save-settings"]');
     
     // Provider sections
     this.openAISection = page.locator('[data-testid="provider-openai"]');
@@ -42,9 +42,21 @@ export class SettingsPage extends BasePage {
     this.systemPromptTextarea = page.locator('[data-testid="system-prompt"]');
   }
 
-  async openSettings(): Promise<void> {
-    await this.settingsButton.click();
+  async openMenu(): Promise<void> {
+    await this.menuButton.click();
+    // Wait for menu dropdown to be visible
+    await expect(this.page.locator('[data-testid="menu-item-api-keys"]')).toBeVisible();
+  }
+
+  async openSettingsSection(section: string = 'api-keys'): Promise<void> {
+    await this.openMenu();
+    await this.page.locator(`[data-testid="menu-item-${section}"]`).click();
     await expect(this.settingsModal).toBeVisible();
+  }
+
+  async openSettings(): Promise<void> {
+    // Default to opening API Keys section for backward compatibility
+    await this.openSettingsSection('api-keys');
   }
 
   async closeSettings(): Promise<void> {
@@ -53,15 +65,8 @@ export class SettingsPage extends BasePage {
   }
 
   async saveSettings(): Promise<void> {
-    await this.saveButton.click();
-    
-    // Wait for save confirmation
-    const notification = this.page.locator('[data-testid="save-notification"]');
-    await expect(notification).toBeVisible();
-    await expect(notification).toHaveText('Settings saved');
-    
-    // Modal should close after save
-    await expect(this.settingsModal).not.toBeVisible();
+    // Settings auto-save in this app, so we just close the modal
+    await this.closeSettings();
   }
 
   async setApiKey(provider: string, apiKey: string): Promise<void> {
