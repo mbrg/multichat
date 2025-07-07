@@ -26,12 +26,11 @@ test.describe('Critical Path Smoke Tests', () => {
     await chatPage.goto();
     await CustomAssertions.assertPageLoaded(page);
     
-    // 2. Open settings
-    await settingsPage.openSettings();
-    
-    // 3. Add API key
+    // 2. Add API key (this will open settings automatically)
     const testUser = TestDataFactory.createTestUser();
     await settingsPage.setApiKey('openai', testUser.apiKeys.openai);
+    
+    // 3. Enable the provider (required for system to be ready)
     await settingsPage.toggleProvider('openai', true);
     
     // 4. Save settings

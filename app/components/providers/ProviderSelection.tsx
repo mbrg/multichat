@@ -42,6 +42,7 @@ export const ProviderSelection: React.FC<ProviderSelectionProps> = ({
               type="button"
               onClick={() => !isDisabled && onProviderSelect(provider.id)}
               disabled={isDisabled}
+              data-testid={`provider-select-${provider.id}`}
               title={
                 isDisabled
                   ? `${provider.name.replace(' API Key', '')} is already configured. Remove the existing key first.`

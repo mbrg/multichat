@@ -214,10 +214,10 @@ describe('Settings Component', () => {
     })
 
     await act(async () => {
-      // Find the toggle switches for configured providers
+      // Find the toggle switches for configured providers (now checkboxes)
       const toggles = screen
-        .getAllByRole('button')
-        .filter((button) => button.className.includes('w-10 h-5'))
+        .getAllByRole('checkbox')
+        .filter((checkbox) => checkbox.className.includes('w-10 h-5'))
 
       fireEvent.click(toggles[0]) // Click first toggle (OpenAI)
     })

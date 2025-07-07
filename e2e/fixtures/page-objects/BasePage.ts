@@ -46,7 +46,26 @@ export abstract class BasePage {
   }
 
   async cleanup(): Promise<void> {
+    await this.closeAnyOpenModals();
     await TestCleanup.cleanAllTestData(this.page);
+  }
+
+  async closeAnyOpenModals(): Promise<void> {
+    // Close settings modal if open
+    const settingsModal = this.page.locator('[data-testid="settings-modal"]');
+    if (await settingsModal.isVisible()) {
+      const closeButton = this.page.locator('[data-testid="close-settings"]');
+      if (await closeButton.isVisible()) {
+        await closeButton.click();
+        await settingsModal.waitFor({ state: 'hidden' });
+      }
+    }
+
+    // Press Escape to close any other modals
+    await this.page.keyboard.press('Escape');
+    
+    // Wait a moment for any modal animations to complete
+    await this.page.waitForTimeout(100);
   }
 
   async setupMocks(): Promise<void> {

@@ -40,6 +40,97 @@ export class TestCleanup {
   }
 
   static async interceptAndMockAPIs(page: Page): Promise<void> {
+    // Mock NextAuth session to return authenticated user for E2E tests
+    await page.route('**/api/auth/session', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: {
+            id: 'e2e-test-user',
+            name: 'E2E Test User',
+            email: 'e2e@test.com',
+            image: null,
+          },
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        }),
+      });
+    });
+
+    // Mock specific API endpoints for E2E tests
+    await page.route('**/api/apikeys/validate', route => {
+      console.log(`[E2E Mock] ${route.request().method()} ${route.request().url()}`);
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ 
+          isValid: true,
+          provider: 'openai',
+          message: 'API key is valid'
+        }),
+      });
+    });
+
+    // Track API keys state across test
+    let apiKeysState: Record<string, string> = {};
+
+    await page.route('**/api/apikeys', route => {
+      const method = route.request().method();
+      console.log(`[E2E Mock] ${method} ${route.request().url()}`);
+      
+      if (method === 'GET') {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(apiKeysState),
+        });
+      } else if (method === 'POST') {
+        // Simulate saving the API key
+        const body = route.request().postDataJSON();
+        if (body?.provider) {
+          apiKeysState[body.provider] = '***'; // Mark as configured
+        }
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true }),
+        });
+      } else if (method === 'DELETE') {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true }),
+        });
+      } else {
+        route.continue();
+      }
+    });
+
+    await page.route('**/api/settings', route => {
+      const method = route.request().method();
+      console.log(`[E2E Mock] ${method} ${route.request().url()}`);
+      
+      if (method === 'GET') {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            systemInstructions: [],
+            temperatures: [],
+            maxTokens: 1000,
+          }),
+        });
+      } else if (method === 'POST') {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true }),
+        });
+      } else {
+        route.continue();
+      }
+    });
+
     // Mock external API calls to prevent real API usage
     await page.route('**/api.openai.com/**', route => {
       route.fulfill({

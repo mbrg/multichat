@@ -94,6 +94,7 @@ const GenerationSettingsPanel: React.FC = () => {
             pattern="[0-9]*"
             className={inputClass}
             value={values.possibilityTokens}
+            data-testid="max-tokens-input"
             onChange={(e) =>
               handleChange('possibilityTokens', parseInt(e.target.value))
             }

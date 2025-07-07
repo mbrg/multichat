@@ -37,6 +37,7 @@ const FormTextarea: React.FC<FormTextareaProps> = ({
         disabled={disabled}
         rows={rows}
         maxLength={maxLength}
+        data-testid={id === 'instruction-content' ? 'system-prompt' : undefined}
         className={`w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-md text-[#e0e0e0] placeholder-[#666] focus:border-[#667eea] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-colors ${className}`}
       />
 
