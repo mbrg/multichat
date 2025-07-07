@@ -4,7 +4,7 @@
  * Provides structured logging that works with Vercel's serverless environment:
  * - Direct console output for Vercel log aggregation
  * - Integration with VercelMonitoring for metrics
- * - No state, no in-memory storage, no singletons
+ * - No persistent state between requests
  * - Security-first approach (no sensitive data logging)
  */
 
