@@ -367,11 +367,13 @@ describe('MessageInputContainer', () => {
       expect(outerContainer).toHaveClass(
         'border-t',
         'border-[#2a2a2a]',
-        'bg-[#1a1a1a]',
-        'p-4'
+        'bg-[#1a1a1a]'
       )
 
-      const innerContainer = outerContainer.firstChild as HTMLElement
+      const inputSection = outerContainer.firstChild as HTMLElement
+      expect(inputSection).toHaveClass('p-4')
+
+      const innerContainer = inputSection.firstChild as HTMLElement
       expect(innerContainer).toHaveClass('max-w-[800px]', 'mx-auto')
     })
 
