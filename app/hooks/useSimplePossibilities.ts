@@ -23,10 +23,11 @@ interface PossibilityState {
 
 export function useSimplePossibilities(
   messages: ChatMessage[],
-  settings: UserSettings
+  settings: UserSettings | null
 ) {
   // Generate metadata once - never changes during a session
   const metadata = useMemo(() => {
+    if (!settings) return []
     const service = new PossibilityMetadataService()
     return service.generatePrioritizedMetadata(settings)
   }, [settings])
@@ -73,6 +74,8 @@ export function useSimplePossibilities(
 
   const loadPossibility = useCallback(
     async (possibilityId: string) => {
+      // Don't load if settings are not available
+      if (!settings) return
       const meta = metadata.find(
         (m: PossibilityMetadata) => m.id === possibilityId
       )
@@ -226,7 +229,7 @@ export function useSimplePossibilities(
         connectionQueue.push(executeRequest)
       }
     },
-    [messages, metadata, settings.possibilityTokens, settings.reasoningTokens]
+    [messages, metadata, settings]
   )
 
   // Extract completed possibilities for publishing

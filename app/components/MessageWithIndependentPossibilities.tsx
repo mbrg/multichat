@@ -217,17 +217,15 @@ const MessageWithIndependentPossibilities: React.FC<
                     )
                     return null
                   })()}
-                  {settings && (
-                    <VirtualizedPossibilitiesPanel
-                      messages={[]}
-                      settings={settings}
-                      isActive={false}
-                      showBackground={true}
-                      savedPossibilities={message.possibilities}
-                      onSelectResponse={handleSelectResponse}
-                      enableVirtualScrolling={false}
-                    />
-                  )}
+                  <VirtualizedPossibilitiesPanel
+                    messages={[]}
+                    settings={settings}
+                    isActive={false}
+                    showBackground={true}
+                    savedPossibilities={message.possibilities}
+                    onSelectResponse={handleSelectResponse}
+                    enableVirtualScrolling={false}
+                  />
                 </div>
               )}
 

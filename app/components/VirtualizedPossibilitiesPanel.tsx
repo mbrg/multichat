@@ -9,7 +9,7 @@ import type { Message as ChatMessageType } from '../types/chat'
 
 interface VirtualizedPossibilitiesPanelProps {
   messages: ChatMessage[]
-  settings: UserSettings
+  settings: UserSettings | null // Allow null when only displaying saved possibilities
   isActive?: boolean
   showBackground?: boolean
   savedPossibilities?: any[] // Pre-loaded possibilities for conversation display
@@ -56,6 +56,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
   useEffect(() => {
     if (
       isActive &&
+      settings &&
       messages.length > 0 &&
       loadedConversationRef.current !== conversationKey
     ) {

@@ -205,10 +205,47 @@ export default function ConversationPage({ params }: ConversationPageProps) {
         return
       }
 
-      // For shared conversations, we can allow viewing possibilities but not continuing
-      console.log('Possibility selection in shared conversation:', {
-        userMessage: userMessage.id,
-        selectedPossibility: selectedPossibility.id,
+      // Allow authenticated users to select possibilities
+      setMessages((prevMessages) => {
+        // Find the assistant message that has empty content (placeholder for possibilities)
+        const assistantMessageIndex = prevMessages.findIndex(
+          (msg) =>
+            msg.role === 'assistant' &&
+            (!msg.content || msg.content === '') &&
+            !msg.isPossibility
+        )
+
+        if (assistantMessageIndex === -1) {
+          console.error(
+            'Could not find assistant message to replace with selected possibility'
+          )
+          return prevMessages
+        }
+
+        // Create new messages array
+        const newMessages = [...prevMessages]
+
+        // Replace the empty assistant message with the selected possibility content
+        const fixedAssistantMessage: Message = {
+          id: newMessages[assistantMessageIndex].id, // Keep original ID
+          role: 'assistant',
+          content: selectedPossibility.content,
+          model:
+            typeof selectedPossibility.model === 'string'
+              ? selectedPossibility.model
+              : (selectedPossibility.model as any)?.id ||
+                (selectedPossibility.model as any)?.name,
+          temperature: selectedPossibility.temperature,
+          probability: selectedPossibility.probability,
+          timestamp: newMessages[assistantMessageIndex].timestamp, // Keep original timestamp
+          systemInstruction: selectedPossibility.systemInstruction,
+          possibilities: undefined, // Remove possibilities after selection
+          isPossibility: false,
+        }
+
+        newMessages[assistantMessageIndex] = fixedAssistantMessage
+
+        return newMessages
       })
     },
     [session]
