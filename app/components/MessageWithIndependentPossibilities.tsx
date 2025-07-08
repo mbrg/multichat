@@ -289,6 +289,7 @@ const MessageWithIndependentPossibilities: React.FC<
                     })()}
                     settings={settings}
                     isActive={!disableLivePossibilities}
+                    showBackground={true}
                     onSelectResponse={handleSelectResponse}
                     enableVirtualScrolling={true}
                     maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}

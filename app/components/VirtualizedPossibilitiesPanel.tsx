@@ -11,6 +11,7 @@ interface VirtualizedPossibilitiesPanelProps {
   messages: ChatMessage[]
   settings: UserSettings
   isActive?: boolean
+  showBackground?: boolean
   onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
@@ -25,6 +26,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
   messages,
   settings,
   isActive = false,
+  showBackground = false,
   onSelectResponse,
   enableVirtualScrolling = true,
   maxTokens,
@@ -139,41 +141,50 @@ const VirtualizedPossibilitiesPanel: React.FC<
         className={`
           bg-[#0f0f0f] border-t border-[#2a2a2a] 
           flex flex-col transition-all duration-300 ease-out overflow-hidden
-          ${isActive ? 'max-h-[45vh]' : 'max-h-0'}
+          ${isActive ? 'max-h-[45vh]' : showBackground ? 'max-h-[45vh]' : 'max-h-0'}
         `}
       >
         {/* Scrollable area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#2a2a2a] scrollbar-track-transparent">
           <div className="px-4 py-2">
-            {/* Show streaming possibilities */}
-            <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
-              {possibilities.map((possibility) => {
-                const modelConfig = getModelById(possibility.metadata.model)
+            {isActive ? (
+              /* Show streaming possibilities */
+              <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
+                {possibilities.map((possibility) => {
+                  const modelConfig = getModelById(possibility.metadata.model)
 
-                const msg: ChatMessageType = {
-                  id: possibility.id,
-                  role: 'assistant',
-                  content: possibility.content,
-                  model: modelConfig?.alias || possibility.metadata.model,
-                  probability: possibility.probability,
-                  temperature: possibility.metadata.temperature,
-                  timestamp: new Date(),
-                  systemInstruction:
-                    possibility.metadata.systemInstruction?.name,
-                  isPossibility: true,
-                  error: possibility.error || undefined,
-                }
+                  const msg: ChatMessageType = {
+                    id: possibility.id,
+                    role: 'assistant',
+                    content: possibility.content,
+                    model: modelConfig?.alias || possibility.metadata.model,
+                    probability: possibility.probability,
+                    temperature: possibility.metadata.temperature,
+                    timestamp: new Date(),
+                    systemInstruction:
+                      possibility.metadata.systemInstruction?.name,
+                    isPossibility: true,
+                    error: possibility.error || undefined,
+                  }
 
-                return (
-                  <Message
-                    key={possibility.id}
-                    message={msg}
-                    onSelectPossibility={onSelectResponse}
-                    className="max-w-[800px] w-full"
-                  />
-                )
-              })}
-            </div>
+                  return (
+                    <Message
+                      key={possibility.id}
+                      message={msg}
+                      onSelectPossibility={onSelectResponse}
+                      className="max-w-[800px] w-full"
+                    />
+                  )
+                })}
+              </div>
+            ) : showBackground ? (
+              /* Show placeholder when background is visible but functionality is disabled */
+              <div className="flex flex-col items-center justify-center py-8 text-[#666] max-w-[1200px] mx-auto">
+                <div className="text-sm">
+                  Live possibilities are disabled for shared conversations
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
