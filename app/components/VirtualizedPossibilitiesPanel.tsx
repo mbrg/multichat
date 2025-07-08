@@ -137,7 +137,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
                   <span className="text-[#4ade80]">
                     ✓ {savedPossibilities?.length || 0}
                   </span>
-                  <span className="text-[#666]">
+                  <span className="text-[#fbbf24]">
                     ⟳ 0
                   </span>
                 </>
