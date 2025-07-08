@@ -34,5 +34,4 @@ dist-ssr
 .env*.local
 
 # tests
-e2e-results/
 test-results/
