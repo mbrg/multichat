@@ -25,6 +25,31 @@ vi.mock('../../../utils/crypto', () => ({
     return Promise.resolve(Buffer.from(encrypted, 'hex').toString())
   }),
 }))
+vi.mock('../../../services/DefaultSettingsService', () => ({
+  createDefaultSettings: vi.fn().mockReturnValue({
+    _metadata: {
+      version: 1,
+      lastUpdated: '2024-01-01T00:00:00.000Z',
+    },
+    systemPrompt: 'You are a helpful AI assistant.',
+    enabledProviders:
+      '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false}',
+    enabledModels: ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'o1-preview'],
+    temperatures: [
+      { id: 'low', value: 0.3 },
+      { id: 'medium', value: 0.7 },
+      { id: 'high', value: 1 },
+    ],
+    systemInstructions: [],
+    possibilityMultiplier: 1,
+    maxInitialPossibilities: 12,
+    possibilityTokens: 100,
+    reasoningTokens: 1500,
+    continuationTokens: 1000,
+  }),
+  migrateSettings: vi.fn().mockImplementation((settings) => settings),
+  validateSettings: vi.fn().mockReturnValue(true),
+}))
 
 describe('/api/settings', () => {
   const mockSession = {
@@ -73,10 +98,11 @@ describe('/api/settings', () => {
 
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data).toEqual(mockSettings)
+      expect(data.systemPrompt).toBe('You are a helpful assistant')
+      expect(data.enabledProviders).toBe('{"openai":true,"anthropic":false}')
     })
 
-    it('should return empty object if no settings stored', async () => {
+    it('should return default settings if no settings stored', async () => {
       vi.mocked(getServerSession).mockResolvedValue(mockSession)
       mockKVStore.get.mockResolvedValue(null)
 
@@ -85,7 +111,21 @@ describe('/api/settings', () => {
 
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data).toEqual({})
+      expect(data.systemPrompt).toBe('You are a helpful AI assistant.')
+      expect(data.enabledProviders).toBe(
+        '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false}'
+      )
+      expect(data.enabledModels).toEqual([
+        'gpt-4o',
+        'gpt-4-turbo',
+        'gpt-4',
+        'o1-preview',
+      ])
+      expect(data.temperatures).toEqual([
+        { id: 'low', value: 0.3 },
+        { id: 'medium', value: 0.7 },
+        { id: 'high', value: 1 },
+      ])
     })
 
     it('should handle errors gracefully', async () => {
@@ -175,7 +215,20 @@ describe('/api/settings', () => {
 
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data).toEqual(newSettings)
+      expect(data.systemPrompt).toBe('You are helpful')
+      expect(data.enabledProviders).toBe('{"openai":true,"anthropic":true}')
+      // Should include other default settings merged in
+      expect(data.enabledModels).toEqual([
+        'gpt-4o',
+        'gpt-4-turbo',
+        'gpt-4',
+        'o1-preview',
+      ])
+      expect(data.temperatures).toEqual([
+        { id: 'low', value: 0.3 },
+        { id: 'medium', value: 0.7 },
+        { id: 'high', value: 1 },
+      ])
     })
 
     it('should remove null or undefined values', async () => {
@@ -217,8 +270,25 @@ describe('/api/settings', () => {
     it('should delete a specific setting', async () => {
       vi.mocked(getServerSession).mockResolvedValue(mockSession)
       const existingSettings = {
+        _metadata: {
+          version: 1,
+          lastUpdated: '2024-01-01T00:00:00.000Z',
+        },
         systemPrompt: 'Keep this',
-        enabledProviders: 'Delete this',
+        enabledProviders:
+          '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false}',
+        enabledModels: ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'o1-preview'],
+        temperatures: [
+          { id: 'low', value: 0.3 },
+          { id: 'medium', value: 0.7 },
+          { id: 'high', value: 1 },
+        ],
+        systemInstructions: [],
+        possibilityMultiplier: 1,
+        maxInitialPossibilities: 12,
+        possibilityTokens: 100,
+        reasoningTokens: 1500,
+        continuationTokens: 1000,
       }
       mockKVStore.get.mockResolvedValue(
         `${'a'.repeat(32)}:${Buffer.from(JSON.stringify(existingSettings)).toString('hex')}`

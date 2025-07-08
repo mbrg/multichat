@@ -117,10 +117,9 @@ const VirtualizedPossibilitiesPanel: React.FC<
         <div className="px-4 py-1 text-xs text-[#888] flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span>
-              {isActive 
+              {isActive
                 ? `${possibilities.length} possibilities`
-                : `${savedPossibilities?.length || 0} possibilities`
-              }
+                : `${savedPossibilities?.length || 0} possibilities`}
             </span>
             <div className="flex items-center gap-2 text-[#666]">
               {isActive ? (
@@ -137,9 +136,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
                   <span className="text-[#4ade80]">
                     ✓ {savedPossibilities?.length || 0}
                   </span>
-                  <span className="text-[#fbbf24]">
-                    ⟳ 0
-                  </span>
+                  <span className="text-[#fbbf24]">⟳ 0</span>
                 </>
               )}
             </div>
@@ -209,7 +206,8 @@ const VirtualizedPossibilitiesPanel: React.FC<
                     probability: possibility.probability,
                     temperature: possibility.temperature,
                     timestamp: possibility.timestamp || new Date(),
-                    systemInstruction: possibility.systemInstruction || 'default',
+                    systemInstruction:
+                      possibility.systemInstruction || 'default',
                     isPossibility: true,
                   }
 

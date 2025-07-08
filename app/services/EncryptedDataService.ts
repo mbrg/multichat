@@ -81,10 +81,10 @@ export class EncryptedDataService<T = Record<string, any>> {
 }
 
 import { UserSettings } from '../types/settings'
-import { 
-  createDefaultSettings, 
-  migrateSettings, 
-  validateSettings 
+import {
+  createDefaultSettings,
+  migrateSettings,
+  validateSettings,
 } from './DefaultSettingsService'
 
 // Pre-configured service instances for common data types
@@ -103,23 +103,25 @@ class VersionedSettingsService extends EncryptedDataService<UserSettings> {
    */
   async getData(userId: string): Promise<UserSettings> {
     const rawSettings = await super.getData(userId)
-    
+
     // Apply migrations if needed
     const migratedSettings = migrateSettings(rawSettings)
-    
+
     // If migration occurred, save the updated settings
     if (migratedSettings._metadata?.migratedFrom !== undefined) {
       await this.saveData(userId, migratedSettings)
     }
-    
+
     // Validate settings and fall back to defaults if invalid
     if (!validateSettings(migratedSettings)) {
-      console.warn(`Invalid settings detected for user ${userId}, using defaults`)
+      console.warn(
+        `Invalid settings detected for user ${userId}, using defaults`
+      )
       const defaultSettings = createDefaultSettings()
       await this.saveData(userId, defaultSettings)
       return defaultSettings
     }
-    
+
     return migratedSettings
   }
 }
