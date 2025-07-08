@@ -32,10 +32,7 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
   onSettingsClick,
 }) => {
   return (
-    <div
-      
-      className="absolute right-0 mt-2 w-[90vw] min-w-[320px] sm:w-72 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-xl z-50 max-h-[90vh] overflow-y-auto"
-    >
+    <div className="absolute right-0 mt-2 w-[90vw] min-w-[320px] sm:w-72 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-xl z-50 max-h-[90vh] overflow-y-auto">
       <UserSection
         session={session}
         status={status}

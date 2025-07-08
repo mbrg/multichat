@@ -101,7 +101,6 @@ export const TemperatureForm: React.FC<TemperatureFormProps> = ({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="0.7"
-          
           className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-md text-[#e0e0e0] text-base focus:outline-none focus:border-[#667eea] placeholder-[#666]"
         />
       </div>
@@ -111,10 +110,7 @@ export const TemperatureForm: React.FC<TemperatureFormProps> = ({
         <div className="p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-md">
           <div className="text-xs text-[#aaa] mb-2">Preview:</div>
           <div className="flex items-center gap-3">
-            <div
-              className="text-sm font-mono text-[#e0e0e0]"
-              
-            >
+            <div className="text-sm font-mono text-[#e0e0e0]">
               {numValue.toFixed(1)}
             </div>
             <div className="flex-1">

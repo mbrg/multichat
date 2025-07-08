@@ -94,7 +94,6 @@ const GenerationSettingsPanel: React.FC = () => {
             pattern="[0-9]*"
             className={inputClass}
             value={values.possibilityTokens}
-            
             onChange={(e) =>
               handleChange('possibilityTokens', parseInt(e.target.value))
             }

@@ -81,7 +81,6 @@ const TemperaturesPanel: React.FC = () => {
         </h3>
         {isAuthenticated && temperatures.length < 3 && !showAddForm && (
           <button
-            
             onClick={() => setShowAddForm(true)}
             className="px-3 py-1.5 text-sm text-[#667eea] hover:text-[#5a6fd8] bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-md transition-colors"
           >

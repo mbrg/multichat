@@ -56,10 +56,7 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
   }
 
   return (
-    <div
-      `}
-      className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg"
-    >
+    <div className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
       <div className="flex items-center gap-3">
         <Image
           src={provider.icon}
@@ -74,9 +71,7 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           <div className="text-sm text-[#e0e0e0] font-medium">
             {provider.name.replace(' API Key', '')}
           </div>
-          <div  data-status={validationStatus}>
-            {getValidationDisplay()}
-          </div>
+          <div data-status={validationStatus}>{getValidationDisplay()}</div>
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -86,7 +81,6 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           checked={provider.enabled}
           onChange={() => onToggle(provider.id)}
           disabled={validationStatus === 'invalid'}
-          
           className={`relative w-10 h-5 rounded-full transition-colors appearance-none ${
             validationStatus === 'invalid'
               ? 'bg-[#2a2a2a] opacity-50 cursor-not-allowed'
