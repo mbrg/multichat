@@ -272,6 +272,9 @@ const ChatDemo: React.FC = () => {
 
       const result = await response.json()
 
+      // Silently navigate to the conversation page to prevent duplicate shares
+      router.push(`/conversation/${result.id}`)
+
       return result
     } catch (error) {
       console.error('Error publishing conversation:', error)
@@ -279,7 +282,7 @@ const ChatDemo: React.FC = () => {
     } finally {
       setIsPublishing(false)
     }
-  }, [session, messages, getCompletedPossibilities])
+  }, [session, messages, getCompletedPossibilities, router])
 
   // Handle title click (go to home)
   const handleTitleClick = useCallback(() => {
