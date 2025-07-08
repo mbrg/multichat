@@ -51,9 +51,9 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       return 'Generating response...'
     }
 
-    // Don't show specific disabled reasons while authentication state is still loading
+    // Show loading message while settings or API keys are loading
     if (settingsLoading || apiKeysLoading) {
-      return 'Type message...'
+      return 'Loading...'
     }
 
     // Check for possibilities first (higher priority than other disabled states)
