@@ -73,7 +73,7 @@ const Settings: React.FC<SettingsProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        data-testid="settings-modal"
+        
         className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
@@ -83,7 +83,7 @@ const Settings: React.FC<SettingsProps> = ({
             <span>{sections.find((s) => s.id === activeSection)?.label}</span>
           </h2>
           <button
-            data-testid="close-settings"
+            
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center text-[#888] hover:text-[#e0e0e0] hover:bg-[#2a2a2a] rounded-md transition-colors"
             aria-label="Close"

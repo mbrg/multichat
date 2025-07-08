@@ -141,7 +141,7 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
         {menuItems.map((item) => (
           <button
             key={item.section}
-            data-testid={`menu-item-${item.section}`}
+            `}
             onClick={(e) => onSettingsClick(e, item.section)}
             className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#aaa] hover:text-[#e0e0e0] hover:bg-[#2a2a2a] rounded-md transition-colors text-left"
           >
@@ -164,7 +164,7 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
         {status === 'loading' ? (
           <div className="px-4 py-2.5 flex items-center justify-center">
             <div
-              data-testid="loading-spinner"
+              
               className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"
             ></div>
           </div>

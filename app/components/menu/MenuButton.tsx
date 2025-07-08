@@ -18,7 +18,7 @@ export const MenuButton: React.FC<MenuButtonProps> = ({
 }) => {
   return (
     <button
-      data-testid="menu-button"
+      
       onClick={(e) => {
         e.stopPropagation()
         onToggle()

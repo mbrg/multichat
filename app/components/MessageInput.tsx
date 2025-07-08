@@ -137,7 +137,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           {/* Text Input */}
           <textarea
             ref={textareaRef}
-            data-testid="message-input"
+            
             value={message}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
@@ -150,7 +150,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           {/* Send Button */}
           <button
             type="submit"
-            data-testid="send-button"
+            
             disabled={disabled || (!message.trim() && attachments.length === 0)}
             className="flex-shrink-0 p-3 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg hover:translate-y-[-2px] hover:shadow-[0_4px_20px_rgba(102,126,234,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all disabled:hover:transform-none disabled:hover:shadow-none -webkit-tap-highlight-color-transparent"
             aria-label="Send message"
