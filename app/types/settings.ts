@@ -10,7 +10,14 @@ export interface Temperature {
   value: number
 }
 
+export interface UserSettingsMetadata {
+  version: number
+  lastUpdated: string
+  migratedFrom?: number
+}
+
 export interface UserSettings {
+  _metadata?: UserSettingsMetadata
   systemPrompt?: string
   enabledProviders?: string // JSON stringified EnabledProviders
   systemInstructions?: SystemInstruction[]
