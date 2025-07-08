@@ -63,7 +63,7 @@ describe('MessageInputContainer', () => {
       ).toBeInTheDocument()
     })
 
-    it('should show default placeholder when settingsLoading is true', () => {
+    it('should show loading placeholder when settingsLoading is true', () => {
       render(
         <MessageInputContainer
           {...defaultProps}
@@ -73,10 +73,10 @@ describe('MessageInputContainer', () => {
         />
       )
 
-      expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Loading...')).toBeInTheDocument()
     })
 
-    it('should show default placeholder when apiKeysLoading is true', () => {
+    it('should show loading placeholder when apiKeysLoading is true', () => {
       render(
         <MessageInputContainer
           {...defaultProps}
@@ -86,10 +86,10 @@ describe('MessageInputContainer', () => {
         />
       )
 
-      expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Loading...')).toBeInTheDocument()
     })
 
-    it('should show default placeholder when both settings and API keys are loading', () => {
+    it('should show loading placeholder when both settings and API keys are loading', () => {
       render(
         <MessageInputContainer
           {...defaultProps}
@@ -100,7 +100,7 @@ describe('MessageInputContainer', () => {
         />
       )
 
-      expect(screen.getByPlaceholderText('Type message...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Loading...')).toBeInTheDocument()
     })
 
     it('should show default placeholder when not disabled and not loading', () => {
