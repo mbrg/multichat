@@ -40,7 +40,6 @@
   ],
   "exclude": [
     "node_modules",
-    "vitest.config.ts",
-    "e2e"
+    "vitest.config.ts"
   ]
 }
