@@ -200,16 +200,14 @@ const MessageWithIndependentPossibilities: React.FC<
               </div>
             )}
 
-            {/* Saved Possibilities - Use modern Message component for consistent styling */}
+            {/* Saved Possibilities - Reuse VirtualizedPossibilitiesPanel for consistency */}
             {!isUser &&
               message.possibilities &&
               message.possibilities.length > 0 && (
-                <div
-                  className={message.content ? 'mt-3 space-y-2' : 'space-y-2'}
-                >
+                <div className="mt-3">
                   {(() => {
                     log.debug(
-                      'Rendering saved possibilities with modern styling',
+                      'Rendering saved possibilities using VirtualizedPossibilitiesPanel',
                       {
                         messageId: message.id,
                         savedPossibilitiesCount: message.possibilities.length,
@@ -219,33 +217,17 @@ const MessageWithIndependentPossibilities: React.FC<
                     )
                     return null
                   })()}
-                  {message.content && (
-                    <div className="text-xs text-[#888] font-medium">
-                      Other possibilities:
-                    </div>
+                  {settings && (
+                    <VirtualizedPossibilitiesPanel
+                      messages={[]}
+                      settings={settings}
+                      isActive={false}
+                      showBackground={true}
+                      savedPossibilities={message.possibilities}
+                      onSelectResponse={handleSelectResponse}
+                      enableVirtualScrolling={false}
+                    />
                   )}
-                  <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
-                    {message.possibilities.map((possibility) => {
-                      const modelConfig = { alias: possibility.model } // Simple config for saved possibilities
-
-                      return (
-                        <MessageComponent
-                          key={possibility.id}
-                          message={{
-                            ...possibility,
-                            role: 'assistant' as const,
-                            timestamp: possibility.timestamp || new Date(),
-                            isPossibility: true,
-                          }}
-                          onSelectPossibility={(selectedPossibility) => {
-                            // Convert back to the expected format for the parent handler
-                            onSelectPossibility?.(message, selectedPossibility)
-                          }}
-                          className="max-w-[800px] w-full"
-                        />
-                      )
-                    })}
-                  </div>
                 </div>
               )}
 
@@ -289,6 +271,7 @@ const MessageWithIndependentPossibilities: React.FC<
                     })()}
                     settings={settings}
                     isActive={!disableLivePossibilities}
+                    showBackground={true}
                     onSelectResponse={handleSelectResponse}
                     enableVirtualScrolling={true}
                     maxTokens={TOKEN_LIMITS.POSSIBILITY_DEFAULT}

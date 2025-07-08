@@ -157,6 +157,7 @@ Before completing any task, ALWAYS execute these steps in order:
    - Are architectural patterns followed consistently?
    - Is technical debt minimized?
 4. **Commit Guidelines**: If committing changes:
-   - Do NOT add Claude as co-author
+   - Do NOT add Claude as co-author (no `Co-Authored-By: Claude <noreply@anthropic.com>` line)
    - Use clear, descriptive commit messages
    - Include `🤖 Generated with [Claude Code](https://claude.ai/code)` footer only
+   - This applies to both git commits and pull requests
