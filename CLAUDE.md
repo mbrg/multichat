@@ -16,8 +16,8 @@ npm run vercel:dev   # Start Vercel development server with local environment
 
 ### Testing
 ```bash
-npm test             # Run all tests once
-npm run test:watch   # Run tests in watch mode
+npm test             # Run all unit tests once
+npm run test:watch   # Run unit tests in watch mode
 npm run test:ui      # Open Vitest UI for interactive testing
 npm test -- path/to/test.ts  # Run a specific test file
 ```

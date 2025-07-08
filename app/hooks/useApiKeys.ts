@@ -147,11 +147,17 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
   const saveApiKey = async (provider: keyof ApiKeys, key: string) => {
     try {
       if (key.trim()) {
-        // Store API key via CloudApiKeys only
-        await CloudApiKeys.setApiKey(provider, key)
+        // Store API key via CloudApiKeys and get updated status
+        const updatedStatus = await CloudApiKeys.setApiKey(provider, key)
 
-        // Update local state
-        setApiKeys((prev) => ({ ...prev, [provider]: '***' }))
+        // Update local state with actual server response
+        const keys: ApiKeys = {}
+        if (updatedStatus.openai) keys.openai = '***'
+        if (updatedStatus.anthropic) keys.anthropic = '***'
+        if (updatedStatus.google) keys.google = '***'
+        if (updatedStatus.mistral) keys.mistral = '***'
+        if (updatedStatus.together) keys.together = '***'
+        setApiKeys(keys)
 
         // Validate the API key after saving
         const isValid = await validateApiKey(provider)
@@ -181,12 +187,8 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
       // Remove API key via CloudApiKeys only
       await CloudApiKeys.deleteApiKey(provider)
 
-      // Update local state
-      setApiKeys((prev) => {
-        const newKeys = { ...prev }
-        delete newKeys[provider]
-        return newKeys
-      })
+      // Refresh API key status from server to ensure consistency
+      await loadApiKeys()
 
       // Clear validation status
       setValidationStatus((prev) => ({ ...prev, [provider]: null }))

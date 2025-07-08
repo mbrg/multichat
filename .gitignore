@@ -32,3 +32,6 @@ dist-ssr
 *.tsbuildinfo
 .tsbuildinfo
 .env*.local
+
+# tests
+test-results/

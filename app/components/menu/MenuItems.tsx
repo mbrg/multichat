@@ -162,10 +162,7 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
       <div className="px-2 pb-2">
         {status === 'loading' ? (
           <div className="px-4 py-2.5 flex items-center justify-center">
-            <div
-              data-testid="loading-spinner"
-              className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"
-            ></div>
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"></div>
           </div>
         ) : session ? (
           <button
