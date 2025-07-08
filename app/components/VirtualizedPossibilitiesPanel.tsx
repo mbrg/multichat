@@ -12,6 +12,7 @@ interface VirtualizedPossibilitiesPanelProps {
   settings: UserSettings
   isActive?: boolean
   showBackground?: boolean
+  savedPossibilities?: any[] // Pre-loaded possibilities for conversation display
   onSelectResponse?: (response: ChatMessageType) => void
   enableVirtualScrolling?: boolean
   maxTokens?: number
@@ -27,6 +28,7 @@ const VirtualizedPossibilitiesPanel: React.FC<
   settings,
   isActive = false,
   showBackground = false,
+  savedPossibilities,
   onSelectResponse,
   enableVirtualScrolling = true,
   maxTokens,
@@ -111,22 +113,40 @@ const VirtualizedPossibilitiesPanel: React.FC<
   return (
     <>
       {/* Header with statistics - outside the panel */}
-      {isActive && (
+      {(isActive || (showBackground && savedPossibilities)) && (
         <div className="px-4 py-1 text-xs text-[#888] flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span>{possibilities.length} possibilities</span>
+            <span>
+              {isActive 
+                ? `${possibilities.length} possibilities`
+                : `${savedPossibilities?.length || 0} possibilities`
+              }
+            </span>
             <div className="flex items-center gap-2 text-[#666]">
-              <span className="text-[#4ade80]">
-                ✓ {possibilities.filter((p) => p.isComplete).length}
-              </span>
-              <span className="text-[#fbbf24]">
-                ⟳ {possibilities.filter((p) => !p.isComplete).length}
-              </span>
+              {isActive ? (
+                <>
+                  <span className="text-[#4ade80]">
+                    ✓ {possibilities.filter((p) => p.isComplete).length}
+                  </span>
+                  <span className="text-[#fbbf24]">
+                    ⟳ {possibilities.filter((p) => !p.isComplete).length}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[#4ade80]">
+                    ✓ {savedPossibilities?.length || 0}
+                  </span>
+                  <span className="text-[#666]">
+                    ⭕ 0
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Loading indicator */}
-          {possibilities.some((p) => !p.isComplete) && (
+          {/* Loading indicator - only for live possibilities */}
+          {isActive && possibilities.some((p) => !p.isComplete) && (
             <div className="flex items-center gap-1">
               <div className="w-1 h-1 bg-[#667eea] rounded-full animate-bounce"></div>
               <div className="w-1 h-1 bg-[#667eea] rounded-full animate-bounce delay-100"></div>
@@ -165,6 +185,32 @@ const VirtualizedPossibilitiesPanel: React.FC<
                       possibility.metadata.systemInstruction?.name,
                     isPossibility: true,
                     error: possibility.error || undefined,
+                  }
+
+                  return (
+                    <Message
+                      key={possibility.id}
+                      message={msg}
+                      onSelectPossibility={onSelectResponse}
+                      className="max-w-[800px] w-full"
+                    />
+                  )
+                })}
+              </div>
+            ) : savedPossibilities && savedPossibilities.length > 0 ? (
+              /* Show saved possibilities */
+              <div className="flex flex-col gap-2 max-w-[1200px] mx-auto">
+                {savedPossibilities.map((possibility) => {
+                  const msg: ChatMessageType = {
+                    id: possibility.id,
+                    role: 'assistant',
+                    content: possibility.content,
+                    model: possibility.model,
+                    probability: possibility.probability,
+                    temperature: possibility.temperature,
+                    timestamp: possibility.timestamp || new Date(),
+                    systemInstruction: possibility.systemInstruction || 'default',
+                    isPossibility: true,
                   }
 
                   return (
