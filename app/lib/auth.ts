@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session?.user) {
-        session.user.id = token.sub!
+        session.user.id = `/github/${token.sub}`
         if (token.sid) {
           // expose session id to client for logging context
           ;(session as any).sessionId = token.sid as string
