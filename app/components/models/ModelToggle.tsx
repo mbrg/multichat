@@ -32,7 +32,13 @@ const ModelToggle: React.FC<ModelToggleProps> = ({
           alt={model.name}
           width={20}
           height={20}
-          className="w-5 h-5 rounded"
+          className={`w-5 h-5 rounded ${
+            model.provider === 'openai' ||
+            model.provider === 'anthropic' ||
+            model.provider === 'xai'
+              ? 'filter invert'
+              : ''
+          }`}
         />
         <div className="text-sm text-[#e0e0e0]">{model.name}</div>
       </div>

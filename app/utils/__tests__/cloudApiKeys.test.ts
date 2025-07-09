@@ -19,6 +19,7 @@ describe('CloudApiKeys', () => {
         google: true,
         mistral: false,
         together: false,
+        xai: false,
       }
 
       mockFetch.mockResolvedValue(
@@ -85,6 +86,7 @@ describe('CloudApiKeys', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       }
 
       mockFetch.mockResolvedValue(

@@ -4,6 +4,7 @@ import anthropicLogo from '../assets/anthropic.png'
 import geminiLogo from '../assets/gemini.svg'
 import mistralLogo from '../assets/mistral.png'
 import huggingfaceLogo from '../assets/huggingface.svg'
+import xaiLogo from '../assets/xai.png'
 import { getModelById, getAllModels } from '../services/ai/config'
 
 export const providerLogos = {
@@ -26,6 +27,10 @@ export const providerLogos = {
   together: {
     light: huggingfaceLogo,
     dark: huggingfaceLogo,
+  },
+  xai: {
+    light: xaiLogo,
+    dark: xaiLogo,
   },
 } as const
 

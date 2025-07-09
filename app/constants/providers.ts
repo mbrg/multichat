@@ -11,6 +11,7 @@ export const AI_PROVIDERS = {
   GOOGLE: 'google',
   MISTRAL: 'mistral',
   TOGETHER: 'together',
+  XAI: 'xai',
 } as const
 
 export type AIProviderType = (typeof AI_PROVIDERS)[keyof typeof AI_PROVIDERS]
@@ -36,6 +37,7 @@ export const PROVIDER_NAMES: Record<AIProviderType, string> = {
   [AI_PROVIDERS.GOOGLE]: 'Google',
   [AI_PROVIDERS.MISTRAL]: 'Mistral',
   [AI_PROVIDERS.TOGETHER]: 'Together AI',
+  [AI_PROVIDERS.XAI]: 'xAI',
 }
 
 /**
@@ -47,6 +49,7 @@ export const PROVIDER_DESCRIPTIONS: Record<AIProviderType, string> = {
   [AI_PROVIDERS.GOOGLE]: 'Gemini 2.5 Pro & Flash',
   [AI_PROVIDERS.MISTRAL]: 'Mistral Large, Mistral Small',
   [AI_PROVIDERS.TOGETHER]: 'Llama 2, Code Llama',
+  [AI_PROVIDERS.XAI]: 'Grok models',
 }
 
 /**
@@ -58,4 +61,5 @@ export const DEFAULT_PROVIDER_STATE: Record<AIProviderType, boolean> = {
   [AI_PROVIDERS.GOOGLE]: false,
   [AI_PROVIDERS.MISTRAL]: false,
   [AI_PROVIDERS.TOGETHER]: false,
+  [AI_PROVIDERS.XAI]: false,
 }

@@ -64,7 +64,11 @@ export const ProviderConfig: React.FC<ProviderConfigProps> = ({
           width={20}
           height={20}
           className={`w-5 h-5 rounded flex-shrink-0 ${
-            provider.id === 'anthropic' ? 'filter invert' : ''
+            provider.id === 'anthropic' ||
+            provider.id === 'xai' ||
+            provider.id === 'openai'
+              ? 'filter invert'
+              : ''
           }`}
         />
         <div>

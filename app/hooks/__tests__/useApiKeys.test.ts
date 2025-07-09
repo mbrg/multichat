@@ -29,6 +29,7 @@ describe('useApiKeys', () => {
       google: false,
       mistral: false,
       together: false,
+      xai: false,
     })
     vi.mocked(CloudApiKeys.setApiKey).mockResolvedValue({
       openai: true,
@@ -36,6 +37,7 @@ describe('useApiKeys', () => {
       google: false,
       mistral: false,
       together: false,
+      xai: false,
     })
     vi.mocked(CloudApiKeys.deleteApiKey).mockResolvedValue()
     vi.mocked(CloudApiKeys.deleteAllApiKeys).mockResolvedValue()
@@ -75,6 +77,7 @@ describe('useApiKeys', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       })
 
       const { result } = renderHook(() => useApiKeys())
@@ -152,6 +155,7 @@ describe('useApiKeys', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       })
 
       const { result } = renderHook(() => useApiKeys())
@@ -183,6 +187,7 @@ describe('useApiKeys', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       })
 
       const { result } = renderHook(() => useApiKeys())
