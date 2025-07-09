@@ -18,7 +18,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   onDelete,
 }) => {
   const [isEditing, setIsEditing] = useState(false)
-  const [title, setTitle] = useState(conversation.title)
+  const [title, setTitle] = useState(conversation.title || '')
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleSave = async () => {
@@ -31,7 +31,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   }
 
   const handleCancel = () => {
-    setTitle(conversation.title)
+    setTitle(conversation.title || '')
     setIsEditing(false)
   }
 
@@ -103,7 +103,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
         ) : (
           <div>
             <h3 className="text-sm font-medium text-[#e0e0e0] truncate">
-              {conversation.title}
+              {conversation.title || 'Untitled Conversation'}
             </h3>
             <p className="text-xs text-[#888]">
               {formatDistanceToNow(new Date(conversation.createdAt), {

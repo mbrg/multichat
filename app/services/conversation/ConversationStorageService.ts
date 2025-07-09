@@ -69,7 +69,7 @@ export class ConversationStorageService {
       // Add conversation metadata to user's KV list
       const conversationMetadata: ConversationMetadata = {
         id,
-        title: request.metadata?.title || 'Untitled Conversation',
+        title: request.metadata?.title || '',
         createdAt: sharedConversation.createdAt,
         blobUrl: blob.url,
       }
