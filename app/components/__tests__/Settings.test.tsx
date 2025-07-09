@@ -77,6 +77,7 @@ vi.mock('../../hooks/useApiKeys', () => ({
       google: true,
       mistral: true,
       together: true,
+      xai: false,
     },
     validationStatus: {
       openai: 'valid',
@@ -84,6 +85,7 @@ vi.mock('../../hooks/useApiKeys', () => ({
       google: null,
       mistral: null,
       together: null,
+      xai: null,
     },
     isLoading: false,
     isAuthenticated: true,

@@ -4,6 +4,7 @@ export interface ApiKeyStatus {
   google: boolean
   mistral: boolean
   together: boolean
+  xai: boolean
 }
 
 export class CloudApiKeys {

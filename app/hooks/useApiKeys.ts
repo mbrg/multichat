@@ -9,6 +9,7 @@ export interface ApiKeys {
   google?: string
   mistral?: string
   together?: string
+  xai?: string
 }
 
 export interface EnabledProviders {
@@ -17,6 +18,7 @@ export interface EnabledProviders {
   google: boolean
   mistral: boolean
   together: boolean
+  xai: boolean
 }
 
 interface ApiKeyValidationStatus {
@@ -25,6 +27,7 @@ interface ApiKeyValidationStatus {
   google?: 'valid' | 'invalid' | 'validating' | null
   mistral?: 'valid' | 'invalid' | 'validating' | null
   together?: 'valid' | 'invalid' | 'validating' | null
+  xai?: 'valid' | 'invalid' | 'validating' | null
 }
 
 export const useApiKeys = (onSettingsChange?: () => void) => {
@@ -36,6 +39,7 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
     google: false,
     mistral: false,
     together: false,
+    xai: false,
   })
   const [validationStatus, setValidationStatus] =
     useState<ApiKeyValidationStatus>({})
@@ -53,7 +57,14 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
   const loadApiKeys = async () => {
     setIsLoading(true)
     try {
-      const providers = ['openai', 'anthropic', 'google', 'mistral', 'together']
+      const providers = [
+        'openai',
+        'anthropic',
+        'google',
+        'mistral',
+        'together',
+        'xai',
+      ]
       const keys: ApiKeys = {}
 
       setApiKeys(keys)
@@ -65,6 +76,7 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       }
 
       try {
@@ -92,6 +104,7 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
         google: apiKeyStatus.google && parsed.google !== false,
         mistral: apiKeyStatus.mistral && parsed.mistral !== false,
         together: apiKeyStatus.together && parsed.together !== false,
+        xai: apiKeyStatus.xai && parsed.xai !== false,
       }
 
       // Update keys object to show masked values for set API keys
@@ -100,6 +113,7 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
       if (apiKeyStatus.google) keys.google = '***'
       if (apiKeyStatus.mistral) keys.mistral = '***'
       if (apiKeyStatus.together) keys.together = '***'
+      if (apiKeyStatus.xai) keys.xai = '***'
 
       setEnabledProviders(newEnabledProviders)
     } catch (error) {
@@ -258,6 +272,7 @@ export const useApiKeys = (onSettingsChange?: () => void) => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       })
 
       // Reload keys after clearing (will get env vars if in dev mode)

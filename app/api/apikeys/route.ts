@@ -21,6 +21,7 @@ interface ApiKeyStatus {
   google: boolean
   mistral: boolean
   together: boolean
+  xai: boolean
 }
 
 // GET /api/apikeys - Returns which API keys are set (not the actual keys)
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
       google: !!apiKeysData.google,
       mistral: !!apiKeysData.mistral,
       together: !!apiKeysData.together,
+      xai: !!apiKeysData.xai,
     }
 
     return NextResponse.json({ status })
@@ -105,6 +107,7 @@ export async function POST(request: NextRequest) {
       google: !!apiKeysData.google,
       mistral: !!apiKeysData.mistral,
       together: !!apiKeysData.together,
+      xai: !!apiKeysData.xai,
     }
 
     return NextResponse.json({ status })

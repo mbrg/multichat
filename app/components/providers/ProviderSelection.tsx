@@ -61,7 +61,11 @@ export const ProviderSelection: React.FC<ProviderSelectionProps> = ({
                 width={20}
                 height={20}
                 className={`w-5 h-5 rounded flex-shrink-0 ${
-                  provider.id === 'anthropic' ? 'filter invert' : ''
+                  provider.id === 'anthropic' ||
+                  provider.id === 'xai' ||
+                  provider.id === 'openai'
+                    ? 'filter invert'
+                    : ''
                 } ${isDisabled ? 'opacity-50' : ''}`}
               />
               <div className="flex-1 min-w-0">

@@ -20,6 +20,7 @@ export function createDefaultSettings(): UserSettings {
       google: false,
       mistral: false,
       together: false,
+      xai: false,
     }),
 
     // Default models - focus on most popular and reliable options

@@ -65,6 +65,7 @@ describe('ModelsPanel', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       },
       validationStatus: { openai: 'valid', anthropic: null },
       isLoading: false,

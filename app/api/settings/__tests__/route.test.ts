@@ -33,7 +33,7 @@ vi.mock('../../../services/DefaultSettingsService', () => ({
     },
     systemPrompt: 'You are a helpful AI assistant.',
     enabledProviders:
-      '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false}',
+      '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false,"xai":false}',
     enabledModels: ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'o1-preview'],
     temperatures: [
       { id: 'low', value: 0.3 },
@@ -113,7 +113,7 @@ describe('/api/settings', () => {
       const data = await response.json()
       expect(data.systemPrompt).toBe('You are a helpful AI assistant.')
       expect(data.enabledProviders).toBe(
-        '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false}'
+        '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false,"xai":false}'
       )
       expect(data.enabledModels).toEqual([
         'gpt-4o',
@@ -276,7 +276,7 @@ describe('/api/settings', () => {
         },
         systemPrompt: 'Keep this',
         enabledProviders:
-          '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false}',
+          '{"openai":true,"anthropic":false,"google":false,"mistral":false,"together":false,"xai":false}',
         enabledModels: ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'o1-preview'],
         temperatures: [
           { id: 'low', value: 0.3 },

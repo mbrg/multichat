@@ -79,6 +79,7 @@ describe('/api/apikeys', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       })
     })
 
@@ -97,6 +98,7 @@ describe('/api/apikeys', () => {
         google: false,
         mistral: false,
         together: false,
+        xai: false,
       })
     })
 

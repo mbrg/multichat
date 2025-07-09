@@ -383,6 +383,43 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       isReasoningModel: true,
     },
   ],
+  xai: [
+    {
+      id: 'grok-3-latest',
+      name: 'Grok 3',
+      alias: 'grok-3',
+      provider: 'xai',
+      description: 'Latest and most advanced Grok model',
+      supportsLogprobs: true,
+      maxTokens: 8192,
+      priority: 'high',
+      supportedMimeTypes: ['text/plain'],
+    },
+    {
+      id: 'grok-3-mini',
+      name: 'Grok 3 Mini',
+      alias: 'grok-3-mini',
+      provider: 'xai',
+      description:
+        'Compact reasoning model with advanced problem-solving capabilities',
+      supportsLogprobs: true,
+      maxTokens: 8192,
+      priority: 'high',
+      supportedMimeTypes: ['text/plain'],
+      isReasoningModel: true,
+    },
+    {
+      id: 'grok-3-fast',
+      name: 'Grok 3 Fast',
+      alias: 'grok-3-fast',
+      provider: 'xai',
+      description: 'High-speed Grok 3 model optimized for performance',
+      supportsLogprobs: true,
+      maxTokens: 8192,
+      priority: 'high',
+      supportedMimeTypes: ['text/plain'],
+    },
+  ],
 }
 
 export const getAllModels = (): ModelInfo[] => {

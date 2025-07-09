@@ -307,6 +307,7 @@ export class PossibilityMetadataService {
       google: 2500,
       mistral: 2000,
       together: 1500,
+      xai: 2500,
     }
 
     const baseTime = baseEstimates[metadata.provider] || 3000

@@ -8,6 +8,7 @@ import { AnthropicProvider } from '../../../services/ai/providers/anthropic'
 import { GoogleProvider } from '../../../services/ai/providers/google'
 import { MistralProvider } from '../../../services/ai/providers/mistral'
 import { TogetherProvider } from '../../../services/ai/providers/together'
+import { XAIProvider } from '../../../services/ai/providers/xai'
 import { ApiKeysService } from '../../../services/EncryptedDataService'
 import {
   AI_PROVIDER_LIST,
@@ -23,6 +24,7 @@ const providerInstances = {
   google: new GoogleProvider(),
   mistral: new MistralProvider(),
   together: new TogetherProvider(),
+  xai: new XAIProvider(),
 }
 
 // POST /api/apikeys/validate - Validate a specific API key

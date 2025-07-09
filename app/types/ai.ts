@@ -91,6 +91,7 @@ export type ProviderType =
   | 'google'
   | 'mistral'
   | 'together'
+  | 'xai'
 
 export interface ProviderConfig {
   [key: string]: {

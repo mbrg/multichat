@@ -11,6 +11,7 @@ import anthropicLogo from '../assets/anthropic.png'
 import geminiLogo from '../assets/gemini.svg'
 import mistralLogo from '../assets/mistral.png'
 import huggingfaceLogo from '../assets/huggingface.svg'
+import xaiLogo from '../assets/xai.png'
 
 interface Provider {
   id: string
@@ -77,6 +78,13 @@ const ApiKeysPanel: React.FC = () => {
       icon: huggingfaceLogo,
       description: 'Open Source Models',
       enabled: enabledProviders.together,
+    },
+    {
+      id: 'xai',
+      name: 'xAI API Key',
+      icon: xaiLogo,
+      description: 'Grok models',
+      enabled: enabledProviders.xai,
     },
   ]
 

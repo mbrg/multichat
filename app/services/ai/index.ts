@@ -3,6 +3,7 @@ import { AnthropicProvider } from './providers/anthropic'
 import { GoogleProvider } from './providers/google'
 import { MistralProvider } from './providers/mistral'
 import { TogetherProvider } from './providers/together'
+import { XAIProvider } from './providers/xai'
 import { ServerKeys } from '../../utils/serverKeys'
 import { compareProbabilities } from '../../utils/logprobs'
 import type {
@@ -32,6 +33,7 @@ export class AIService {
     this.providers.set('google', new GoogleProvider())
     this.providers.set('mistral', new MistralProvider())
     this.providers.set('together', new TogetherProvider())
+    this.providers.set('xai', new XAIProvider())
   }
 
   getAvailableModels(): ModelInfo[] {
