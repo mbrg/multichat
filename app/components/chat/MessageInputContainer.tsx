@@ -118,7 +118,7 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
                     d="M1 1l22 22"
                   />
                 </svg>
-                <span>Conversations are not stored (unless shared)</span>
+                <span>Data not stored unless shared</span>
               </div>
             </div>
 
