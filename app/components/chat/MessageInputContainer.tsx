@@ -97,30 +97,7 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
       <div className="border-t border-[#2a2a2a] bg-[#0a0a0a] px-4 py-3">
         <div className="max-w-[800px] mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#888]">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                  />
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M1 1l22 22"
-                  />
-                </svg>
-                <span>Conversations not stored unless shared</span>
-              </div>
-            </div>
+            <div className="flex items-center gap-4"></div>
 
             <div className="flex items-center gap-3">
               <span>by</span>
