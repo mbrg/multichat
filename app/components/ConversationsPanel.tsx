@@ -295,9 +295,30 @@ const ConversationsPanel: React.FC = () => {
           </span>
         </div>
         <p className="text-sm text-[#888]">
-          Manage your shared conversations. You can edit titles or delete
-          conversations.
+          Edit titles or delete conversations
         </p>
+      </div>
+
+      {/* Privacy Notice */}
+      <div className="mb-4 p-3 bg-[#2a2a2a] rounded-lg">
+        <div className="flex items-center gap-2 text-xs text-[#888]">
+          <svg
+            className="w-4 h-4 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+            />
+            <circle cx="12" cy="12" r="3" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M1 1l22 22" />
+          </svg>
+          <span>Conversations not stored unless shared</span>
+        </div>
       </div>
 
       {error && (
