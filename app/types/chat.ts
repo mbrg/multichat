@@ -44,6 +44,7 @@ export interface ChatContainerProps {
   onClearPossibilities?: (clearFn: () => void) => void
   disableLivePossibilities?: boolean
   hasUnselectedPossibilities?: boolean
+  hasReachedConversationLimit?: boolean
 }
 
 export interface MessageProps {

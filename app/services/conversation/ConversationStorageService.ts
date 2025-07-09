@@ -3,6 +3,7 @@ import type {
   SharedConversation,
   ShareConversationRequest,
   ShareConversationResponse,
+  ConversationMetadata,
 } from '../../types/conversation'
 import { CONVERSATION_SCHEMA } from '../../constants/defaults'
 import {
@@ -12,6 +13,7 @@ import {
   ConversationMigrationError,
   ConversationSchemaError,
 } from './ConversationMigrationService'
+import { ConversationsService } from '../EncryptedDataService'
 
 export class ConversationStorageService {
   private getBaseUrl(): string {
@@ -35,6 +37,12 @@ export class ConversationStorageService {
     baseUrl?: string
   ): Promise<ShareConversationResponse> {
     try {
+      // Check conversation limit first
+      const userConversations = await ConversationsService.getData(creatorId)
+      if (userConversations.conversations.length >= 100) {
+        throw new Error('Maximum number of conversations reached (100)')
+      }
+
       // Generate unique ID with collision checking
       const id = await this.generateUniqueId()
 
@@ -57,6 +65,22 @@ export class ConversationStorageService {
       const blob = await put(key, JSON.stringify(sharedConversation), {
         access: 'public',
       })
+
+      // Add conversation metadata to user's KV list
+      const conversationMetadata: ConversationMetadata = {
+        id,
+        title: request.metadata?.title || 'Untitled Conversation',
+        createdAt: sharedConversation.createdAt,
+        blobUrl: blob.url,
+      }
+
+      const updatedConversations = {
+        conversations: [
+          ...userConversations.conversations,
+          conversationMetadata,
+        ],
+      }
+      await ConversationsService.saveData(creatorId, updatedConversations)
 
       console.log(`Conversation saved successfully: ${key}`, {
         conversationId: id,
@@ -189,6 +213,123 @@ export class ConversationStorageService {
         conversationId: id,
       })
       throw new Error(`Failed to delete conversation: ${errorMessage}`)
+    }
+  }
+
+  /**
+   * Delete a conversation from both blob storage and user's KV list
+   */
+  async deleteUserConversation(
+    userId: string,
+    conversationId: string
+  ): Promise<void> {
+    try {
+      // First, delete from blob storage
+      await this.deleteConversation(conversationId)
+
+      // Then, remove from user's KV list
+      const userConversations = await ConversationsService.getData(userId)
+      const filteredConversations = userConversations.conversations.filter(
+        (conv) => conv.id !== conversationId
+      )
+
+      await ConversationsService.saveData(userId, {
+        conversations: filteredConversations,
+      })
+
+      console.log(
+        `Conversation ${conversationId} deleted successfully for user ${userId}`
+      )
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to delete user conversation:', {
+        error: errorMessage,
+        userId,
+        conversationId,
+      })
+      throw new Error(`Failed to delete conversation: ${errorMessage}`)
+    }
+  }
+
+  /**
+   * Update conversation title in user's KV list
+   */
+  async updateConversationTitle(
+    userId: string,
+    conversationId: string,
+    newTitle: string
+  ): Promise<void> {
+    try {
+      // Validate title length
+      if (newTitle.length > 240) {
+        throw new Error('Title cannot exceed 240 characters')
+      }
+
+      const userConversations = await ConversationsService.getData(userId)
+      const conversationIndex = userConversations.conversations.findIndex(
+        (conv) => conv.id === conversationId
+      )
+
+      if (conversationIndex === -1) {
+        throw new Error(`Conversation not found: ${conversationId}`)
+      }
+
+      // Update the title
+      userConversations.conversations[conversationIndex].title = newTitle
+
+      await ConversationsService.saveData(userId, userConversations)
+
+      console.log(`Conversation title updated successfully: ${conversationId}`)
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to update conversation title:', {
+        error: errorMessage,
+        userId,
+        conversationId,
+        newTitle,
+      })
+      throw new Error(`Failed to update conversation title: ${errorMessage}`)
+    }
+  }
+
+  /**
+   * Get user's conversation list from KV storage
+   */
+  async getUserConversations(userId: string): Promise<ConversationMetadata[]> {
+    try {
+      const userConversations = await ConversationsService.getData(userId)
+      // Sort by creation date, newest first
+      return userConversations.conversations.sort(
+        (a, b) => b.createdAt - a.createdAt
+      )
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to get user conversations:', {
+        error: errorMessage,
+        userId,
+      })
+      throw new Error(`Failed to get conversations: ${errorMessage}`)
+    }
+  }
+
+  /**
+   * Get conversation count for user
+   */
+  async getConversationCount(userId: string): Promise<number> {
+    try {
+      const userConversations = await ConversationsService.getData(userId)
+      return userConversations.conversations.length
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to get conversation count:', {
+        error: errorMessage,
+        userId,
+      })
+      return 0
     }
   }
 

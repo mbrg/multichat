@@ -29,6 +29,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onClearPossibilities,
   disableLivePossibilities = false,
   hasUnselectedPossibilities = false,
+  hasReachedConversationLimit = false,
 }) => {
   // Settings modal state
   const [showSettings, setShowSettings] = useState(false)
@@ -38,6 +39,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     | 'temperatures'
     | 'models'
     | 'generation'
+    | 'conversations'
     | undefined
   >()
 
@@ -57,6 +59,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       | 'temperatures'
       | 'models'
       | 'generation'
+      | 'conversations'
   ) => {
     setSettingsSection(section)
     setShowSettings(true)
@@ -91,6 +94,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         isGenerating={isGenerating}
         isPublishing={isPublishing}
         isAuthenticated={isAuthenticated}
+        hasReachedConversationLimit={hasReachedConversationLimit}
       />
 
       <AuthenticationBanner

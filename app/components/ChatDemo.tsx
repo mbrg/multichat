@@ -6,6 +6,7 @@ import type { Message, Attachment } from '../types/chat'
 import type { PossibilityResponse } from '../types/api'
 import { useSettings } from '../hooks/useSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
+import { useConversationCount } from '../hooks/useConversationCount'
 
 const ChatDemo: React.FC = () => {
   const router = useRouter()
@@ -31,6 +32,8 @@ const ChatDemo: React.FC = () => {
     enabledProviders,
     isLoading: apiKeysLoading,
   } = useApiKeys(refreshSettings)
+  const { hasReachedLimit, refresh: refreshConversationCount } =
+    useConversationCount()
 
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -244,6 +247,14 @@ const ChatDemo: React.FC = () => {
       return
     }
 
+    if (hasReachedLimit) {
+      console.error('Maximum number of conversations reached')
+      alert(
+        'You have reached the maximum number of saved conversations (100). Please delete some conversations to save new ones.'
+      )
+      return
+    }
+
     try {
       setIsPublishing(true)
 
@@ -267,10 +278,22 @@ const ChatDemo: React.FC = () => {
       })
 
       if (!response.ok) {
+        const error = await response.json()
+        if (error.error?.includes('Maximum number of conversations reached')) {
+          alert(
+            'You have reached the maximum number of saved conversations (100). Please delete some conversations to save new ones.'
+          )
+          // Refresh the conversation count
+          await refreshConversationCount()
+          return
+        }
         throw new Error(`Failed to publish: ${response.statusText}`)
       }
 
       const result = await response.json()
+
+      // Refresh the conversation count after successful save
+      await refreshConversationCount()
 
       return result
     } catch (error) {
@@ -279,7 +302,13 @@ const ChatDemo: React.FC = () => {
     } finally {
       setIsPublishing(false)
     }
-  }, [session, messages, getCompletedPossibilities])
+  }, [
+    session,
+    messages,
+    getCompletedPossibilities,
+    hasReachedLimit,
+    refreshConversationCount,
+  ])
 
   // Handle title click (go to home)
   const handleTitleClick = useCallback(() => {
@@ -307,6 +336,7 @@ const ChatDemo: React.FC = () => {
       }
       onClearPossibilities={(clearFn) => setClearPossibilities(() => clearFn)}
       hasUnselectedPossibilities={hasActivePossibilities()}
+      hasReachedConversationLimit={hasReachedLimit}
     />
   )
 }
