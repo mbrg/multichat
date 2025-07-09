@@ -166,13 +166,15 @@ export const MenuItems: React.FC<MenuItemsProps> = ({
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            strokeWidth="2"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
             />
+            <circle cx="12" cy="12" r="3" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M1 1l22 22" />
           </svg>
           <span>Conversations not stored unless shared</span>
         </div>
