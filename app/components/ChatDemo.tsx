@@ -259,8 +259,19 @@ const ChatDemo: React.FC = () => {
       setIsPublishing(true)
 
       // Extract possibilities from the current conversation
-      const possibilities: PossibilityResponse[] = getCompletedPossibilities
-        ? getCompletedPossibilities()
+      // Only include possibilities if there are unselected possibilities (assistant messages with empty content)
+      const hasUnselectedPossibilities = messages.some(
+        (msg) =>
+          msg.role === 'assistant' &&
+          (!msg.content || msg.content.trim() === '') &&
+          msg.possibilities &&
+          msg.possibilities.length > 0
+      )
+
+      const possibilities: PossibilityResponse[] = hasUnselectedPossibilities
+        ? getCompletedPossibilities
+          ? getCompletedPossibilities()
+          : []
         : []
 
       const response = await fetch('/api/conversations', {
