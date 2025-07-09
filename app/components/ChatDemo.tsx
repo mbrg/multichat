@@ -271,9 +271,7 @@ const ChatDemo: React.FC = () => {
         body: JSON.stringify({
           messages,
           possibilities,
-          metadata: {
-            title: 'Shared Conversation',
-          },
+          metadata: {},
         }),
       })
 
