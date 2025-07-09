@@ -40,7 +40,7 @@ const MessageWithIndependentPossibilities: React.FC<
   const isUser = message.role === 'user'
   const isQuoteMessage = message.isQuoteMessage || false
   const { settings } = useSettings()
-  
+
   // Use MessageComponent for quote messages
   if (isQuoteMessage) {
     return (
