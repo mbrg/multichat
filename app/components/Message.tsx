@@ -15,6 +15,7 @@ const Message: React.FC<ExtendedMessageProps> = ({
   className = '',
 }) => {
   const isUser = message.role === 'user'
+  const isQuoteMessage = message.isQuoteMessage || false
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Check if possibilities are still streaming in
@@ -32,6 +33,30 @@ const Message: React.FC<ExtendedMessageProps> = ({
     )
 
   const hasModelInfo = !isUser
+
+  // Special styling for quote messages
+  if (isQuoteMessage) {
+    return (
+      <div className={`flex justify-center py-2 ${className}`}>
+        <div className="max-w-2xl w-full">
+          <div className="py-2 bg-[#667eea]/5 rounded-lg">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-[#e0e0e0] leading-relaxed italic">"{message.content}"</p>
+              <span className="text-xs text-[#888] ml-4 whitespace-nowrap">
+                {message.timestamp.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`flex gap-3 ${className}`}>

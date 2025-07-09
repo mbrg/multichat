@@ -159,7 +159,20 @@ export default function ConversationPage({ params }: ConversationPageProps) {
           })
         }
 
-        setMessages(messagesWithPossibilities)
+        // Add title as quote message before all other messages (only if title exists and is not empty)
+        let finalMessages = messagesWithPossibilities
+        if (conversationData.metadata?.title && conversationData.metadata.title.trim() !== '') {
+          const quoteMessage: Message = {
+            id: 'quote-title',
+            role: 'assistant',
+            content: conversationData.metadata.title,
+            timestamp: new Date(conversationData.createdAt),
+            isQuoteMessage: true
+          }
+          finalMessages = [quoteMessage, ...messagesWithPossibilities]
+        }
+        
+        setMessages(finalMessages)
         setPossibilities(conversationData.possibilities)
       } catch (err) {
         console.error('Error fetching conversation:', err)
