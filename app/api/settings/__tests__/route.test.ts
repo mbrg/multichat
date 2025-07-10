@@ -159,7 +159,8 @@ describe('/api/settings', () => {
 
       const request = new NextRequest(createTestUrl('/api/settings'), {
         method: 'POST',
-        body: JSON.stringify(null),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invalidField: 'invalid' }),
       })
       const response = await POST(request)
 
@@ -181,6 +182,7 @@ describe('/api/settings', () => {
 
       const request = new NextRequest(createTestUrl('/api/settings'), {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ systemPrompt: 'New prompt' }),
       })
       const response = await POST(request)
@@ -209,6 +211,7 @@ describe('/api/settings', () => {
 
       const request = new NextRequest(createTestUrl('/api/settings'), {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSettings),
       })
       const response = await POST(request)
@@ -235,7 +238,7 @@ describe('/api/settings', () => {
       vi.mocked(getServerSession).mockResolvedValue(mockSession)
       const existingSettings = {
         systemPrompt: 'Keep this',
-        oldSetting: 'Remove this',
+        possibilityMultiplier: 2,
       }
       mockKVStore.get.mockResolvedValue(
         `${'a'.repeat(32)}:${Buffer.from(JSON.stringify(existingSettings)).toString('hex')}`
@@ -244,14 +247,15 @@ describe('/api/settings', () => {
 
       const request = new NextRequest(createTestUrl('/api/settings'), {
         method: 'POST',
-        body: JSON.stringify({ oldSetting: null }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ systemPrompt: 'Updated prompt' }),
       })
       const response = await POST(request)
 
       expect(response.status).toBe(200)
       const data = await response.json()
-      expect(data.systemPrompt).toBe('Keep this')
-      expect(data.oldSetting).toBeUndefined()
+      expect(data.systemPrompt).toBe('Updated prompt')
+      expect(data.possibilityMultiplier).toBe(2)
     })
   })
 
@@ -347,7 +351,7 @@ describe('/api/settings', () => {
 
       expect(response.status).toBe(500)
       const data = await response.json()
-      expect(data.error).toBe('Failed to delete settings')
+      expect(data.error).toBe('Internal server error')
     })
   })
 })

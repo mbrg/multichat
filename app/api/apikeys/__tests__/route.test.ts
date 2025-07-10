@@ -133,13 +133,14 @@ describe('/api/apikeys', () => {
 
       const request = new NextRequest(createTestUrl('/api/apikeys'), {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: 'invalid', apiKey: 'sk-123' }),
       })
       const response = await POST(request)
 
       expect(response.status).toBe(400)
       const data = await response.json()
-      expect(data.error).toContain('Invalid provider')
+      expect(data.error).toContain('Invalid API key data')
     })
 
     it('should reject non-string API key', async () => {
@@ -147,13 +148,14 @@ describe('/api/apikeys', () => {
 
       const request = new NextRequest(createTestUrl('/api/apikeys'), {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: 'openai', apiKey: 123 }),
       })
       const response = await POST(request)
 
       expect(response.status).toBe(400)
       const data = await response.json()
-      expect(data.error).toBe('API key must be a string')
+      expect(data.error).toContain('Invalid API key data')
     })
 
     it('should set a new API key', async () => {
@@ -163,6 +165,7 @@ describe('/api/apikeys', () => {
 
       const request = new NextRequest(createTestUrl('/api/apikeys'), {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: 'openai', apiKey: 'sk-123' }),
       })
       const response = await POST(request)
@@ -188,6 +191,7 @@ describe('/api/apikeys', () => {
 
       const request = new NextRequest(createTestUrl('/api/apikeys'), {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: 'openai', apiKey: 'sk-new' }),
       })
       const response = await POST(request)
@@ -208,7 +212,8 @@ describe('/api/apikeys', () => {
 
       const request = new NextRequest(createTestUrl('/api/apikeys'), {
         method: 'POST',
-        body: JSON.stringify({ provider: 'openai', apiKey: '' }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'openai', apiKey: ' ' }),
       })
       const response = await POST(request)
 

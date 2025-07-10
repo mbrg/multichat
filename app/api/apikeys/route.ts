@@ -11,9 +11,18 @@ import {
   ApiKeysService,
   type ApiKeyData,
 } from '../../services/EncryptedDataService'
+import { z } from 'zod'
 
 const VALID_API_KEY_PROVIDERS = AI_PROVIDER_LIST
 type ApiKeyProvider = AIProviderType
+
+// Validation schemas
+const ApiKeySetSchema = z.object({
+  provider: z.enum(VALID_API_KEY_PROVIDERS as [string, ...string[]]),
+  apiKey: z.string().min(1).max(500).trim(),
+})
+
+const ProviderSchema = z.enum(VALID_API_KEY_PROVIDERS as [string, ...string[]])
 
 interface ApiKeyStatus {
   openai: boolean
@@ -63,29 +72,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Validate Content-Type
+    const contentType = request.headers.get('content-type')
+    if (!contentType || !contentType.includes('application/json')) {
+      return NextResponse.json(
+        { error: 'Content-Type must be application/json' },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
-    const { provider, apiKey } = body
 
-    // Validate provider
-    if (
-      !provider ||
-      !VALID_API_KEY_PROVIDERS.includes(provider as ApiKeyProvider)
-    ) {
-      return NextResponse.json(
-        {
-          error: `Invalid provider. Must be one of: ${VALID_API_KEY_PROVIDERS.join(', ')}`,
-        },
-        { status: 400 }
-      )
-    }
-
-    // Validate API key
-    if (typeof apiKey !== 'string') {
-      return NextResponse.json(
-        { error: 'API key must be a string' },
-        { status: 400 }
-      )
-    }
+    // Validate request body
+    const { provider, apiKey } = ApiKeySetSchema.parse(body)
 
     // Get current data and update
     const apiKeysData = await ApiKeysService.getData(session.user.id)
@@ -113,9 +112,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status })
   } catch (error) {
     const context = await getServerLogContext()
+
+    if (error instanceof z.ZodError) {
+      log.warn('API key validation error', context)
+      return NextResponse.json(
+        { error: 'Invalid API key data', details: error.errors },
+        { status: 400 }
+      )
+    }
+
     log.error('Failed to set API key', error as Error, context)
     return NextResponse.json(
-      { error: 'Failed to set API key' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -133,17 +141,11 @@ export async function DELETE(request: NextRequest) {
     const provider = url.searchParams.get('provider')
 
     if (provider) {
-      // Delete specific API key
-      if (!VALID_API_KEY_PROVIDERS.includes(provider as ApiKeyProvider)) {
-        return NextResponse.json(
-          {
-            error: `Invalid provider. Must be one of: ${VALID_API_KEY_PROVIDERS.join(', ')}`,
-          },
-          { status: 400 }
-        )
-      }
+      // Validate provider parameter
+      const validatedProvider = ProviderSchema.parse(provider)
 
-      await ApiKeysService.deleteKey(session.user.id, provider)
+      // Delete specific API key
+      await ApiKeysService.deleteKey(session.user.id, validatedProvider)
     } else {
       // Delete all API keys
       await ApiKeysService.deleteData(session.user.id)
@@ -152,9 +154,18 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     const context = await getServerLogContext()
+
+    if (error instanceof z.ZodError) {
+      log.warn('Provider validation error', context)
+      return NextResponse.json(
+        { error: 'Invalid provider parameter' },
+        { status: 400 }
+      )
+    }
+
     log.error('Failed to delete API key', error as Error, context)
     return NextResponse.json(
-      { error: 'Failed to delete API key' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
