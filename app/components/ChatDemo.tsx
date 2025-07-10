@@ -260,13 +260,20 @@ const ChatDemo: React.FC = () => {
 
       // Extract possibilities from the current conversation
       // Only include possibilities if there are unselected possibilities (assistant messages with empty content)
-      const hasUnselectedPossibilities = messages.some(
-        (msg) =>
-          msg.role === 'assistant' &&
-          (!msg.content || msg.content.trim() === '') &&
-          msg.possibilities &&
-          msg.possibilities.length > 0
-      )
+      const hasUnselectedPossibilities = (() => {
+        // Check if there are completed possibilities available
+        const completedPossibilities = getCompletedPossibilities
+          ? getCompletedPossibilities()
+          : []
+        if (completedPossibilities.length === 0) return false
+
+        // Check if there's an empty assistant message waiting for selection
+        return messages.some(
+          (msg) =>
+            msg.role === 'assistant' &&
+            (!msg.content || msg.content.trim() === '')
+        )
+      })()
 
       const possibilities: PossibilityResponse[] = hasUnselectedPossibilities
         ? getCompletedPossibilities
