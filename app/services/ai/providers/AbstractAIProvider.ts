@@ -194,22 +194,47 @@ export abstract class AbstractAIProvider implements AIProvider {
 
       // Wait for final result with timeout
       console.log(`[${this.name}] Waiting for finishReason and usage`)
-      const finalResult = (await Promise.race([
-        result.finishReason,
-        new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error('Timeout waiting for finishReason')),
-            5000
-          )
-        ),
-      ])) as any
+      // Provider-specific timeout for xAI reasoning models (longer timeout needed)
+      // xAI docs recommend overriding timeout for reasoning models
+      const isXAIReasoningModel = this.name === 'xAI' && model.isReasoningModel
+      const timeout = isXAIReasoningModel ? 30000 : 5000
 
-      const finalUsage = (await Promise.race([
-        result.usage,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout waiting for usage')), 5000)
-        ),
-      ])) as any
+      let finalResult: any
+      let finalUsage: any
+
+      try {
+        finalResult = await Promise.race([
+          result.finishReason,
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Timeout waiting for finishReason')),
+              timeout
+            )
+          ),
+        ])
+      } catch (error) {
+        console.warn(
+          `[${this.name}] Timeout waiting for finishReason, using default`
+        )
+        finalResult = 'stop'
+      }
+
+      try {
+        finalUsage = await Promise.race([
+          result.usage,
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Timeout waiting for usage')),
+              timeout
+            )
+          ),
+        ])
+      } catch (error) {
+        console.warn(
+          `[${this.name}] Timeout waiting for usage, skipping usage data`
+        )
+        finalUsage = null
+      }
 
       console.log(`[${this.name}] Final result:`, { finalResult, finalUsage })
 
