@@ -60,7 +60,6 @@ export const ShareMenu: React.FC<ShareMenuProps> = ({
       setIsSharing(true)
       try {
         await navigator.share({
-          title: 'Shared Conversation',
           text: 'Check out this conversation',
           url: shareUrl,
         })

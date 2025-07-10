@@ -18,6 +18,7 @@ export interface ModalContainerProps {
     | 'temperatures'
     | 'models'
     | 'generation'
+    | 'conversations'
   onCloseSettings: () => void
 
   // Auth popup

@@ -7,6 +7,7 @@ export interface PublishButtonProps {
   isLoading?: boolean
   hasMessages: boolean
   isGenerating: boolean
+  hasReachedLimit?: boolean
 }
 
 export const PublishButton: React.FC<PublishButtonProps> = ({
@@ -15,6 +16,7 @@ export const PublishButton: React.FC<PublishButtonProps> = ({
   isLoading = false,
   hasMessages,
   isGenerating,
+  hasReachedLimit = false,
 }) => {
   const [showCopiedIndicator, setShowCopiedIndicator] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
@@ -23,7 +25,8 @@ export const PublishButton: React.FC<PublishButtonProps> = ({
     id: string
   } | null>(null)
 
-  const isDisabled = disabled || !hasMessages || isGenerating || isLoading
+  const isDisabled =
+    disabled || !hasMessages || isGenerating || isLoading || hasReachedLimit
 
   const handlePublish = async () => {
     if (isDisabled) return
@@ -73,11 +76,13 @@ export const PublishButton: React.FC<PublishButtonProps> = ({
           title={
             disabled
               ? 'Sign in to publish conversations'
-              : !hasMessages
-                ? 'Add messages to publish conversation'
-                : isGenerating
-                  ? 'Wait for possibilities to finish generating'
-                  : 'Publish conversation and share'
+              : hasReachedLimit
+                ? 'Maximum number of conversations reached (100). Delete some to save new ones.'
+                : !hasMessages
+                  ? 'Add messages to publish conversation'
+                  : isGenerating
+                    ? 'Wait for possibilities to finish generating'
+                    : 'Publish conversation and share'
           }
         >
           {isLoading ? (

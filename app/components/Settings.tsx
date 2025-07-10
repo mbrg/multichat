@@ -6,6 +6,7 @@ import SystemInstructionsPanel from './SystemInstructionsPanel'
 import TemperaturesPanel from './TemperaturesPanel'
 import ModelsPanel from './ModelsPanel'
 import GenerationSettingsPanel from './GenerationSettingsPanel'
+import ConversationsPanel from './ConversationsPanel'
 import ErrorBoundary from './ErrorBoundary'
 import { CloudSettings } from '../utils/cloudSettings'
 import { useApiKeys } from '../hooks/useApiKeys'
@@ -19,6 +20,7 @@ interface SettingsProps {
     | 'temperatures'
     | 'models'
     | 'generation'
+    | 'conversations'
 }
 
 type SettingsSection =
@@ -27,6 +29,7 @@ type SettingsSection =
   | 'temperatures'
   | 'models'
   | 'generation'
+  | 'conversations'
 
 const Settings: React.FC<SettingsProps> = ({
   isOpen,
@@ -50,6 +53,7 @@ const Settings: React.FC<SettingsProps> = ({
     { id: 'models' as const, label: 'Models', icon: '🧠' },
     { id: 'temperatures' as const, label: 'Temperatures', icon: '🌡️' },
     { id: 'generation' as const, label: 'Generation', icon: '⚙️' },
+    { id: 'conversations' as const, label: 'Conversations', icon: '💬' },
   ]
 
   // Update active section when initialSection changes
@@ -108,6 +112,7 @@ const Settings: React.FC<SettingsProps> = ({
             {activeSection === 'models' && <ModelsPanel />}
             {activeSection === 'temperatures' && <TemperaturesPanel />}
             {activeSection === 'generation' && <GenerationSettingsPanel />}
+            {activeSection === 'conversations' && <ConversationsPanel />}
           </ErrorBoundary>
         </div>
       </div>
