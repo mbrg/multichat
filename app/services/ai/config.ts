@@ -424,11 +424,12 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       name: 'Grok 4',
       alias: 'grok-4',
       provider: 'xai',
-      description: 'Next generation Grok model with enhanced capabilities',
+      description: 'Next generation reasoning model with enhanced capabilities',
       supportsLogprobs: true,
       maxTokens: 8192,
       priority: 'high',
       supportedMimeTypes: ['text/plain'],
+      isReasoningModel: true,
     },
   ],
 }
