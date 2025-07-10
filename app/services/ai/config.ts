@@ -419,6 +419,18 @@ export const MODEL_CONFIGS: Record<ProviderType, ModelInfo[]> = {
       priority: 'high',
       supportedMimeTypes: ['text/plain'],
     },
+    {
+      id: 'grok-4-0709',
+      name: 'Grok 4',
+      alias: 'grok-4',
+      provider: 'xai',
+      description: 'Next generation reasoning model with enhanced capabilities',
+      supportsLogprobs: true,
+      maxTokens: 8192,
+      priority: 'high',
+      supportedMimeTypes: ['text/plain'],
+      isReasoningModel: true,
+    },
   ],
 }
 
