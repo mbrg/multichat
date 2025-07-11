@@ -110,6 +110,8 @@ export const MessageInputContainer: React.FC<MessageInputContainerProps> = ({
                 mbrg0
               </a>
               <span>•</span>
+              <span>Free</span>
+              <span>•</span>
               <a
                 href="https://github.com/mbrg/multichat"
                 target="_blank"
