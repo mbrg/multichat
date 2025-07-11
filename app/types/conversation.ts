@@ -28,3 +28,14 @@ export interface ShareConversationResponse {
   id: string
   url: string
 }
+
+export interface ConversationMetadata {
+  id: string
+  title: string
+  createdAt: number
+  blobUrl: string
+}
+
+export interface UserConversations {
+  conversations: ConversationMetadata[]
+}

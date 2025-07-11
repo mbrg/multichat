@@ -13,6 +13,7 @@ interface MenuProps {
       | 'temperatures'
       | 'models'
       | 'generation'
+      | 'conversations'
   ) => void
   className?: string
 }
@@ -51,6 +52,7 @@ const Menu: React.FC<MenuProps> = ({ onOpenSettings, className = '' }) => {
       | 'temperatures'
       | 'models'
       | 'generation'
+      | 'conversations'
   ) => {
     e.preventDefault()
     e.stopPropagation()

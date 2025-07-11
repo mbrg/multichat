@@ -81,6 +81,7 @@ export class EncryptedDataService<T = Record<string, any>> {
 }
 
 import { UserSettings } from '../types/settings'
+import { UserConversations } from '../types/conversation'
 import {
   createDefaultSettings,
   migrateSettings,
@@ -132,3 +133,7 @@ export const ApiKeysService = new EncryptedDataService<ApiKeyData>(
   {}
 )
 export const SettingsService = new VersionedSettingsService()
+export const ConversationsService = new EncryptedDataService<UserConversations>(
+  'conversations',
+  { conversations: [] }
+)

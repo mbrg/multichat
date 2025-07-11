@@ -38,7 +38,27 @@ const MessageWithIndependentPossibilities: React.FC<
   disableLivePossibilities = false,
 }) => {
   const isUser = message.role === 'user'
+  const isQuoteMessage = message.isQuoteMessage || false
   const { settings } = useSettings()
+
+  // Use MessageComponent for quote messages
+  if (isQuoteMessage) {
+    return (
+      <MessageComponent
+        message={message}
+        onSelectPossibility={(possibility) => {
+          // Find the last user message for compatibility
+          const lastUserMessage = conversationMessages
+            .filter((m) => m.role === 'user')
+            .pop()
+          if (lastUserMessage) {
+            onSelectPossibility?.(lastUserMessage, possibility)
+          }
+        }}
+        className={className}
+      />
+    )
+  }
 
   // Log message details for debugging possibilities
   log.debug('MessageWithIndependentPossibilities render', {

@@ -15,7 +15,7 @@ if (!env) {
 export const metadata: Metadata = {
   title: `${prefix}${baseTitle}`,
   description:
-    'A production-ready web application that shows multiple response possibilities from various AI models simultaneously.',
+    'Open Source web application that shows multiple response possibilities from various AI models simultaneously.',
   keywords: [
     'AI',
     'chat',
@@ -35,14 +35,14 @@ export const metadata: Metadata = {
     url: 'https://multichat.vercel.app',
     title: `${prefix}${baseTitle}`,
     description:
-      'An AI assistant that shows multiple response possibilities from various AI models simultaneously.',
+      'Open Source AI assistant that shows multiple response possibilities from various AI models simultaneously.',
     siteName: 'chatsbox.ai',
   },
   twitter: {
     card: 'summary_large_image',
     title: `${prefix}${baseTitle}`,
     description:
-      'An AI assistant that shows multiple response possibilities from various AI models simultaneously.',
+      'Open Source AI assistant that shows multiple response possibilities from various AI models simultaneously.',
   },
 }
 

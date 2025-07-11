@@ -17,6 +17,7 @@ interface MenuDropdownProps {
       | 'temperatures'
       | 'models'
       | 'generation'
+      | 'conversations'
   ) => void
 }
 

@@ -20,6 +20,7 @@ export interface Message {
   isPossibility?: boolean // True if this is a possibility that can be selected
   systemInstruction?: string // Name of the system instruction used
   error?: string // Short error message when generation fails
+  isQuoteMessage?: boolean // True if this is a quote message (e.g., conversation title)
 }
 
 export interface ChatContainerProps {
@@ -44,6 +45,7 @@ export interface ChatContainerProps {
   onClearPossibilities?: (clearFn: () => void) => void
   disableLivePossibilities?: boolean
   hasUnselectedPossibilities?: boolean
+  hasReachedConversationLimit?: boolean
 }
 
 export interface MessageProps {

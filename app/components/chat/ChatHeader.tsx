@@ -17,6 +17,7 @@ export interface ChatHeaderProps {
       | 'temperatures'
       | 'models'
       | 'generation'
+      | 'conversations'
   ) => void
   onPublishConversation?: () => Promise<{ url: string; id: string } | void>
   onTitleClick: () => void
@@ -24,6 +25,7 @@ export interface ChatHeaderProps {
   isGenerating: boolean
   isPublishing: boolean
   isAuthenticated?: boolean
+  hasReachedConversationLimit?: boolean
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -34,6 +36,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   isGenerating,
   isPublishing,
   isAuthenticated = true,
+  hasReachedConversationLimit = false,
 }) => {
   return (
     <div className="flex items-center justify-between p-4 bg-[#1a1a1a] border-b border-[#2a2a2a] min-h-[56px]">
@@ -52,6 +55,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           isGenerating={isGenerating}
           isLoading={isPublishing}
           disabled={!isAuthenticated || !onPublishConversation}
+          hasReachedLimit={hasReachedConversationLimit}
         />
         <Menu onOpenSettings={onOpenSettings} />
       </div>
