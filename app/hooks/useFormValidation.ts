@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { SYSTEM_INSTRUCTION_LIMITS } from '@/constants/defaults'
 
 export interface ValidationRule {
   validator: (value: any, formData?: Record<string, any>) => boolean
@@ -155,8 +156,9 @@ export const createSystemInstructionValidation = (
     required: true,
     rules: [
       {
-        validator: (value: string) => value.length <= 1000,
-        message: 'Content must be 1000 characters or less',
+        validator: (value: string) =>
+          value.length <= SYSTEM_INSTRUCTION_LIMITS.MAX_CONTENT_CHARS,
+        message: `Content must be ${SYSTEM_INSTRUCTION_LIMITS.MAX_CONTENT_CHARS} characters or less`,
       },
     ],
   },
