@@ -3,20 +3,26 @@ import {
   randomBytes,
   createCipheriv,
   createDecipheriv,
+  pbkdf2,
 } from 'crypto'
+import { promisify } from 'util'
+
+const pbkdf2Async = promisify(pbkdf2)
 
 // Derive a user-specific encryption key from user ID and dedicated encryption secret
-export function deriveUserKey(userId: string): Promise<Buffer> {
+export async function deriveUserKey(userId: string): Promise<Buffer> {
   const encryptionSecret = process.env.KV_ENCRYPTION_KEY
   if (!encryptionSecret) {
     throw new Error('KV_ENCRYPTION_KEY environment variable is required')
   }
 
-  const key = createHash('sha256')
-    .update(userId + encryptionSecret)
-    .digest()
+  // Create a salt from the user ID (deterministic but unique per user)
+  const salt = createHash('sha256').update(userId).digest()
 
-  return Promise.resolve(key)
+  // Use PBKDF2 with 100,000 iterations for better security
+  const key = await pbkdf2Async(encryptionSecret, salt, 100000, 32, 'sha256')
+
+  return key
 }
 
 // Encrypt data with user-specific key
