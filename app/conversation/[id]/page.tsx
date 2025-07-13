@@ -135,12 +135,12 @@ export async function generateMetadata({
     const url = `${process.env.NEXTAUTH_URL}/conversation/${id}`
 
     return {
-      title: `${truncatedTitle} | AI Chat Sandbox`,
+      title: `Prompt: ${truncatedTitle} | AI Chat Sandbox`,
       description: description,
       // Open Graph - Facebook, WhatsApp, Slack, Teams, LinkedIn
       openGraph: {
         type: 'article',
-        title: `${truncatedTitle} | AI Chat Sandbox`,
+        title: `Prompt: ${truncatedTitle} | AI Chat Sandbox`,
         description: description,
         url,
         siteName: 'chatsbox.ai',
@@ -160,7 +160,7 @@ export async function generateMetadata({
         card: 'summary_large_image',
         site: '@chatsboxai',
         creator: '@chatsboxai',
-        title: `${truncatedTitle} | AI Chat Sandbox`,
+        title: `Prompt: ${truncatedTitle} | AI Chat Sandbox`,
         description: description,
         images: [
           `${process.env.NEXTAUTH_URL}/twitter-card-1200x675-summary-large-image.png`,
