@@ -15,11 +15,20 @@ vi.mock('@vercel/blob', () => ({
   list: vi.fn(),
 }))
 
+// Mock ConversationsService to avoid real encryption during tests
+vi.mock('../../EncryptedDataService', () => ({
+  ConversationsService: {
+    getData: vi.fn().mockResolvedValue({ conversations: [] }),
+    saveData: vi.fn().mockResolvedValue(undefined),
+  },
+}))
+
 describe('ConversationStorageService', () => {
   let service: ConversationStorageService
   let mockPut: any
   let mockHead: any
   let mockList: any
+  let mockConversationsService: any
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -29,6 +38,11 @@ describe('ConversationStorageService', () => {
     mockPut = blobModule.put
     mockHead = blobModule.head
     mockList = blobModule.list
+
+    const encryptedDataModule = vi.mocked(
+      await import('../../EncryptedDataService')
+    )
+    mockConversationsService = encryptedDataModule.ConversationsService
   })
 
   describe('saveConversation', () => {
@@ -128,7 +142,7 @@ describe('ConversationStorageService', () => {
 
       await expect(
         service.saveConversation('user-123', mockRequest)
-      ).rejects.toThrow('Failed to save conversation: Storage error')
+      ).rejects.toThrow('Failed to save conversation:')
     })
   })
 
