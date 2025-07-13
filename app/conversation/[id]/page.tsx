@@ -13,11 +13,7 @@ export async function generateMetadata({
 
   try {
     // Fetch conversation data server-side
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000')
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'
 
     const response = await fetch(`${baseUrl}/api/conversations/${id}`, {
       next: { revalidate: 3600 }, // Cache for 1 hour
