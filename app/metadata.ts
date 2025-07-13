@@ -32,17 +32,30 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://multichat.vercel.app',
+    url: 'https://chatsbox.ai',
     title: `${prefix}${baseTitle}`,
     description:
       'Open Source AI assistant that shows multiple response possibilities from various AI models simultaneously.',
     siteName: 'chatsbox.ai',
+    images: [
+      {
+        url: 'https://chatsbox.ai/og-image-1200x630-facebook-meta-whatsapp-linkedin.png',
+        width: 1200,
+        height: 630,
+        alt: 'AI Chat Sandbox - Multiple AI Models',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@chatsboxai',
+    creator: '@chatsboxai',
     title: `${prefix}${baseTitle}`,
     description:
       'Open Source AI assistant that shows multiple response possibilities from various AI models simultaneously.',
+    images: [
+      'https://chatsbox.ai/twitter-card-1200x675-summary-large-image.png',
+    ],
   },
 }
 

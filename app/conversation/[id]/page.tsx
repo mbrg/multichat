@@ -13,7 +13,10 @@ export async function generateMetadata({
 
   try {
     // Fetch conversation data server-side
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'
+    const baseUrl =
+      process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      'https://chatsbox.ai'
 
     const response = await fetch(`${baseUrl}/api/conversations/${id}`, {
       next: { revalidate: 3600 }, // Cache for 1 hour
@@ -24,6 +27,20 @@ export async function generateMetadata({
         title: 'Conversation Not Found - chatsbox.ai',
         description:
           'The requested conversation could not be found. | AI Chat Sandbox',
+        openGraph: {
+          type: 'website',
+          title: 'Conversation Not Found - chatsbox.ai',
+          description:
+            'The requested conversation could not be found. | AI Chat Sandbox',
+          siteName: 'chatsbox.ai',
+        },
+        twitter: {
+          card: 'summary',
+          site: '@chatsboxai',
+          title: 'Conversation Not Found',
+          description:
+            'The requested conversation could not be found. | AI Chat Sandbox',
+        },
       }
     }
 
@@ -126,6 +143,7 @@ export async function generateMetadata({
     return {
       title: `${truncatedTitle} - chatsbox.ai`,
       description: finalDescription,
+      // Open Graph - Facebook, WhatsApp, Slack, Teams, LinkedIn
       openGraph: {
         type: 'article',
         title: truncatedTitle,
@@ -133,11 +151,52 @@ export async function generateMetadata({
         url,
         siteName: 'chatsbox.ai',
         locale: 'en_US',
+        // Facebook/Meta/WhatsApp/LinkedIn specific
+        images: [
+          {
+            url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
+            width: 1200,
+            height: 630,
+            alt: 'AI Chat Sandbox - Multiple AI Models Conversation',
+          },
+        ],
       },
+      // Twitter/X
       twitter: {
         card: 'summary_large_image',
+        site: '@chatsboxai',
+        creator: '@chatsboxai',
         title: truncatedTitle,
         description: finalDescription,
+        images: [
+          `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/twitter-card-1200x675-summary-large-image.png`,
+        ],
+      },
+      // Additional meta tags for broader platform support
+      other: {
+        // Discord, Signal (use Open Graph)
+        'og:image:width': '1200',
+        'og:image:height': '630',
+        'og:image:type': 'image/png',
+
+        // LinkedIn specific
+        'article:author': 'chatsbox.ai',
+        'article:publisher': 'https://chatsbox.ai',
+        'article:section': 'AI Conversations',
+
+        // Microsoft Teams (uses Open Graph + additional)
+        'msapplication-TileColor': '#667eea',
+        'theme-color': '#667eea',
+
+        // WhatsApp (uses Open Graph but prefers specific image ratios)
+        'og:image:alt': 'AI Chat Sandbox conversation preview',
+
+        // General SEO
+        robots: 'index,follow',
+        googlebot: 'index,follow',
+        author: 'chatsbox.ai',
+        keywords:
+          'AI, chat, conversation, multiple models, OpenAI, Anthropic, Google',
       },
       alternates: {
         canonical: url,
@@ -149,6 +208,29 @@ export async function generateMetadata({
     return {
       title: 'AI Conversation - chatsbox.ai',
       description: 'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
+      openGraph: {
+        type: 'website',
+        title: 'AI Conversation - chatsbox.ai',
+        description:
+          'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
+        url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/conversation/${id}`,
+        siteName: 'chatsbox.ai',
+        images: [
+          {
+            url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
+            width: 1200,
+            height: 630,
+            alt: 'AI Chat Sandbox',
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        site: '@chatsboxai',
+        title: 'AI Conversation - chatsbox.ai',
+        description:
+          'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
+      },
     }
   }
 }
