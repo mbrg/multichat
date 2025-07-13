@@ -32,14 +32,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://chatsbox.ai',
+    url: process.env.NEXTAUTH_URL || 'https://chatsbox.ai',
     title: `${prefix}${baseTitle}`,
     description:
       'Open Source AI assistant that shows multiple response possibilities from various AI models simultaneously.',
     siteName: 'chatsbox.ai',
     images: [
       {
-        url: 'https://chatsbox.ai/og-image-1200x630-facebook-meta-whatsapp-linkedin.png',
+        url: `${process.env.NEXTAUTH_URL}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
         width: 1200,
         height: 630,
         alt: 'AI Chat Sandbox - Multiple AI Models',
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     description:
       'Open Source AI assistant that shows multiple response possibilities from various AI models simultaneously.',
     images: [
-      'https://chatsbox.ai/twitter-card-1200x675-summary-large-image.png',
+      `${process.env.NEXTAUTH_URL}/twitter-card-1200x675-summary-large-image.png`,
     ],
   },
 }

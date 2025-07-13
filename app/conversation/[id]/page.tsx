@@ -135,7 +135,7 @@ export async function generateMetadata({
       }
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/conversation/${id}`
+    const url = `${process.env.NEXTAUTH_URL}/conversation/${id}`
 
     // Add AI Chat Sandbox suffix to description
     const finalDescription = `${description} | AI Chat Sandbox`
@@ -154,7 +154,7 @@ export async function generateMetadata({
         // Facebook/Meta/WhatsApp/LinkedIn specific
         images: [
           {
-            url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
+            url: `${process.env.NEXTAUTH_URL}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
             width: 1200,
             height: 630,
             alt: 'AI Chat Sandbox - Multiple AI Models Conversation',
@@ -169,7 +169,7 @@ export async function generateMetadata({
         title: truncatedTitle,
         description: finalDescription,
         images: [
-          `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/twitter-card-1200x675-summary-large-image.png`,
+          `${process.env.NEXTAUTH_URL}/twitter-card-1200x675-summary-large-image.png`,
         ],
       },
       // Additional meta tags for broader platform support
@@ -213,11 +213,11 @@ export async function generateMetadata({
         title: 'AI Conversation - chatsbox.ai',
         description:
           'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
-        url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/conversation/${id}`,
+        url: `${process.env.NEXTAUTH_URL}/conversation/${id}`,
         siteName: 'chatsbox.ai',
         images: [
           {
-            url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
+            url: `${process.env.NEXTAUTH_URL}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
             width: 1200,
             height: 630,
             alt: 'AI Chat Sandbox',
