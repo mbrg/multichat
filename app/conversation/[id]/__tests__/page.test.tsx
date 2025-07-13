@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import ConversationPage from '../page'
+import ConversationClient from '../ConversationClient'
 import type { SharedConversation } from '../../../types/conversation'
 
 // Mock fetch globally
@@ -34,7 +34,7 @@ vi.mock('../../../components/LoadingSkeleton', () => ({
   default: () => <div data-testid="loading-skeleton">Loading skeleton</div>,
 }))
 
-describe('ConversationPage', () => {
+describe('ConversationClient', () => {
   const mockConversation: SharedConversation = {
     id: 'test-id',
     version: '1.0.0',
@@ -80,7 +80,7 @@ describe('ConversationPage', () => {
       json: () => Promise.resolve(mockConversation),
     } as Response)
 
-    render(<ConversationPage params={Promise.resolve({ id: 'test-id' })} />)
+    render(<ConversationClient params={Promise.resolve({ id: 'test-id' })} />)
 
     // Initially shows loading
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
@@ -93,7 +93,7 @@ describe('ConversationPage', () => {
       json: () => Promise.resolve(mockConversation),
     } as Response)
 
-    render(<ConversationPage params={Promise.resolve({ id: 'test-id' })} />)
+    render(<ConversationClient params={Promise.resolve({ id: 'test-id' })} />)
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/conversations/test-id')
