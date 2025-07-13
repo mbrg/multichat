@@ -32,12 +32,12 @@ export class CloudKVStore implements IKVStore {
     try {
       const value = (await this.redis.get(key)) as T | null
       console.log(
-        `[CloudKVStore:${this.instanceId}] GET ${key} -> ${value ? 'found' : 'null'}`
+        `[CloudKVStore:${this.instanceId}] GET ${this.obfuscateKey(key)} -> ${value ? 'found' : 'null'}`
       )
       return value
     } catch (error) {
       console.error(
-        `[CloudKVStore:${this.instanceId}] GET ${key} -> ERROR:`,
+        `[CloudKVStore:${this.instanceId}] GET ${this.obfuscateKey(key)} -> ERROR:`,
         error
       )
       throw error
@@ -47,10 +47,12 @@ export class CloudKVStore implements IKVStore {
   async set(key: string, value: any): Promise<void> {
     try {
       await this.redis.set(key, value)
-      console.log(`[CloudKVStore:${this.instanceId}] SET ${key} -> stored`)
+      console.log(
+        `[CloudKVStore:${this.instanceId}] SET ${this.obfuscateKey(key)} -> stored`
+      )
     } catch (error) {
       console.error(
-        `[CloudKVStore:${this.instanceId}] SET ${key} -> ERROR:`,
+        `[CloudKVStore:${this.instanceId}] SET ${this.obfuscateKey(key)} -> ERROR:`,
         error
       )
       throw error
@@ -60,10 +62,12 @@ export class CloudKVStore implements IKVStore {
   async del(key: string): Promise<void> {
     try {
       await this.redis.del(key)
-      console.log(`[CloudKVStore:${this.instanceId}] DEL ${key} -> deleted`)
+      console.log(
+        `[CloudKVStore:${this.instanceId}] DEL ${this.obfuscateKey(key)} -> deleted`
+      )
     } catch (error) {
       console.error(
-        `[CloudKVStore:${this.instanceId}] DEL ${key} -> ERROR:`,
+        `[CloudKVStore:${this.instanceId}] DEL ${this.obfuscateKey(key)} -> ERROR:`,
         error
       )
       throw error
@@ -72,5 +76,13 @@ export class CloudKVStore implements IKVStore {
 
   getImplementationName(): string {
     return `CloudKVStore:${this.instanceId}:Upstash`
+  }
+
+  private obfuscateKey(key: string): string {
+    // Only show first 8 characters and last 4 characters, mask the middle
+    if (key.length <= 12) {
+      return key.substring(0, 4) + '***'
+    }
+    return key.substring(0, 8) + '***' + key.substring(key.length - 4)
   }
 }
