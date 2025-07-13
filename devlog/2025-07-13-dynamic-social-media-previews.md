@@ -13,9 +13,9 @@ Successfully implemented dynamic social media previews for shared conversations 
 ## Changes Made
 
 ### Files Modified
-- app/conversation/[id]/page.tsx - Converted to server component with generateMetadata function and comprehensive platform support
+- app/conversation/[id]/page.tsx - Converted to server component with generateMetadata function, comprehensive platform support, and NEXTAUTH_URL usage
 - app/conversation/[id]/__tests__/page.test.tsx - Updated to test ConversationClient instead of page component
-- app/metadata.ts - Enhanced with platform-specific images and Twitter attribution
+- app/metadata.ts - Enhanced with platform-specific images, Twitter attribution, and NEXTAUTH_URL for consistent URL generation
 
 ### Files Created
 - app/conversation/[id]/ConversationClient.tsx - Extracted client component logic from original page.tsx
@@ -112,7 +112,7 @@ No new dependencies added. Used existing Next.js metadata API and conversation t
 - Maintains compatibility with all current features (authentication, possibility selection, etc.)
 
 ## Deployment/Configuration Changes
-Requires NEXT_PUBLIC_BASE_URL environment variable to be set for proper URL generation in metadata. Supports fallback to Vercel URL or localhost for development.
+Uses NEXTAUTH_URL environment variable for consistent URL generation across all metadata functions. This provides reliable server-side URL construction for both API calls and image URLs in social media previews.
 
 ## Related Documentation
 - docs/social-media-preview-design.md - Complete design document with architecture diagrams and implementation strategy
@@ -124,3 +124,6 @@ Requires NEXT_PUBLIC_BASE_URL environment variable to be set for proper URL gene
 3. Comprehensive error handling and fallbacks are essential for social media crawlers
 4. Performance optimization through caching is crucial for server-side metadata generation
 5. Following established patterns (like Dave Farley's principles) leads to maintainable, testable code
+6. NEXTAUTH_URL provides the most reliable environment variable for consistent URL generation across server-side operations
+7. Platform-specific image dimensions and metadata requirements vary significantly - comprehensive testing across platforms is essential
+8. Stub images with descriptive filenames help clarify requirements for future asset creation

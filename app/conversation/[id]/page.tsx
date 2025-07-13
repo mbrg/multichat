@@ -24,22 +24,19 @@ export async function generateMetadata({
 
     if (!response.ok) {
       return {
-        title: 'Conversation Not Found - chatsbox.ai',
-        description:
-          'The requested conversation could not be found. | AI Chat Sandbox',
+        title: 'Conversation Not Found | AI Chat Sandbox',
+        description: 'The requested conversation could not be found.',
         openGraph: {
           type: 'website',
-          title: 'Conversation Not Found - chatsbox.ai',
-          description:
-            'The requested conversation could not be found. | AI Chat Sandbox',
+          title: 'Conversation Not Found | AI Chat Sandbox',
+          description: 'The requested conversation could not be found.',
           siteName: 'chatsbox.ai',
         },
         twitter: {
           card: 'summary',
           site: '@chatsboxai',
-          title: 'Conversation Not Found',
-          description:
-            'The requested conversation could not be found. | AI Chat Sandbox',
+          title: 'Conversation Not Found | AI Chat Sandbox',
+          description: 'The requested conversation could not be found.',
         },
       }
     }
@@ -135,26 +132,23 @@ export async function generateMetadata({
       }
     }
 
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/conversation/${id}`
-
-    // Add AI Chat Sandbox suffix to description
-    const finalDescription = `${description} | AI Chat Sandbox`
+    const url = `${process.env.NEXTAUTH_URL}/conversation/${id}`
 
     return {
-      title: `${truncatedTitle} - chatsbox.ai`,
-      description: finalDescription,
+      title: `Prompt: ${truncatedTitle} | AI Chat Sandbox`,
+      description: description,
       // Open Graph - Facebook, WhatsApp, Slack, Teams, LinkedIn
       openGraph: {
         type: 'article',
-        title: truncatedTitle,
-        description: finalDescription,
+        title: `Prompt: ${truncatedTitle} | AI Chat Sandbox`,
+        description: description,
         url,
         siteName: 'chatsbox.ai',
         locale: 'en_US',
         // Facebook/Meta/WhatsApp/LinkedIn specific
         images: [
           {
-            url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
+            url: `${process.env.NEXTAUTH_URL}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
             width: 1200,
             height: 630,
             alt: 'AI Chat Sandbox - Multiple AI Models Conversation',
@@ -166,10 +160,10 @@ export async function generateMetadata({
         card: 'summary_large_image',
         site: '@chatsboxai',
         creator: '@chatsboxai',
-        title: truncatedTitle,
-        description: finalDescription,
+        title: `Prompt: ${truncatedTitle} | AI Chat Sandbox`,
+        description: description,
         images: [
-          `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/twitter-card-1200x675-summary-large-image.png`,
+          `${process.env.NEXTAUTH_URL}/twitter-card-1200x675-summary-large-image.png`,
         ],
       },
       // Additional meta tags for broader platform support
@@ -206,18 +200,17 @@ export async function generateMetadata({
     console.error('Error generating metadata:', error)
 
     return {
-      title: 'AI Conversation - chatsbox.ai',
-      description: 'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
+      title: 'AI Conversation | AI Chat Sandbox',
+      description: 'View this AI conversation on chatsbox.ai',
       openGraph: {
         type: 'website',
-        title: 'AI Conversation - chatsbox.ai',
-        description:
-          'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
-        url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/conversation/${id}`,
+        title: 'AI Conversation | AI Chat Sandbox',
+        description: 'View this AI conversation on chatsbox.ai',
+        url: `${process.env.NEXTAUTH_URL}/conversation/${id}`,
         siteName: 'chatsbox.ai',
         images: [
           {
-            url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://chatsbox.ai'}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
+            url: `${process.env.NEXTAUTH_URL}/og-image-1200x630-facebook-meta-whatsapp-linkedin.png`,
             width: 1200,
             height: 630,
             alt: 'AI Chat Sandbox',
@@ -227,9 +220,8 @@ export async function generateMetadata({
       twitter: {
         card: 'summary_large_image',
         site: '@chatsboxai',
-        title: 'AI Conversation - chatsbox.ai',
-        description:
-          'View this AI conversation on chatsbox.ai | AI Chat Sandbox',
+        title: 'AI Conversation | AI Chat Sandbox',
+        description: 'View this AI conversation on chatsbox.ai',
       },
     }
   }
